@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, Search } from "lucide-react";
+import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, Search, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Lead } from "@/lib/mock-data";
@@ -74,6 +74,25 @@ const AITools = () => {
   const copyToClipboard = () => {
     navigator.clipboard.writeText(generatedContent);
     toast.success("Copied to clipboard");
+  };
+
+  const openInEmailClient = () => {
+    const lead = leads.find((l) => l.id === selectedLead);
+    if (!lead || !generatedContent) return;
+
+    // Extract subject from content (first line if it starts with "Subject:")
+    let subject = `Website services for ${lead.business_name}`;
+    let body = generatedContent;
+    
+    const lines = generatedContent.split("\n");
+    if (lines[0]?.toLowerCase().startsWith("subject:")) {
+      subject = lines[0].replace(/^subject:\s*/i, "").trim();
+      body = lines.slice(1).join("\n").trim();
+    }
+
+    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailto, "_blank");
+    toast.success("Opening email client...");
   };
 
   return (
@@ -169,9 +188,16 @@ const AITools = () => {
         <Card className="border-primary/20">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-lg">Generated Content</CardTitle>
-            <Button variant="ghost" size="sm" onClick={copyToClipboard}>
-              <Copy className="mr-1 h-4 w-4" /> Copy
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={copyToClipboard}>
+                <Copy className="mr-1 h-4 w-4" /> Copy
+              </Button>
+              {outreachType === "email" && (
+                <Button variant="outline" size="sm" onClick={openInEmailClient}>
+                  <ExternalLink className="mr-1 h-4 w-4" /> Send via Email
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <Textarea value={generatedContent} onChange={(e) => setGeneratedContent(e.target.value)} className="min-h-[200px] font-mono text-sm" />
