@@ -53,6 +53,25 @@ const Admin = () => {
     setUpdating(null);
   };
 
+  const handleLeadsChange = async (userId: string, newLeads: number) => {
+    if (isNaN(newLeads) || newLeads < 0) return;
+    const { error } = await supabase
+      .from("usage_tracking")
+      .update({ leads_remaining: newLeads })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to update leads");
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.user_id === userId ? { ...u, leads_remaining: newLeads } : u
+        )
+      );
+      toast.success(`Leads updated to ${newLeads}`);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
