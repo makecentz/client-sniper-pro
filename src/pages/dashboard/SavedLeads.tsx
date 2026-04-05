@@ -1,19 +1,48 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Flame, AlertTriangle, MapPin, Phone, Globe, Download, Check, X, StickyNote } from "lucide-react";
-import { mockLeads, type Lead } from "@/lib/mock-data";
+import { Flame, AlertTriangle, MapPin, Phone, Globe, Download, Check, X, StickyNote, Trash2 } from "lucide-react";
+import { type Lead } from "@/lib/mock-data";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 type Filter = "all" | "contacted" | "not_contacted";
 
 const SavedLeads = () => {
-  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+  const { user } = useAuth();
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
+
+  const fetchLeads = async () => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("leads")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    if (error) {
+      toast.error("Failed to load leads");
+      console.error(error);
+    } else {
+      setLeads((data || []).map((d) => ({
+        ...d,
+        phone: d.phone || "",
+        address: d.address || "",
+        score: (d.score as "hot" | "needs_upgrade") || "needs_upgrade",
+        notes: d.notes || "",
+      })));
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLeads();
+  }, [user]);
 
   const filtered = leads.filter((l) => {
     if (filter === "contacted") return l.contacted;
@@ -21,18 +50,25 @@ const SavedLeads = () => {
     return true;
   });
 
-  const toggleContacted = (id: string) => {
-    setLeads((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, contacted: !l.contacted } : l))
-    );
+  const toggleContacted = async (id: string, current: boolean) => {
+    const { error } = await supabase.from("leads").update({ contacted: !current }).eq("id", id);
+    if (error) { toast.error("Update failed"); return; }
+    setLeads((prev) => prev.map((l) => l.id === id ? { ...l, contacted: !current } : l));
   };
 
-  const updateNotes = (id: string, notes: string) => {
-    setLeads((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, notes } : l))
-    );
+  const updateNotes = async (id: string, notes: string) => {
+    const { error } = await supabase.from("leads").update({ notes }).eq("id", id);
+    if (error) { toast.error("Update failed"); return; }
+    setLeads((prev) => prev.map((l) => l.id === id ? { ...l, notes } : l));
     setEditingNotes(null);
     toast.success("Notes updated");
+  };
+
+  const deleteLead = async (id: string) => {
+    const { error } = await supabase.from("leads").delete().eq("id", id);
+    if (error) { toast.error("Delete failed"); return; }
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+    toast.success("Lead deleted");
   };
 
   const exportCSV = () => {
@@ -52,6 +88,10 @@ const SavedLeads = () => {
     toast.success("CSV exported");
   };
 
+  if (loading) {
+    return <div className="flex items-center justify-center py-12"><div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" /></div>;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -64,7 +104,6 @@ const SavedLeads = () => {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="flex gap-2">
         {(["all", "contacted", "not_contacted"] as Filter[]).map((f) => (
           <Button key={f} variant={filter === f ? "default" : "secondary"} size="sm" onClick={() => setFilter(f)}>
@@ -73,7 +112,6 @@ const SavedLeads = () => {
         ))}
       </div>
 
-      {/* Leads List */}
       <div className="space-y-3">
         {filtered.map((lead) => (
           <Card key={lead.id} className="border-border/50">
@@ -97,12 +135,15 @@ const SavedLeads = () => {
                     {lead.website && <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" /> {lead.website}</span>}
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => toggleContacted(lead.id)}>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => toggleContacted(lead.id, lead.contacted)}>
                     {lead.contacted ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />}
                   </Button>
                   <Button variant="ghost" size="sm" onClick={() => setEditingNotes(editingNotes === lead.id ? null : lead.id)}>
                     <StickyNote className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteLead(lead.id)}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -110,6 +151,12 @@ const SavedLeads = () => {
               {lead.ai_audit && (
                 <div className="rounded-md bg-muted/50 p-3 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">AI Audit:</span> {lead.ai_audit}
+                </div>
+              )}
+
+              {lead.screenshot_url && (
+                <div className="rounded-md overflow-hidden border border-border/30">
+                  <img src={lead.screenshot_url} alt={`${lead.business_name} website`} className="w-full h-40 object-cover object-top" />
                 </div>
               )}
 
