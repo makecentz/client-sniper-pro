@@ -190,7 +190,15 @@ const Admin = () => {
                       </Select>
                     </TableCell>
                     <TableCell>{u.searches_today}</TableCell>
-                    <TableCell>{u.leads_remaining}</TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        className="w-24"
+                        defaultValue={u.leads_remaining}
+                        onBlur={(e) => handleLeadsChange(u.user_id, parseInt(e.target.value, 10))}
+                        min={0}
+                      />
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString()}
                     </TableCell>
