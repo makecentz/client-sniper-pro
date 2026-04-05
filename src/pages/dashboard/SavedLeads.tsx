@@ -142,31 +142,39 @@ const SavedLeads = () => {
                     {lead.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {lead.email}</span>}
                     {lead.website && <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" /> {lead.website}</span>}
                   </div>
-                  {/* Website issue badges */}
-                  {lead.website_issues && lead.website_issues.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1">
-                      {lead.no_ssl && (
-                        <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
-                          <ShieldOff className="mr-1 h-3 w-3" /> No SSL
-                        </Badge>
-                      )}
-                      {lead.website_error && (
-                        <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
-                          <AlertTriangle className="mr-1 h-3 w-3" /> Site Error
-                        </Badge>
-                      )}
-                      {lead.not_mobile_friendly && (
-                        <Badge variant="outline" className="text-warning border-warning/30 text-xs">
-                          <Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly
-                        </Badge>
-                      )}
-                      {lead.outdated_copyright && (
-                        <Badge variant="outline" className="text-warning border-warning/30 text-xs">
-                          <CalendarX className="mr-1 h-3 w-3" /> Outdated Copyright
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                  {/* Website status & issue badges */}
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {!lead.has_website && (
+                      <Badge variant="destructive" className="text-xs">
+                        <Globe className="mr-1 h-3 w-3" /> No Website
+                      </Badge>
+                    )}
+                    {lead.has_website && !lead.no_ssl && !lead.website_error && !lead.not_mobile_friendly && !lead.outdated_copyright && (
+                      <Badge variant="outline" className="text-success border-success/30 text-xs">
+                        <Check className="mr-1 h-3 w-3" /> Website OK
+                      </Badge>
+                    )}
+                    {lead.no_ssl && (
+                      <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                        <ShieldOff className="mr-1 h-3 w-3" /> No SSL
+                      </Badge>
+                    )}
+                    {lead.website_error && (
+                      <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                        <AlertTriangle className="mr-1 h-3 w-3" /> Site Error
+                      </Badge>
+                    )}
+                    {lead.not_mobile_friendly && (
+                      <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                        <Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly
+                      </Badge>
+                    )}
+                    {lead.outdated_copyright && (
+                      <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                        <CalendarX className="mr-1 h-3 w-3" /> Outdated Copyright
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" onClick={() => toggleContacted(lead.id, lead.contacted)}>
