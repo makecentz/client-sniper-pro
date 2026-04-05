@@ -46,6 +46,27 @@ serve(async (req) => {
       });
     }
 
+    // Fetch user's company settings
+    const adminClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
+    const { data: companySettings } = await adminClient
+      .from("company_settings")
+      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    const companyContext = companySettings
+      ? `\n\nYour Company Info (use this to personalize the message — sign off with your details):
+Company: ${companySettings.business_name || "N/A"}
+Website: ${companySettings.website_url || "N/A"}
+Phone: ${companySettings.phone || "N/A"}
+Email: ${companySettings.email || "N/A"}
+Website Development Price: ${companySettings.website_dev_price || "N/A"}
+Current Deal/Promotion: ${companySettings.current_deal || "None"}`
+      : "";
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
@@ -59,15 +80,15 @@ Website: ${lead.website || "No website"}
 Phone: ${lead.phone || "Unknown"}
 Address: ${lead.address || "Unknown"}
 Score: ${lead.score || "Unknown"}
-AI Audit: ${lead.ai_audit || "Not available"}`;
+AI Audit: ${lead.ai_audit || "Not available"}${companyContext}`;
 
     const prompts: Record<string, string> = {
-      email: `Write a professional cold outreach email to pitch web design/development services to this local business. Be personalized based on their details. If they have no website, emphasize the need for one. If they have a website, suggest improvements. Keep it concise (under 200 words), friendly, and include a clear call-to-action for a brief call.\n\n${leadContext}`,
-      dm: `Write a short, casual social media DM (under 80 words) to pitch web design services to this business. Be friendly, use 1-2 emojis, reference something specific about their business.\n\n${leadContext}`,
-      sms: `Write a very brief SMS (under 50 words) to pitch web design services. Include a soft CTA. Professional but conversational.\n\n${leadContext}`,
-      offer: `Create a detailed service offer/proposal for this business. Include:\n- Custom website package with pricing ($997 one-time)\n- Monthly maintenance ($49/mo)\n- List of included features (SEO, responsive design, contact forms, etc.)\n- A bonus offer with urgency\n- ROI justification\nFormat it cleanly with bullet points and emojis.\n\n${leadContext}`,
-      followup1: `Write a first follow-up message (email style, under 150 words) for a business that didn't respond to the initial outreach about web design services. Reference social proof (e.g. other clients seeing 40% more calls). Be persistent but respectful.\n\n${leadContext}`,
-      followup2: `Write a final follow-up message (email style, under 120 words) for a business that hasn't responded to two previous outreach attempts about web design services. Create gentle urgency (limited spots). Be warm and give them an easy out.\n\n${leadContext}`,
+      email: `Write a professional cold outreach email to pitch web design/development services to this local business. Be personalized based on their details. If they have no website, emphasize the need for one. If they have a website, suggest improvements. Keep it concise (under 200 words), friendly, and include a clear call-to-action for a brief call. Use the sender's company info for the signature and any pricing/deal info.\n\n${leadContext}`,
+      dm: `Write a short, casual social media DM (under 80 words) to pitch web design services to this business. Be friendly, use 1-2 emojis, reference something specific about their business. If sender company info is available, mention it naturally.\n\n${leadContext}`,
+      sms: `Write a very brief SMS (under 50 words) to pitch web design services. Include a soft CTA. Professional but conversational. Use sender's name/company if available.\n\n${leadContext}`,
+      offer: `Create a detailed service offer/proposal for this business. Include:\n- Custom website package with pricing (use the sender's actual price if provided)\n- Monthly maintenance pricing\n- List of included features (SEO, responsive design, contact forms, etc.)\n- Include any current deal/promotion the sender has\n- ROI justification\nFormat it cleanly with bullet points and emojis. Use the sender's company branding.\n\n${leadContext}`,
+      followup1: `Write a first follow-up message (email style, under 150 words) for a business that didn't respond to the initial outreach about web design services. Reference social proof (e.g. other clients seeing 40% more calls). Be persistent but respectful. Sign with sender's company info.\n\n${leadContext}`,
+      followup2: `Write a final follow-up message (email style, under 120 words) for a business that hasn't responded to two previous outreach attempts about web design services. Create gentle urgency (limited spots). Be warm and give them an easy out. Include any current deal. Sign with sender's company info.\n\n${leadContext}`,
       audit: `Perform a website audit analysis for this business. Evaluate:\n- Overall web presence (do they have a site?)\n- Mobile responsiveness likelihood\n- SEO basics (would they rank for local searches?)\n- Missing features (booking, contact forms, reviews)\n- Competitor advantage\n- Specific recommendations for improvement\nBe specific and actionable. Format with headers and bullet points.\n\n${leadContext}`,
     };
 
