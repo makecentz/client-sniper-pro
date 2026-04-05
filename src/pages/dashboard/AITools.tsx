@@ -1,29 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy } from "lucide-react";
-import { mockLeads } from "@/lib/mock-data";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { type Lead } from "@/lib/mock-data";
 import { toast } from "sonner";
 
 const AITools = () => {
+  const { user } = useAuth();
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState("");
   const [outreachType, setOutreachType] = useState("email");
   const [generatedContent, setGeneratedContent] = useState("");
   const [generating, setGenerating] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("leads")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (data) setLeads(data.map((d) => ({
+          ...d,
+          phone: d.phone || "",
+          address: d.address || "",
+          score: (d.score as "hot" | "needs_upgrade") || "needs_upgrade",
+          notes: d.notes || "",
+        })));
+      });
+  }, [user]);
 
   const generate = (type: string) => {
     if (!selectedLead) {
       toast.error("Select a lead first");
       return;
     }
-    const lead = mockLeads.find((l) => l.id === selectedLead);
+    const lead = leads.find((l) => l.id === selectedLead);
     if (!lead) return;
 
     setGenerating(true);
-    // Mock AI generation
+    // Mock AI generation — will be replaced with real AI in Phase 3
     setTimeout(() => {
       const templates: Record<string, string> = {
         email: `Subject: Transform ${lead.business_name}'s Online Presence\n\nHi there,\n\nI noticed that ${lead.business_name} ${lead.website ? "has a website that could benefit from a modern redesign" : "doesn't have a website yet"}. In today's digital world, a strong online presence is crucial for attracting new customers.\n\nI specialize in building high-converting websites for businesses like yours. I'd love to show you how a professional website could help grow ${lead.business_name}.\n\nWould you be open to a quick 10-minute call this week?\n\nBest regards`,
@@ -35,6 +57,20 @@ const AITools = () => {
       };
       setGeneratedContent(templates[type] || templates.email);
       setGenerating(false);
+
+      // Save generated message to DB
+      if (user && lead) {
+        const msgType = ["email", "dm", "sms"].includes(type) ? type : "email";
+        supabase.from("messages").insert({
+          user_id: user.id,
+          lead_id: lead.id,
+          type: msgType,
+          content: templates[type] || templates.email,
+        }).then(({ error }) => {
+          if (error) console.error("Failed to save message:", error);
+        });
+      }
+
       toast.success("Message generated");
     }, 1500);
   };
@@ -51,7 +87,6 @@ const AITools = () => {
         <p className="text-sm text-muted-foreground">Generate outreach messages, offers, and follow-ups with AI</p>
       </div>
 
-      {/* Lead Selector */}
       <Card className="border-border/50">
         <CardContent className="p-6">
           <div className="space-y-2">
@@ -61,7 +96,7 @@ const AITools = () => {
                 <SelectValue placeholder="Choose a lead..." />
               </SelectTrigger>
               <SelectContent>
-                {mockLeads.map((l) => (
+                {leads.map((l) => (
                   <SelectItem key={l.id} value={l.id}>{l.business_name}</SelectItem>
                 ))}
               </SelectContent>
@@ -71,7 +106,6 @@ const AITools = () => {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Generate Outreach */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Outreach</CardTitle>
@@ -95,7 +129,6 @@ const AITools = () => {
           </CardContent>
         </Card>
 
-        {/* Generate Offer */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Offer</CardTitle>
@@ -108,7 +141,6 @@ const AITools = () => {
           </CardContent>
         </Card>
 
-        {/* Follow-ups */}
         <Card className="border-border/50 md:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg">Generate Follow-Ups</CardTitle>
@@ -125,7 +157,6 @@ const AITools = () => {
         </Card>
       </div>
 
-      {/* Generated Content */}
       {generatedContent && (
         <Card className="border-primary/20">
           <CardHeader className="flex flex-row items-center justify-between">
