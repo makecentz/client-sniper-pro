@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
 import logo from "@/assets/logo.png";
 import heroBg from "@/assets/hero-bg.png";
+import pricingBg from "@/assets/pricing-bg.png";
 
 const features = [
   { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry using Outscraper." },
@@ -85,8 +86,13 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section className="border-t border-border/50 px-6 py-20">
-        <div className="mx-auto max-w-4xl">
+      <section className="relative overflow-hidden border-t border-border/50 px-6 py-20">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-10"
+          style={{ backgroundImage: `url(${pricingBg})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
+        <div className="relative z-10 mx-auto max-w-4xl">
           <h2 className="mb-4 text-center text-3xl font-bold text-foreground">Simple Pricing</h2>
           <p className="mb-12 text-center text-muted-foreground">Start free. Scale when ready.</p>
           <div className="grid gap-6 md:grid-cols-3">
