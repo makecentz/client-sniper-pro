@@ -8,6 +8,8 @@ interface User {
   plan: "free" | "pro";
   searches_today: number;
   leads_remaining: number;
+  subscribed: boolean;
+  subscription_end: string | null;
 }
 
 interface AuthContextType {
@@ -16,6 +18,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshSubscription: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,7 +30,6 @@ export const useAuth = () => {
 };
 
 const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
-  // Fetch usage tracking data
   const { data: usage } = await supabase
     .from("usage_tracking")
     .select("searches_today, leads_remaining, plan")
@@ -40,6 +42,8 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     plan: (usage?.plan as "free" | "pro") ?? "free",
     searches_today: usage?.searches_today ?? 0,
     leads_remaining: usage?.leads_remaining ?? 2,
+    subscribed: usage?.plan === "pro",
+    subscription_end: null,
   };
 };
 
@@ -47,12 +51,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const checkSubscription = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error || !data) return;
+      
+      setUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          subscribed: data.subscribed,
+          plan: data.subscribed ? "pro" : prev.plan,
+          subscription_end: data.subscription_end || null,
+        };
+      });
+    } catch (e) {
+      console.error("Failed to check subscription:", e);
+    }
+  }, []);
+
   useEffect(() => {
-    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
-          // Use setTimeout to avoid Supabase client deadlock
           setTimeout(async () => {
             const mapped = await mapSupabaseUser(session.user);
             setUser(mapped);
@@ -65,7 +86,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // THEN check existing session
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const mapped = await mapSupabaseUser(session.user);
@@ -76,6 +96,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check subscription on login and periodically
+  useEffect(() => {
+    if (!user) return;
+    checkSubscription();
+    const interval = setInterval(checkSubscription, 60000);
+    return () => clearInterval(interval);
+  }, [user?.id, checkSubscription]);
 
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -97,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, refreshSubscription: checkSubscription }}>
       {children}
     </AuthContext.Provider>
   );
