@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const features = [
   { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry using Outscraper." },
@@ -16,10 +17,9 @@ const Landing = () => {
       {/* Nav */}
       <nav className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Zap className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">ClientHunter AI</span>
-          </div>
+          <Link to="/" className="flex items-center">
+            <img src={logo} alt="ClientHunter AI" className="h-8 w-auto" />
+          </Link>
           <div className="flex items-center gap-3">
             <Link to="/login">
               <Button variant="ghost" size="sm">Log In</Button>
@@ -138,9 +138,8 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-border/50 px-6 py-8">
         <div className="mx-auto flex max-w-7xl items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Zap className="h-4 w-4 text-primary" />
-            <span>ClientHunter AI</span>
+          <div className="flex items-center">
+            <img src={logo} alt="ClientHunter AI" className="h-6 w-auto" />
           </div>
           <span>© 2026 All rights reserved.</span>
         </div>
