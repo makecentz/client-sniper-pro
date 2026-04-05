@@ -96,6 +96,14 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        {isAdmin && (
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-primary hover:text-primary" asChild>
+            <NavLink to="/admin" end className="" activeClassName="bg-muted">
+              <ShieldCheck className="h-4 w-4" />
+              {!collapsed && <span>Admin Panel</span>}
+            </NavLink>
+          </Button>
+        )}
         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Log out</span>}
