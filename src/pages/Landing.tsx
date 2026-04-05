@@ -34,9 +34,6 @@ const Landing = () => {
       {/* Hero */}
       <section className="px-6 py-24 text-center">
         <div className="mx-auto max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
-            <Zap className="h-3.5 w-3.5" /> AI-Powered Lead Generation
-          </div>
           <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
             Snipe high-value clients{" "}
             <span className="text-primary">in minutes</span>
