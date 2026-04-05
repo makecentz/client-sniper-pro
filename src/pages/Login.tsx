@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Zap } from "lucide-react";
+import logo from "@/assets/logo.png";
 import { toast } from "sonner";
 
 const Login = () => {
@@ -33,9 +33,9 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md border-border/50">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
+          <Link to="/" className="mx-auto mb-2 block">
+            <img src={logo} alt="ClientHunter AI" className="h-14 w-auto" />
+          </Link>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>Sign in to your ClientHunter AI account</CardDescription>
         </CardHeader>
