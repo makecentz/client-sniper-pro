@@ -155,9 +155,19 @@ const Admin = () => {
                   <TableRow key={u.user_id}>
                     <TableCell className="font-medium">{u.email}</TableCell>
                     <TableCell>
-                      <Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">
-                        {u.plan}
-                      </Badge>
+                      <Select
+                        value={u.plan}
+                        onValueChange={(val) => handlePlanChange(u.user_id, val as "free" | "pro")}
+                        disabled={updating === u.user_id}
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="pro">Pro</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>{u.searches_today}</TableCell>
                     <TableCell>{u.leads_remaining}</TableCell>
