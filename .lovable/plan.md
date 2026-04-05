@@ -1,30 +1,81 @@
 
 
-## Plan: Show Website Status and All Issue Badges on Saved Leads
+## Plan: Phase 2 & 3 — Addictive + Elite Features for ClientHunter AI
 
-### Problem
-When a lead is saved and viewed on the Saved Leads page, the "No Website" status and other website quality signals don't show up. This is because the UI only renders badges for specific boolean flags (no_ssl, website_error, not_mobile_friendly, outdated_copyright) but has no badge for leads with no website at all.
+This is a large feature set. I'll implement it incrementally across multiple steps.
 
-### Changes
+### Database Changes (Single Migration)
 
-**SavedLeads.tsx** — Update the website issue badges section:
+Add new columns to `leads` table:
+- `priority_score` (integer, default 0)
+- `priority_label` (text, default 'low')
+- `ai_insight` (text, nullable)
+- `status` (text, default 'new') — values: new, contacted, followed_up, closed, lost
+- `follow_up_date` (date, nullable)
+- `competitor_insight` (text, nullable)
 
-1. Add a "No Website" badge that shows when `has_website === false` — displayed prominently since this is the primary signal for a hot lead
-2. Move the badge section outside the `website_issues?.length > 0` wrapper so individual boolean flags always render regardless of the array state
-3. Add a "Has Website" indicator (green badge or text) when the lead does have a website but no issues, so the user always sees the website status
+Create new tables:
+- `proposals` — id, user_id, lead_id, content, pdf_url, created_at (RLS: user owns)
+- `dfy_requests` — id, user_id, lead_id, notes, status (default 'pending'), created_at (RLS: user owns + admin read)
 
-The updated badge section will render:
-- **No Website** (destructive badge with Globe icon) — when `!has_website`
-- **No SSL** — when `no_ssl === true`
-- **Site Error** — when `website_error === true`
-- **Not Mobile Friendly** — when `not_mobile_friendly === true`
-- **Outdated Copyright** — when `outdated_copyright === true`
+### Edge Function Changes
 
-These badges will show unconditionally based on their boolean values, not gated behind the `website_issues` array check.
+**1. Update `generate-outreach/index.ts`** — add new prompt types:
+- `video_script` — 15-30 second TikTok/Instagram pitch script
+- `call_script` — opening, questions, objection handling, closing
+- `proposal` — full proposal content with problems found, solution, pricing
+- `why_this_lead` — 1-3 bullet points explaining opportunity (stored as `ai_insight`)
+- `competitor_insight` — competitive analysis summary
+
+**2. Update `search-businesses/index.ts`** — compute `priority_score` (1-100) and `priority_label` during search based on: no website (+40), website issues (+15 each), high reviews but weak site (+20). Return these with results.
+
+### Frontend Changes
+
+**1. New Dashboard Home page** (`src/pages/dashboard/DashboardHome.tsx`)
+- "🔥 Top Leads Today" — top 5 leads by priority_score
+- "Follow-Up Reminders" — leads with follow_up_date <= today
+- Quick stats (total leads, contacted, pending follow-ups)
+- Route: `/dashboard` (move SearchPanel to `/dashboard/search`)
+
+**2. Update `SavedLeads.tsx`**
+- Add status dropdown per lead (New/Contacted/Followed Up/Closed/Lost)
+- Add "Set Follow-Up" button with 1/2/3 day options (popover)
+- Add priority score badge and label
+- Add "Why This Lead?" button → calls AI, shows/stores `ai_insight`
+- Add "Find Competitors" button → calls AI, shows/stores `competitor_insight`
+- Filter by status
+
+**3. Update `AITools.tsx`**
+- Add "Generate Proposal" card
+- Add "Video Pitch Script" card
+- Add "Call Script" card
+- Add "Done For You" CTA button → opens form, submits to `dfy_requests`
+
+**4. Update `DashboardSidebar.tsx`**
+- Add "Dashboard" nav item (home icon) pointing to `/dashboard`
+- Rename search route
+
+**5. Update `App.tsx`** — add new routes
+
+**6. Update `mock-data.ts`** — extend Lead interface with new fields
 
 ### Technical Details
-- Only one file changes: `src/pages/dashboard/SavedLeads.tsx`
-- Remove the outer `{lead.website_issues && lead.website_issues.length > 0 && ...}` wrapper
-- Add `{!lead.has_website && <Badge>No Website</Badge>}` as the first badge
-- Import `Globe` icon (already imported) for the No Website badge
+
+- Priority scoring logic runs in the edge function during search and is saved with the lead
+- "Why This Lead?" and "Competitor Insight" use the existing `generate-outreach` function with new prompt types, stored on the lead record
+- Proposal PDF generation uses the AI gateway to generate content, then a client-side PDF download (html-to-text style, no server-side PDF library needed)
+- Follow-up reminders are date-based queries, no cron needed — just filter on dashboard load
+- DFY requests table has admin RLS policy so admin page can view all requests
+
+### Files to Create/Modify
+
+1. **Migration** — new columns + new tables
+2. `src/pages/dashboard/DashboardHome.tsx` — new dashboard home
+3. `src/pages/dashboard/SavedLeads.tsx` — status, follow-ups, AI insight, competitors
+4. `src/pages/dashboard/AITools.tsx` — proposal, video script, call script, DFY
+5. `src/lib/mock-data.ts` — updated interfaces
+6. `src/App.tsx` — new routes
+7. `src/components/DashboardSidebar.tsx` — updated nav
+8. `supabase/functions/generate-outreach/index.ts` — new prompt types
+9. `supabase/functions/search-businesses/index.ts` — priority scoring
 
