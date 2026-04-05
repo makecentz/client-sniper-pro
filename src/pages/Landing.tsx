@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import heroBg from "@/assets/hero-bg.png";
 
 const features = [
   { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry using Outscraper." },
@@ -32,7 +33,12 @@ const Landing = () => {
       </nav>
 
       {/* Hero */}
-      <section className="px-6 py-24 text-center">
+      <section className="relative overflow-hidden px-6 py-24 text-center">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-15"
+          style={{ backgroundImage: `url(${heroBg})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
             Snipe high-value clients{" "}
