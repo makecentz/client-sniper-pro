@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, Search, ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, ExternalLink, Video, PhoneCall, Briefcase, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Lead } from "@/lib/mock-data";
@@ -17,6 +19,9 @@ const AITools = () => {
   const [outreachType, setOutreachType] = useState("email");
   const [generatedContent, setGeneratedContent] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [dfyNotes, setDfyNotes] = useState("");
+  const [dfyOpen, setDfyOpen] = useState(false);
+  const [dfySubmitting, setDfySubmitting] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -39,6 +44,12 @@ const AITools = () => {
           not_mobile_friendly: d.not_mobile_friendly ?? false,
           outdated_copyright: d.outdated_copyright ?? false,
           website_issues: d.website_issues || null,
+          priority_score: d.priority_score ?? 0,
+          priority_label: d.priority_label ?? "low",
+          ai_insight: d.ai_insight || null,
+          status: d.status || "new",
+          follow_up_date: d.follow_up_date || null,
+          competitor_insight: d.competitor_insight || null,
         })));
       });
   }, [user]);
@@ -56,23 +67,12 @@ const AITools = () => {
       const { data, error } = await supabase.functions.invoke("generate-outreach", {
         body: { type, lead },
       });
-
-      if (error) {
-        console.error("AI generation error:", error);
-        toast.error("Failed to generate content. Please try again.");
-        return;
-      }
-
-      if (data?.error) {
-        toast.error(data.error);
-        return;
-      }
-
+      if (error) { toast.error("Failed to generate content"); return; }
+      if (data?.error) { toast.error(data.error); return; }
       setGeneratedContent(data.content);
-      toast.success("AI-generated message ready!");
-    } catch (err) {
-      console.error("Unexpected error:", err);
-      toast.error("Something went wrong. Please try again.");
+      toast.success("AI content generated!");
+    } catch {
+      toast.error("Something went wrong");
     } finally {
       setGenerating(false);
     }
@@ -86,27 +86,41 @@ const AITools = () => {
   const openInEmailClient = () => {
     const lead = leads.find((l) => l.id === selectedLead);
     if (!lead || !generatedContent) return;
-
-    // Extract subject from content (first line if it starts with "Subject:")
     let subject = `Website services for ${lead.business_name}`;
     let body = generatedContent;
-    
     const lines = generatedContent.split("\n");
     if (lines[0]?.toLowerCase().startsWith("subject:")) {
       subject = lines[0].replace(/^subject:\s*/i, "").trim();
       body = lines.slice(1).join("\n").trim();
     }
+    window.open(`mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, "_blank");
+  };
 
-    const mailto = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailto, "_blank");
-    toast.success("Opening email client...");
+  const submitDFY = async () => {
+    if (!selectedLead || !user) { toast.error("Select a lead first"); return; }
+    setDfySubmitting(true);
+    try {
+      const { error } = await supabase.from("dfy_requests").insert({
+        user_id: user.id,
+        lead_id: selectedLead,
+        notes: dfyNotes,
+      });
+      if (error) throw error;
+      toast.success("Request submitted! We'll be in touch.");
+      setDfyOpen(false);
+      setDfyNotes("");
+    } catch {
+      toast.error("Failed to submit request");
+    } finally {
+      setDfySubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">AI Tools</h1>
-        <p className="text-sm text-muted-foreground">Generate outreach messages, offers, audits, and follow-ups with AI</p>
+        <p className="text-sm text-muted-foreground">Generate outreach, proposals, scripts, and more with AI</p>
       </div>
 
       <Card className="border-border/50">
@@ -128,13 +142,14 @@ const AITools = () => {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
+        {/* Outreach */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Outreach</CardTitle>
-            <CardDescription>AI-powered personalized outreach messages</CardDescription>
+            <CardDescription>Personalized outreach messages</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {[
                 { type: "email", icon: Mail, label: "Email" },
                 { type: "dm", icon: MessageCircle, label: "DM" },
@@ -146,11 +161,12 @@ const AITools = () => {
               ))}
             </div>
             <Button className="w-full" onClick={() => generate(outreachType)} disabled={generating}>
-              {generating ? "Generating with AI..." : "Generate Message"}
+              {generating ? "Generating..." : "Generate Message"}
             </Button>
           </CardContent>
         </Card>
 
+        {/* Offer */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Offer</CardTitle>
@@ -163,22 +179,63 @@ const AITools = () => {
           </CardContent>
         </Card>
 
+        {/* Proposal */}
         <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg">Website Audit</CardTitle>
-            <CardDescription>AI analysis of the lead's web presence</CardDescription>
+            <CardTitle className="text-lg">📄 Generate Proposal</CardTitle>
+            <CardDescription>Full client proposal with analysis & pricing</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full" variant="secondary" onClick={() => generate("audit")} disabled={generating}>
-              <Search className="mr-2 h-4 w-4" /> Generate Audit
+            <Button className="w-full" variant="secondary" onClick={() => generate("proposal")} disabled={generating}>
+              <Briefcase className="mr-2 h-4 w-4" /> Generate Proposal
             </Button>
           </CardContent>
         </Card>
 
+        {/* Audit */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">Website Audit</CardTitle>
+            <CardDescription>AI analysis of web presence</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="secondary" onClick={() => generate("audit")} disabled={generating}>
+              <Sparkles className="mr-2 h-4 w-4" /> Generate Audit
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Video Script */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">🎬 Video Pitch Script</CardTitle>
+            <CardDescription>15-30s TikTok/Instagram script</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="secondary" onClick={() => generate("video_script")} disabled={generating}>
+              <Video className="mr-2 h-4 w-4" /> Create Video Script
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Call Script */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">📞 Call Script</CardTitle>
+            <CardDescription>Cold call script with objection handling</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="secondary" onClick={() => generate("call_script")} disabled={generating}>
+              <PhoneCall className="mr-2 h-4 w-4" /> Generate Call Script
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Follow-ups */}
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Follow-Ups</CardTitle>
-            <CardDescription>AI-generated follow-up sequences</CardDescription>
+            <CardDescription>Follow-up sequences</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Button variant="secondary" onClick={() => generate("followup1")} disabled={generating}>
@@ -189,8 +246,42 @@ const AITools = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Done For You */}
+        <Card className="border-primary/20 bg-primary/5">
+          <CardHeader>
+            <CardTitle className="text-lg">🚀 Done For You</CardTitle>
+            <CardDescription>Want us to close this client for you?</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Dialog open={dfyOpen} onOpenChange={setDfyOpen}>
+              <DialogTrigger asChild>
+                <Button className="w-full">Submit DFY Request</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Done For You Request</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label>Selected Lead</Label>
+                    <Input disabled value={leads.find(l => l.id === selectedLead)?.business_name || "Select a lead first"} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Notes / Instructions</Label>
+                    <Textarea value={dfyNotes} onChange={(e) => setDfyNotes(e.target.value)} placeholder="Any special instructions..." />
+                  </div>
+                  <Button className="w-full" onClick={submitDFY} disabled={dfySubmitting || !selectedLead}>
+                    {dfySubmitting ? "Submitting..." : "Submit Request"}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Generated content */}
       {generatedContent && (
         <Card className="border-primary/20">
           <CardHeader className="flex flex-row items-center justify-between">
