@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Users, DollarSign, Search, Activity, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface UserRow {
   user_id: string;
@@ -27,6 +29,28 @@ const Admin = () => {
   const [totalLeads, setTotalLeads] = useState(0);
   const [activeToday, setActiveToday] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const handlePlanChange = async (userId: string, newPlan: "free" | "pro") => {
+    setUpdating(userId);
+    const leadsRemaining = newPlan === "pro" ? 99999 : 2;
+    const { error } = await supabase
+      .from("usage_tracking")
+      .update({ plan: newPlan, leads_remaining: leadsRemaining })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to update plan");
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.user_id === userId ? { ...u, plan: newPlan, leads_remaining: leadsRemaining } : u
+        )
+      );
+      toast.success(`Plan updated to ${newPlan}`);
+    }
+    setUpdating(null);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -131,9 +155,19 @@ const Admin = () => {
                   <TableRow key={u.user_id}>
                     <TableCell className="font-medium">{u.email}</TableCell>
                     <TableCell>
-                      <Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">
-                        {u.plan}
-                      </Badge>
+                      <Select
+                        value={u.plan}
+                        onValueChange={(val) => handlePlanChange(u.user_id, val as "free" | "pro")}
+                        disabled={updating === u.user_id}
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="free">Free</SelectItem>
+                          <SelectItem value="pro">Pro</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell>{u.searches_today}</TableCell>
                     <TableCell>{u.leads_remaining}</TableCell>
