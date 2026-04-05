@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
     // Parse and validate input
     const body = await req.json();
-    const { city, state, business_type } = body;
+    const { city, state, business_type, zip_code } = body;
 
     if (!city || typeof city !== "string" || city.length > 100) {
       return new Response(JSON.stringify({ error: "Invalid city" }), {
@@ -50,6 +50,12 @@ Deno.serve(async (req) => {
     }
     if (!business_type || typeof business_type !== "string" || business_type.length > 100) {
       return new Response(JSON.stringify({ error: "Invalid business type" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (zip_code && (typeof zip_code !== "string" || !/^\d{1,10}$/.test(zip_code))) {
+      return new Response(JSON.stringify({ error: "Invalid zip code" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

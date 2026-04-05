@@ -4,16 +4,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Phone, MapPin, Flame, AlertTriangle, Camera, Save } from "lucide-react";
 import { type SearchResult, type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
+const US_STATES = [
+  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
+  "HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
+  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ",
+  "NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
+  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
+];
+
 const SearchPanel = () => {
   const { user } = useAuth();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [zipCode, setZipCode] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -29,7 +39,7 @@ const SearchPanel = () => {
     setResults([]);
     try {
       const { data, error } = await supabase.functions.invoke("search-businesses", {
-        body: { city, state, business_type: businessType },
+        body: { city, state, business_type: businessType, zip_code: zipCode || undefined },
       });
       if (error) throw error;
       if (data.error) {
@@ -91,14 +101,32 @@ const SearchPanel = () => {
 
       <Card className="border-border/50">
         <CardContent className="p-6">
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-[1.5fr_0.7fr_0.7fr_1.5fr_auto]">
             <div className="space-y-2">
               <Label>City</Label>
               <Input placeholder="Austin" value={city} onChange={(e) => setCity(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>State</Label>
-              <Input placeholder="TX" value={state} onChange={(e) => setState(e.target.value)} />
+              <Select value={state} onValueChange={setState}>
+                <SelectTrigger>
+                  <SelectValue placeholder="State" />
+                </SelectTrigger>
+                <SelectContent>
+                  {US_STATES.map((s) => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Zip Code</Label>
+              <Input
+                placeholder="78701"
+                value={zipCode}
+                onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
+                maxLength={5}
+              />
             </div>
             <div className="space-y-2">
               <Label>Business Type</Label>
