@@ -200,10 +200,24 @@ Deno.serve(async (req) => {
         websiteCheck = await checkWebsite(website);
       }
 
-      // A lead is "hot" if any issue is found
       const isHot = !hasWebsite || websiteCheck.website_error || websiteCheck.no_ssl || websiteCheck.not_mobile_friendly || websiteCheck.outdated_copyright;
       const allIssues = [...websiteCheck.website_issues];
       if (!hasWebsite) allIssues.unshift("No Website");
+
+      // Compute priority score (1-100)
+      let priorityScore = 0;
+      if (!hasWebsite) priorityScore += 40;
+      if (websiteCheck.website_error) priorityScore += 15;
+      if (websiteCheck.no_ssl) priorityScore += 15;
+      if (websiteCheck.not_mobile_friendly) priorityScore += 15;
+      if (websiteCheck.outdated_copyright) priorityScore += 15;
+      // Boost for businesses with reviews but weak web presence
+      const rating = r.rating || 0;
+      const reviewCount = r.reviews || 0;
+      if (rating >= 4.0 && reviewCount >= 10 && isHot) priorityScore += 20;
+      priorityScore = Math.min(priorityScore, 100);
+
+      const priorityLabel = priorityScore >= 60 ? "high" : priorityScore >= 30 ? "medium" : "low";
 
       return {
         business_name: r.name || "Unknown Business",
@@ -218,6 +232,8 @@ Deno.serve(async (req) => {
         outdated_copyright: websiteCheck.outdated_copyright,
         website_issues: allIssues,
         score: isHot ? "hot" : "needs_upgrade",
+        priority_score: priorityScore,
+        priority_label: priorityLabel,
       };
     });
 

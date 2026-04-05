@@ -1,4 +1,4 @@
-import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield } from "lucide-react";
+import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,8 @@ import {
 import { Button } from "@/components/ui/button";
 
 const navItems = [
-  { title: "Search", url: "/dashboard", icon: Search },
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Search", url: "/dashboard/search", icon: Search },
   { title: "Saved Leads", url: "/dashboard/leads", icon: Bookmark },
   { title: "AI Tools", url: "/dashboard/ai-tools", icon: Bot },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },

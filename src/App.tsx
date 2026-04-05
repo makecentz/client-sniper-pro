@@ -11,6 +11,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import DashboardHome from "./pages/dashboard/DashboardHome";
 import SearchPanel from "./pages/dashboard/SearchPanel";
 import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
@@ -41,7 +42,8 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route index element={<SearchPanel />} />
+              <Route index element={<DashboardHome />} />
+              <Route path="search" element={<SearchPanel />} />
               <Route path="leads" element={<SavedLeads />} />
               <Route path="ai-tools" element={<AITools />} />
               <Route path="settings" element={<DashboardSettings />} />

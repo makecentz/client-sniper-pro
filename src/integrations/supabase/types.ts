@@ -53,6 +53,41 @@ export type Database = {
         }
         Relationships: []
       }
+      dfy_requests: {
+        Row: {
+          created_at: string
+          id: string
+          lead_id: string
+          notes: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_id: string
+          notes?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_id?: string
+          notes?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dfy_requests_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -144,10 +179,13 @@ export type Database = {
         Row: {
           address: string | null
           ai_audit: string | null
+          ai_insight: string | null
           business_name: string
+          competitor_insight: string | null
           contacted: boolean
           created_at: string
           email: string | null
+          follow_up_date: string | null
           has_website: boolean
           id: string
           no_ssl: boolean
@@ -155,8 +193,11 @@ export type Database = {
           notes: string | null
           outdated_copyright: boolean
           phone: string | null
+          priority_label: string
+          priority_score: number
           score: string | null
           screenshot_url: string | null
+          status: string
           updated_at: string
           user_id: string
           website: string | null
@@ -166,10 +207,13 @@ export type Database = {
         Insert: {
           address?: string | null
           ai_audit?: string | null
+          ai_insight?: string | null
           business_name: string
+          competitor_insight?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
+          follow_up_date?: string | null
           has_website?: boolean
           id?: string
           no_ssl?: boolean
@@ -177,8 +221,11 @@ export type Database = {
           notes?: string | null
           outdated_copyright?: boolean
           phone?: string | null
+          priority_label?: string
+          priority_score?: number
           score?: string | null
           screenshot_url?: string | null
+          status?: string
           updated_at?: string
           user_id: string
           website?: string | null
@@ -188,10 +235,13 @@ export type Database = {
         Update: {
           address?: string | null
           ai_audit?: string | null
+          ai_insight?: string | null
           business_name?: string
+          competitor_insight?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
+          follow_up_date?: string | null
           has_website?: boolean
           id?: string
           no_ssl?: boolean
@@ -199,8 +249,11 @@ export type Database = {
           notes?: string | null
           outdated_copyright?: boolean
           phone?: string | null
+          priority_label?: string
+          priority_score?: number
           score?: string | null
           screenshot_url?: string | null
+          status?: string
           updated_at?: string
           user_id?: string
           website?: string | null
@@ -302,6 +355,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      proposals: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+          pdf_url: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          pdf_url?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          pdf_url?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       suppressed_emails: {
         Row: {

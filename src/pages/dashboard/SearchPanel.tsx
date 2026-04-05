@@ -74,6 +74,8 @@ const SearchPanel = () => {
         outdated_copyright: result.outdated_copyright,
         website_issues: result.website_issues,
         screenshot_url: screenshots[idx] || null,
+        priority_score: result.priority_score || 0,
+        priority_label: result.priority_label || "low",
       });
       if (error) throw error;
       toast.success(`Saved "${result.business_name}" to leads`);
