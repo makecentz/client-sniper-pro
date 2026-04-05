@@ -29,6 +29,28 @@ const Admin = () => {
   const [totalLeads, setTotalLeads] = useState(0);
   const [activeToday, setActiveToday] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState<string | null>(null);
+
+  const handlePlanChange = async (userId: string, newPlan: "free" | "pro") => {
+    setUpdating(userId);
+    const leadsRemaining = newPlan === "pro" ? 99999 : 2;
+    const { error } = await supabase
+      .from("usage_tracking")
+      .update({ plan: newPlan, leads_remaining: leadsRemaining })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to update plan");
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.user_id === userId ? { ...u, plan: newPlan, leads_remaining: leadsRemaining } : u
+        )
+      );
+      toast.success(`Plan updated to ${newPlan}`);
+    }
+    setUpdating(null);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
