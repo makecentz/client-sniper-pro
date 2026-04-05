@@ -18,6 +18,13 @@ export interface Lead {
   contacted: boolean;
   notes: string;
   created_at: string;
+  // Phase 2 fields
+  priority_score: number;
+  priority_label: string;
+  ai_insight: string | null;
+  status: string;
+  follow_up_date: string | null;
+  competitor_insight: string | null;
 }
 
 // Search result type (before saving to DB)
@@ -34,4 +41,6 @@ export interface SearchResult {
   not_mobile_friendly: boolean;
   outdated_copyright: boolean;
   website_issues: string[];
+  priority_score: number;
+  priority_label: string;
 }

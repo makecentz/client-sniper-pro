@@ -91,7 +91,8 @@ Website: ${lead.website || "No website"}
 Phone: ${lead.phone || "Unknown"}
 Email: ${lead.email || "Unknown"}
 Address: ${lead.address || "Unknown"}
-Score: ${lead.score || "Unknown"}${issuesSummary}
+Score: ${lead.score || "Unknown"}
+Priority: ${lead.priority_label || "Unknown"} (${lead.priority_score || 0}/100)${issuesSummary}
 AI Audit: ${lead.ai_audit || "Not available"}${companyContext}`;
 
     const prompts: Record<string, string> = {
@@ -102,6 +103,54 @@ AI Audit: ${lead.ai_audit || "Not available"}${companyContext}`;
       followup1: `Write a first follow-up message (email style, under 150 words) for a business that didn't respond to the initial outreach about web design services. If there are website issues, reference one they may not realize (e.g. "Did you know your site shows as 'Not Secure' to visitors?"). Reference social proof. Be persistent but respectful. Sign with sender's company info.\n\n${leadContext}`,
       followup2: `Write a final follow-up message (email style, under 120 words) for a business that hasn't responded to two previous outreach attempts about web design services. Create gentle urgency (limited spots). Be warm and give them an easy out. Include any current deal. Sign with sender's company info.\n\n${leadContext}`,
       audit: `Perform a website audit analysis for this business. IMPORTANT: Use the actual website issues data provided — don't guess. For each issue found, explain:\n- What the issue is\n- Why it hurts their business (lost customers, poor Google ranking, etc.)\n- How to fix it\nAlso evaluate:\n- Missing features (booking, contact forms, reviews)\n- Competitor advantage\n- Specific recommendations for improvement\nBe specific and actionable. Format with headers and bullet points.\n\n${leadContext}`,
+      video_script: `Write a 15-30 second video pitch script for TikTok/Instagram Reels targeting this specific business. Structure:
+- HOOK (first 3 seconds — grab attention, e.g. "Hey [business name], did you know...")
+- PROBLEM (what they're missing — use their actual website issues)
+- OFFER (what you can do for them)
+- CTA (clear next step)
+Keep it natural, conversational, and energetic. Include stage directions in brackets. Under 80 words.\n\n${leadContext}`,
+      call_script: `Write a cold call script for pitching web design services to this business. Structure:
+- OPENING LINE (introduce yourself, mention something specific about their business)
+- DISCOVERY QUESTIONS (2-3 questions to uncover pain points)
+- PITCH (bridge their pain to your solution, reference their specific website issues)
+- OBJECTION HANDLING (3 common objections with responses: "too expensive", "we already have a website", "not interested right now")
+- CLOSING (ask for a meeting or send a proposal)
+Keep it natural and conversational, not robotic.\n\n${leadContext}`,
+      proposal: `Generate a comprehensive client proposal for this business. Structure it as follows:
+
+# Proposal for [Business Name]
+
+## Executive Summary
+Brief overview of what you found and what you propose.
+
+## Current Analysis
+- List each specific website issue found and its business impact
+- Quantify potential lost revenue where possible
+
+## Proposed Solution
+- Detailed scope of work
+- Features included (responsive design, SEO, contact forms, booking, etc.)
+- Timeline estimate
+
+## Investment
+- Use the sender's actual pricing if provided
+- Include monthly maintenance option
+- Show ROI projection
+
+## Why Choose Us
+- Include sender's company details and value props
+
+## Next Steps
+- Clear CTA
+
+Format with markdown headers and bullet points.\n\n${leadContext}`,
+      why_this_lead: `Analyze this business lead and provide exactly 3 short bullet points explaining why this is a good potential client for web design services. Be specific and reference their actual data (website issues, location, business type). Each bullet should be 1 sentence max. Format as a simple bullet list with no headers.\n\n${leadContext}`,
+      competitor_insight: `Analyze the competitive landscape for this business. Based on their business type and location, provide:
+- How competitors in their niche typically present online
+- What this business is missing compared to competitors (based on their website issues)
+- 2-3 specific advantages competitors likely have (online booking, modern design, mobile-friendly, etc.)
+- A brief recommendation on how to position against competitors
+Keep it concise (under 150 words) and actionable.\n\n${leadContext}`,
     };
 
     const prompt = prompts[type];
@@ -155,15 +204,32 @@ AI Audit: ${lead.ai_audit || "Not available"}${companyContext}`;
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content || "Failed to generate content.";
 
-    // Save to DB
-    const dbType = ["email", "dm", "sms"].includes(type) ? type : "email";
+    // Save to DB based on type
     if (type === "offer") {
       await supabase.from("offers").insert({
         user_id: user.id,
         lead_id: lead.id,
         content,
       });
+    } else if (type === "proposal") {
+      await supabase.from("proposals").insert({
+        user_id: user.id,
+        lead_id: lead.id,
+        content,
+      });
+    } else if (type === "why_this_lead") {
+      // Store as ai_insight on the lead
+      await adminClient
+        .from("leads")
+        .update({ ai_insight: content })
+        .eq("id", lead.id);
+    } else if (type === "competitor_insight") {
+      await adminClient
+        .from("leads")
+        .update({ competitor_insight: content })
+        .eq("id", lead.id);
     } else {
+      const dbType = ["email", "dm", "sms"].includes(type) ? type : "email";
       await supabase.from("messages").insert({
         user_id: user.id,
         lead_id: lead.id,
