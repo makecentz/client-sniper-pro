@@ -39,7 +39,7 @@ const Landing = () => {
           style={{ backgroundImage: `url(${heroBg})` }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-        <div className="mx-auto max-w-3xl">
+        <div className="relative z-10 mx-auto max-w-3xl">
           <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
             Snipe high-value clients{" "}
             <span className="text-primary">in minutes</span>
