@@ -32,6 +32,13 @@ const AITools = () => {
           address: d.address || "",
           score: (d.score as "hot" | "needs_upgrade") || "needs_upgrade",
           notes: d.notes || "",
+          email: d.email || null,
+          has_website: d.has_website ?? false,
+          website_error: d.website_error ?? false,
+          no_ssl: d.no_ssl ?? false,
+          not_mobile_friendly: d.not_mobile_friendly ?? false,
+          outdated_copyright: d.outdated_copyright ?? false,
+          website_issues: d.website_issues || null,
         })));
       });
   }, [user]);

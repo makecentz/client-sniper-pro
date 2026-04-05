@@ -75,21 +75,33 @@ Current Deal/Promotion: ${companySettings.current_deal || "None"}`
       });
     }
 
+    // Build website issues summary
+    const issues: string[] = [];
+    if (!lead.has_website) issues.push("No website at all");
+    if (lead.website_error) issues.push("Website returns errors/is down");
+    if (lead.no_ssl) issues.push("No SSL certificate (not secure, shows 'Not Secure' in browsers)");
+    if (lead.not_mobile_friendly) issues.push("Website is not mobile-friendly");
+    if (lead.outdated_copyright) issues.push("Website has outdated copyright (pre-2022, looks abandoned)");
+    const issuesSummary = issues.length > 0
+      ? `\nWebsite Issues Found: ${issues.join("; ")}`
+      : "\nWebsite Issues Found: None — site appears OK";
+
     const leadContext = `Business: ${lead.business_name}
 Website: ${lead.website || "No website"}
 Phone: ${lead.phone || "Unknown"}
+Email: ${lead.email || "Unknown"}
 Address: ${lead.address || "Unknown"}
-Score: ${lead.score || "Unknown"}
+Score: ${lead.score || "Unknown"}${issuesSummary}
 AI Audit: ${lead.ai_audit || "Not available"}${companyContext}`;
 
     const prompts: Record<string, string> = {
-      email: `Write a professional cold outreach email to pitch web design/development services to this local business. Be personalized based on their details. If they have no website, emphasize the need for one. If they have a website, suggest improvements. Keep it concise (under 200 words), friendly, and include a clear call-to-action for a brief call. Use the sender's company info for the signature and any pricing/deal info.\n\n${leadContext}`,
-      dm: `Write a short, casual social media DM (under 80 words) to pitch web design services to this business. Be friendly, use 1-2 emojis, reference something specific about their business. If sender company info is available, mention it naturally.\n\n${leadContext}`,
-      sms: `Write a very brief SMS (under 50 words) to pitch web design services. Include a soft CTA. Professional but conversational. Use sender's name/company if available.\n\n${leadContext}`,
-      offer: `Create a detailed service offer/proposal for this business. Include:\n- Custom website package with pricing (use the sender's actual price if provided)\n- Monthly maintenance pricing\n- List of included features (SEO, responsive design, contact forms, etc.)\n- Include any current deal/promotion the sender has\n- ROI justification\nFormat it cleanly with bullet points and emojis. Use the sender's company branding.\n\n${leadContext}`,
-      followup1: `Write a first follow-up message (email style, under 150 words) for a business that didn't respond to the initial outreach about web design services. Reference social proof (e.g. other clients seeing 40% more calls). Be persistent but respectful. Sign with sender's company info.\n\n${leadContext}`,
+      email: `Write a professional cold outreach email to pitch web design/development services to this local business. Be personalized based on their details. IMPORTANT: If there are website issues listed, mention them specifically as pain points (e.g. "I noticed your site doesn't have an SSL certificate, which means visitors see a 'Not Secure' warning"). If they have no website, emphasize the need for one. Keep it concise (under 200 words), friendly, and include a clear call-to-action for a brief call. Use the sender's company info for the signature and any pricing/deal info.\n\n${leadContext}`,
+      dm: `Write a short, casual social media DM (under 80 words) to pitch web design services to this business. Be friendly, use 1-2 emojis, reference something specific about their business. If there are website issues, briefly mention one as a hook. If sender company info is available, mention it naturally.\n\n${leadContext}`,
+      sms: `Write a very brief SMS (under 50 words) to pitch web design services. If there are website issues, hint at one. Include a soft CTA. Professional but conversational. Use sender's name/company if available.\n\n${leadContext}`,
+      offer: `Create a detailed service offer/proposal for this business. Include:\n- Custom website package with pricing (use the sender's actual price if provided)\n- Monthly maintenance pricing\n- List of included features (SEO, responsive design, contact forms, etc.)\n- IMPORTANT: Address each specific website issue found — explain why it matters and how you'll fix it\n- Include any current deal/promotion the sender has\n- ROI justification\nFormat it cleanly with bullet points and emojis. Use the sender's company branding.\n\n${leadContext}`,
+      followup1: `Write a first follow-up message (email style, under 150 words) for a business that didn't respond to the initial outreach about web design services. If there are website issues, reference one they may not realize (e.g. "Did you know your site shows as 'Not Secure' to visitors?"). Reference social proof. Be persistent but respectful. Sign with sender's company info.\n\n${leadContext}`,
       followup2: `Write a final follow-up message (email style, under 120 words) for a business that hasn't responded to two previous outreach attempts about web design services. Create gentle urgency (limited spots). Be warm and give them an easy out. Include any current deal. Sign with sender's company info.\n\n${leadContext}`,
-      audit: `Perform a website audit analysis for this business. Evaluate:\n- Overall web presence (do they have a site?)\n- Mobile responsiveness likelihood\n- SEO basics (would they rank for local searches?)\n- Missing features (booking, contact forms, reviews)\n- Competitor advantage\n- Specific recommendations for improvement\nBe specific and actionable. Format with headers and bullet points.\n\n${leadContext}`,
+      audit: `Perform a website audit analysis for this business. IMPORTANT: Use the actual website issues data provided — don't guess. For each issue found, explain:\n- What the issue is\n- Why it hurts their business (lost customers, poor Google ranking, etc.)\n- How to fix it\nAlso evaluate:\n- Missing features (booking, contact forms, reviews)\n- Competitor advantage\n- Specific recommendations for improvement\nBe specific and actionable. Format with headers and bullet points.\n\n${leadContext}`,
     };
 
     const prompt = prompts[type];
