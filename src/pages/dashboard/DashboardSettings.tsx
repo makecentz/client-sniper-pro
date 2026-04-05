@@ -3,7 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Shield, CreditCard, Mail, Check, Zap, ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
@@ -24,6 +27,18 @@ const DashboardSettings = () => {
   const [loadingCheckout, setLoadingCheckout] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
+  // Company settings state
+  const [companyLoading, setCompanyLoading] = useState(true);
+  const [companySaving, setCompanySaving] = useState(false);
+  const [company, setCompany] = useState({
+    business_name: "",
+    website_url: "",
+    phone: "",
+    email: "",
+    website_dev_price: "",
+    current_deal: "",
+  });
+
   useEffect(() => {
     const payment = searchParams.get("payment");
     if (payment === "success") {
@@ -33,6 +48,45 @@ const DashboardSettings = () => {
       toast.info("Payment was canceled.");
     }
   }, [searchParams, refreshSubscription]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from("company_settings")
+        .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (data) {
+        setCompany({
+          business_name: data.business_name || "",
+          website_url: data.website_url || "",
+          phone: data.phone || "",
+          email: data.email || "",
+          website_dev_price: data.website_dev_price || "",
+          current_deal: data.current_deal || "",
+        });
+      }
+      setCompanyLoading(false);
+    };
+    load();
+  }, [user?.id]);
+
+  const handleSaveCompany = async () => {
+    if (!user?.id) return;
+    setCompanySaving(true);
+    try {
+      const { error } = await supabase
+        .from("company_settings")
+        .upsert({ user_id: user.id, ...company }, { onConflict: "user_id" });
+      if (error) throw error;
+      toast.success("Company information saved");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save");
+    } finally {
+      setCompanySaving(false);
+    }
+  };
 
   const handleCheckout = async (priceId: string, label: string) => {
     setLoadingCheckout(label);
@@ -64,13 +118,69 @@ const DashboardSettings = () => {
   };
 
   const isPro = user?.plan === "pro" || user?.subscribed;
+  const updateField = (field: string, value: string) => setCompany((prev) => ({ ...prev, [field]: value }));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-sm text-muted-foreground">Manage your account and subscription</p>
+        <p className="text-sm text-muted-foreground">Manage your account, company info, and subscription</p>
       </div>
+
+      {/* Company Information */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Building2 className="h-5 w-5 text-primary" /> Your Company Information
+          </CardTitle>
+          <CardDescription>
+            This info is used to personalize AI-generated outreach letters, emails, and offers.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {companyLoading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : (
+            <>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Business Name</Label>
+                  <Input placeholder="Your Web Design Co." value={company.business_name} onChange={(e) => updateField("business_name", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Website</Label>
+                  <Input placeholder="https://yoursite.com" value={company.website_url} onChange={(e) => updateField("website_url", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Phone</Label>
+                  <Input placeholder="(555) 123-4567" value={company.phone} onChange={(e) => updateField("phone", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input placeholder="hello@yoursite.com" value={company.email} onChange={(e) => updateField("email", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Website Development Price</Label>
+                  <Input placeholder="$997" value={company.website_dev_price} onChange={(e) => updateField("website_dev_price", e.target.value)} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Current Deal / Promotion</Label>
+                <Textarea
+                  placeholder="e.g. 20% off for new clients this month, free hosting for 3 months..."
+                  value={company.current_deal}
+                  onChange={(e) => updateField("current_deal", e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <Button onClick={handleSaveCompany} disabled={companySaving}>
+                <Save className="mr-2 h-4 w-4" />
+                {companySaving ? "Saving..." : "Save Company Info"}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card className="border-border/50">
