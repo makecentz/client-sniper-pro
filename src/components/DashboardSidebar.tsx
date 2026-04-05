@@ -1,7 +1,9 @@
-import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard } from "lucide-react";
+import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +31,14 @@ export function DashboardSidebar() {
   const collapsed = state === "collapsed";
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
+      setIsAdmin(!!data);
+    });
+  }, [user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -86,6 +96,14 @@ export function DashboardSidebar() {
       </SidebarContent>
 
       <SidebarFooter>
+        {isAdmin && (
+          <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-primary hover:text-primary" asChild>
+            <NavLink to="/admin" end className="" activeClassName="bg-muted">
+              <ShieldCheck className="h-4 w-4" />
+              {!collapsed && <span>Admin Panel</span>}
+            </NavLink>
+          </Button>
+        )}
         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Log out</span>}
