@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy } from "lucide-react";
+import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Lead } from "@/lib/mock-data";
@@ -36,7 +36,7 @@ const AITools = () => {
       });
   }, [user]);
 
-  const generate = (type: string) => {
+  const generate = async (type: string) => {
     if (!selectedLead) {
       toast.error("Select a lead first");
       return;
@@ -45,34 +45,30 @@ const AITools = () => {
     if (!lead) return;
 
     setGenerating(true);
-    // Mock AI generation — will be replaced with real AI in Phase 3
-    setTimeout(() => {
-      const templates: Record<string, string> = {
-        email: `Subject: Transform ${lead.business_name}'s Online Presence\n\nHi there,\n\nI noticed that ${lead.business_name} ${lead.website ? "has a website that could benefit from a modern redesign" : "doesn't have a website yet"}. In today's digital world, a strong online presence is crucial for attracting new customers.\n\nI specialize in building high-converting websites for businesses like yours. I'd love to show you how a professional website could help grow ${lead.business_name}.\n\nWould you be open to a quick 10-minute call this week?\n\nBest regards`,
-        dm: `Hey! 👋 I came across ${lead.business_name} and love what you're doing. Quick question — ${lead.website ? "have you thought about refreshing your website?" : "have you considered getting a professional website?"} I help local businesses boost their online presence. Would love to chat if you're interested!`,
-        sms: `Hi! I help businesses like ${lead.business_name} get more customers with professional websites. ${lead.website ? "I noticed your site could use an upgrade." : "I noticed you don't have a website yet."} Interested in a free consultation? Reply YES to learn more.`,
-        offer: `Website Package for ${lead.business_name}\n\n✅ Custom responsive website — $997\n✅ Monthly hosting & maintenance — $49/mo\n✅ SEO setup & Google listing — included\n✅ Contact form & booking system — included\n\n🎁 BONUS: AI Voice Assistant setup (valued at $297) — FREE if you sign up this week\n\nTotal: $997 one-time + $49/mo\n💰 ROI: Just 2-3 new customers/month covers the cost`,
-        followup1: `Hi again! I reached out about a week ago regarding a website for ${lead.business_name}. I know you're busy — just wanted to quickly share that one of my recent clients saw a 40% increase in calls within the first month of launching their new site.\n\nWould love to help ${lead.business_name} see similar results. Any interest in a quick chat?`,
-        followup2: `Hey! Final follow-up here — I have a few spots open this month for new website projects. If ${lead.business_name} is ready to grow online, I'd love to help.\n\nNo pressure at all — just didn't want you to miss out. Let me know either way! 👍`,
-      };
-      setGeneratedContent(templates[type] || templates.email);
-      setGenerating(false);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-outreach", {
+        body: { type, lead },
+      });
 
-      // Save generated message to DB
-      if (user && lead) {
-        const msgType = ["email", "dm", "sms"].includes(type) ? type : "email";
-        supabase.from("messages").insert({
-          user_id: user.id,
-          lead_id: lead.id,
-          type: msgType,
-          content: templates[type] || templates.email,
-        }).then(({ error }) => {
-          if (error) console.error("Failed to save message:", error);
-        });
+      if (error) {
+        console.error("AI generation error:", error);
+        toast.error("Failed to generate content. Please try again.");
+        return;
       }
 
-      toast.success("Message generated");
-    }, 1500);
+      if (data?.error) {
+        toast.error(data.error);
+        return;
+      }
+
+      setGeneratedContent(data.content);
+      toast.success("AI-generated message ready!");
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const copyToClipboard = () => {
@@ -84,7 +80,7 @@ const AITools = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">AI Tools</h1>
-        <p className="text-sm text-muted-foreground">Generate outreach messages, offers, and follow-ups with AI</p>
+        <p className="text-sm text-muted-foreground">Generate outreach messages, offers, audits, and follow-ups with AI</p>
       </div>
 
       <Card className="border-border/50">
@@ -109,7 +105,7 @@ const AITools = () => {
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Outreach</CardTitle>
-            <CardDescription>Create personalized outreach messages</CardDescription>
+            <CardDescription>AI-powered personalized outreach messages</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex gap-2">
@@ -124,7 +120,7 @@ const AITools = () => {
               ))}
             </div>
             <Button className="w-full" onClick={() => generate(outreachType)} disabled={generating}>
-              {generating ? "Generating..." : "Generate Message"}
+              {generating ? "Generating with AI..." : "Generate Message"}
             </Button>
           </CardContent>
         </Card>
@@ -132,7 +128,7 @@ const AITools = () => {
         <Card className="border-border/50">
           <CardHeader>
             <CardTitle className="text-lg">Generate Offer</CardTitle>
-            <CardDescription>Create a service offer package</CardDescription>
+            <CardDescription>AI-crafted service proposal</CardDescription>
           </CardHeader>
           <CardContent>
             <Button className="w-full" variant="secondary" onClick={() => generate("offer")} disabled={generating}>
@@ -141,10 +137,22 @@ const AITools = () => {
           </CardContent>
         </Card>
 
-        <Card className="border-border/50 md:col-span-2">
+        <Card className="border-border/50">
           <CardHeader>
-            <CardTitle className="text-lg">Generate Follow-Ups</CardTitle>
-            <CardDescription>Create follow-up sequences</CardDescription>
+            <CardTitle className="text-lg">Website Audit</CardTitle>
+            <CardDescription>AI analysis of the lead's web presence</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button className="w-full" variant="secondary" onClick={() => generate("audit")} disabled={generating}>
+              <Search className="mr-2 h-4 w-4" /> Generate Audit
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader>
+            <CardTitle className="text-lg">Follow-Ups</CardTitle>
+            <CardDescription>AI-generated follow-up sequences</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-3">
             <Button variant="secondary" onClick={() => generate("followup1")} disabled={generating}>
