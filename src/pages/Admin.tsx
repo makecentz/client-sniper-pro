@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Users, DollarSign, Search, Activity, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -50,6 +51,25 @@ const Admin = () => {
       toast.success(`Plan updated to ${newPlan}`);
     }
     setUpdating(null);
+  };
+
+  const handleLeadsChange = async (userId: string, newLeads: number) => {
+    if (isNaN(newLeads) || newLeads < 0) return;
+    const { error } = await supabase
+      .from("usage_tracking")
+      .update({ leads_remaining: newLeads })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to update leads");
+    } else {
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.user_id === userId ? { ...u, leads_remaining: newLeads } : u
+        )
+      );
+      toast.success(`Leads updated to ${newLeads}`);
+    }
   };
 
   useEffect(() => {
@@ -170,7 +190,15 @@ const Admin = () => {
                       </Select>
                     </TableCell>
                     <TableCell>{u.searches_today}</TableCell>
-                    <TableCell>{u.leads_remaining}</TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        className="w-24"
+                        defaultValue={u.leads_remaining}
+                        onBlur={(e) => handleLeadsChange(u.user_id, parseInt(e.target.value, 10))}
+                        min={0}
+                      />
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString()}
                     </TableCell>
