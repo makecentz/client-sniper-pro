@@ -9,6 +9,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import SearchPanel from "./pages/dashboard/SearchPanel";
 import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
