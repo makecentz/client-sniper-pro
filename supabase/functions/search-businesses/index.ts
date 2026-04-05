@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const query = `${business_type} in ${city}${state ? `, ${state}` : ""}`;
+    const query = `${business_type} in ${city}${state ? `, ${state}` : ""}${zip_code ? ` ${zip_code}` : ""}`;
     const limit = usage.plan === "pro" ? 20 : 5;
 
     const outscraper = await fetch(
