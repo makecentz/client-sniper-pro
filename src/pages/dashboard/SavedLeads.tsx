@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Flame, AlertTriangle, MapPin, Phone, Globe, Download, Check, X, StickyNote, Trash2 } from "lucide-react";
+import { Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Download, Check, X, StickyNote, Trash2, ShieldOff, Smartphone, CalendarX } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -35,6 +35,13 @@ const SavedLeads = () => {
         address: d.address || "",
         score: (d.score as "hot" | "needs_upgrade") || "needs_upgrade",
         notes: d.notes || "",
+        email: d.email || null,
+        has_website: d.has_website ?? false,
+        website_error: d.website_error ?? false,
+        no_ssl: d.no_ssl ?? false,
+        not_mobile_friendly: d.not_mobile_friendly ?? false,
+        outdated_copyright: d.outdated_copyright ?? false,
+        website_issues: d.website_issues || null,
       })));
     }
     setLoading(false);
@@ -72,10 +79,10 @@ const SavedLeads = () => {
   };
 
   const exportCSV = () => {
-    const header = "Business Name,Phone,Address,Website,Score,Contacted,Notes\n";
+    const header = "Business Name,Phone,Email,Address,Website,Score,Issues,Contacted,Notes\n";
     const rows = leads
       .map((l) =>
-        `"${l.business_name}","${l.phone}","${l.address}","${l.website || ""}","${l.score}","${l.contacted}","${l.notes}"`
+        `"${l.business_name}","${l.phone}","${l.email || ""}","${l.address}","${l.website || ""}","${l.score}","${(l.website_issues || []).join("; ")}","${l.contacted}","${l.notes}"`
       )
       .join("\n");
     const blob = new Blob([header + rows], { type: "text/csv" });
@@ -118,7 +125,7 @@ const SavedLeads = () => {
             <CardContent className="p-4 space-y-3">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground">{lead.business_name}</span>
                     {lead.score === "hot" ? (
                       <Badge className="bg-hot/10 text-hot border-hot/20"><Flame className="mr-1 h-3 w-3" /> Hot</Badge>
@@ -132,8 +139,34 @@ const SavedLeads = () => {
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {lead.address}</span>
                     <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {lead.phone}</span>
+                    {lead.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {lead.email}</span>}
                     {lead.website && <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" /> {lead.website}</span>}
                   </div>
+                  {/* Website issue badges */}
+                  {lead.website_issues && lead.website_issues.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1">
+                      {lead.no_ssl && (
+                        <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                          <ShieldOff className="mr-1 h-3 w-3" /> No SSL
+                        </Badge>
+                      )}
+                      {lead.website_error && (
+                        <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                          <AlertTriangle className="mr-1 h-3 w-3" /> Site Error
+                        </Badge>
+                      )}
+                      {lead.not_mobile_friendly && (
+                        <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                          <Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly
+                        </Badge>
+                      )}
+                      {lead.outdated_copyright && (
+                        <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                          <CalendarX className="mr-1 h-3 w-3" /> Outdated Copyright
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-1">
                   <Button variant="ghost" size="sm" onClick={() => toggleContacted(lead.id, lead.contacted)}>

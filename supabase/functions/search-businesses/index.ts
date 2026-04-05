@@ -5,6 +5,71 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function checkWebsite(url: string): Promise<{
+  website_error: boolean;
+  no_ssl: boolean;
+  not_mobile_friendly: boolean;
+  outdated_copyright: boolean;
+  website_issues: string[];
+}> {
+  const issues: string[] = [];
+  let websiteError = false;
+  let noSsl = false;
+  let notMobileFriendly = false;
+  let outdatedCopyright = false;
+
+  // Check SSL
+  if (url.startsWith("http://")) {
+    noSsl = true;
+    issues.push("No SSL");
+  }
+
+  // Fetch the website with timeout
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; LeadChecker/1.0)" },
+      redirect: "follow",
+    });
+    clearTimeout(timeout);
+
+    if (res.status >= 400) {
+      websiteError = true;
+      issues.push(`HTTP ${res.status}`);
+    }
+
+    const html = await res.text();
+
+    // Check mobile friendliness
+    if (!html.toLowerCase().includes('name="viewport"') && !html.toLowerCase().includes("name='viewport'")) {
+      notMobileFriendly = true;
+      issues.push("Not Mobile Friendly");
+    }
+
+    // Check copyright year
+    const copyrightRegex = /(?:©|&copy;|copyright)\s*(\d{4})/gi;
+    const years: number[] = [];
+    let match;
+    while ((match = copyrightRegex.exec(html)) !== null) {
+      years.push(parseInt(match[1]));
+    }
+    if (years.length > 0) {
+      const maxYear = Math.max(...years);
+      if (maxYear < 2022) {
+        outdatedCopyright = true;
+        issues.push(`Outdated Copyright (${maxYear})`);
+      }
+    }
+  } catch {
+    websiteError = true;
+    issues.push("Website Unreachable");
+  }
+
+  return { website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly, outdated_copyright: outdatedCopyright, website_issues: issues };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -115,16 +180,48 @@ Deno.serve(async (req) => {
     }
 
     const outsData = await outscraper.json();
-    // Outscraper v3 returns { data: [[...results]] }
     const rawResults = outsData?.data?.[0] || [];
 
-    const leads = rawResults.map((r: any) => ({
-      business_name: r.name || "Unknown Business",
-      phone: r.phone || r.international_phone_number || "",
-      address: r.full_address || r.address || "",
-      website: r.site || null,
-      score: !r.site || r.site === "" ? "hot" : "needs_upgrade",
-    }));
+    // Process each result with website quality checks in parallel
+    const leadPromises = rawResults.map(async (r: any) => {
+      const website = r.site || null;
+      const hasWebsite = !!website && website !== "";
+      const email = r.email || (r.emails && r.emails.length > 0 ? r.emails[0] : null) || null;
+
+      let websiteCheck = {
+        website_error: false,
+        no_ssl: false,
+        not_mobile_friendly: false,
+        outdated_copyright: false,
+        website_issues: [] as string[],
+      };
+
+      if (hasWebsite) {
+        websiteCheck = await checkWebsite(website);
+      }
+
+      // A lead is "hot" if any issue is found
+      const isHot = !hasWebsite || websiteCheck.website_error || websiteCheck.no_ssl || websiteCheck.not_mobile_friendly || websiteCheck.outdated_copyright;
+      const allIssues = [...websiteCheck.website_issues];
+      if (!hasWebsite) allIssues.unshift("No Website");
+
+      return {
+        business_name: r.name || "Unknown Business",
+        phone: r.phone || r.international_phone_number || "",
+        address: r.full_address || r.address || "",
+        website,
+        email,
+        has_website: hasWebsite,
+        website_error: websiteCheck.website_error,
+        no_ssl: websiteCheck.no_ssl,
+        not_mobile_friendly: websiteCheck.not_mobile_friendly,
+        outdated_copyright: websiteCheck.outdated_copyright,
+        website_issues: allIssues,
+        score: isHot ? "hot" : "needs_upgrade",
+      };
+    });
+
+    const leads = await Promise.all(leadPromises);
 
     // Update usage tracking
     await supabase
