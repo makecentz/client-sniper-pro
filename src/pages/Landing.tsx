@@ -19,7 +19,7 @@ const Landing = () => {
       <nav className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link to="/" className="flex items-center">
-            <img src={logo} alt="ClientHunter AI" className="h-8 w-auto" />
+            <img src={logo} alt="ClientHunter AI" className="h-16 w-auto" />
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login">
@@ -145,7 +145,7 @@ const Landing = () => {
       <footer className="border-t border-border/50 px-6 py-8">
         <div className="mx-auto flex max-w-7xl items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center">
-            <img src={logo} alt="ClientHunter AI" className="h-6 w-auto" />
+            <img src={logo} alt="ClientHunter AI" className="h-12 w-auto" />
           </div>
           <span>© 2026 All rights reserved.</span>
         </div>
