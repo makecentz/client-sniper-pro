@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_settings: {
+        Row: {
+          business_name: string | null
+          created_at: string
+          current_deal: string | null
+          email: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+          website_dev_price: string | null
+          website_url: string | null
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string
+          current_deal?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+          website_dev_price?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string
+          current_deal?: string | null
+          email?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+          website_dev_price?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
