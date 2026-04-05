@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, ArrowLeft, Mail } from "lucide-react";
+import { ArrowLeft, Mail } from "lucide-react";
 import { toast } from "sonner";
+import logo from "@/assets/logo.png";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -34,9 +35,9 @@ const ForgotPassword = () => {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md border-border/50">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Zap className="h-5 w-5 text-primary" />
-          </div>
+          <Link to="/" className="mx-auto mb-2 block">
+            <img src={logo} alt="ClientHunter AI" className="h-14 w-auto" />
+          </Link>
           <CardTitle className="text-2xl">Reset your password</CardTitle>
           <CardDescription>
             {sent
