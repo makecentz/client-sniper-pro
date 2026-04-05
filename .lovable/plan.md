@@ -1,61 +1,30 @@
 
 
-## Plan: Enrich Lead Data with Website Quality Signals
+## Plan: Show Website Status and All Issue Badges on Saved Leads
 
-### Overview
-Enhance the search-businesses edge function to check each result's website for quality issues (404 errors, no SSL, not mobile-friendly, outdated copyright) and extract email addresses. These signals drive a smarter lead scoring system. The frontend will display the new data points.
+### Problem
+When a lead is saved and viewed on the Saved Leads page, the "No Website" status and other website quality signals don't show up. This is because the UI only renders badges for specific boolean flags (no_ssl, website_error, not_mobile_friendly, outdated_copyright) but has no badge for leads with no website at all.
 
-### Database Changes
+### Changes
 
-Add new columns to the `leads` table:
-- `email` (text, nullable) — business email from Outscraper
-- `has_website` (boolean, default false)
-- `website_error` (boolean, default false) — site returns 404/error
-- `no_ssl` (boolean, default false) — no HTTPS
-- `not_mobile_friendly` (boolean, default false)
-- `outdated_copyright` (boolean, default false) — copyright year < 2022
-- `website_issues` (text[], nullable) — summary list of issues found
+**SavedLeads.tsx** — Update the website issue badges section:
 
-### Edge Function: search-businesses/index.ts
+1. Add a "No Website" badge that shows when `has_website === false` — displayed prominently since this is the primary signal for a hot lead
+2. Move the badge section outside the `website_issues?.length > 0` wrapper so individual boolean flags always render regardless of the array state
+3. Add a "Has Website" indicator (green badge or text) when the lead does have a website but no issues, so the user always sees the website status
 
-After getting Outscraper results, for each business that has a website:
+The updated badge section will render:
+- **No Website** (destructive badge with Globe icon) — when `!has_website`
+- **No SSL** — when `no_ssl === true`
+- **Site Error** — when `website_error === true`
+- **Not Mobile Friendly** — when `not_mobile_friendly === true`
+- **Outdated Copyright** — when `outdated_copyright === true`
 
-1. **Extract email** — Outscraper returns `email` or `emails` fields; use those directly
-2. **Check website URL** — Attempt a `fetch()` to the site with a 5-second timeout:
-   - **Has website**: `site` field exists and is non-empty
-   - **Website error**: HTTP status >= 400 or fetch throws
-   - **No SSL**: URL starts with `http://` (not `https://`)
-   - **Not mobile friendly**: Check for `<meta name="viewport">` in the HTML response — absence indicates not mobile-optimized
-   - **Outdated copyright**: Regex scan HTML for `©` or `copyright` followed by a year < 2022
-3. **Scoring**: A lead is "hot" if ANY of: no website, website error, no SSL, not mobile friendly, outdated copyright. Otherwise "needs_upgrade".
-
-Website checks will be done in parallel (Promise.allSettled) with a 5-second timeout per site to avoid blocking.
-
-### Frontend: SearchPanel.tsx & mock-data.ts
-
-**SearchResult interface** — add: `email`, `has_website`, `website_error`, `no_ssl`, `not_mobile_friendly`, `outdated_copyright`, `website_issues`
-
-**Lead interface** — add same fields
-
-**Result cards** — show:
-- Email if available
-- Issue badges (No SSL, 404, Not Mobile, Outdated) as small colored badges
-- Updated score logic display
-
-**SavedLeads.tsx** — display email and website issue badges on saved lead cards
+These badges will show unconditionally based on their boolean values, not gated behind the `website_issues` array check.
 
 ### Technical Details
-
-- Outscraper v3 returns `email`, `emails`, `phone`, `site` fields — we'll use those directly for contact info
-- Website checks run server-side in the edge function to avoid CORS issues
-- Each website fetch uses `AbortController` with 5s timeout
-- HTML is fetched as text (not rendered) so viewport/mobile check is heuristic (meta viewport tag presence)
-- Copyright check uses regex: `/(?:©|copyright)\s*(\d{4})/gi` and checks if max year < 2022
-
-### Files to Change
-1. **Migration** — add new columns to `leads` table
-2. **supabase/functions/search-businesses/index.ts** — add website quality checks and email extraction
-3. **src/lib/mock-data.ts** — update SearchResult and Lead interfaces
-4. **src/pages/dashboard/SearchPanel.tsx** — display new fields and issue badges
-5. **src/pages/dashboard/SavedLeads.tsx** — display email and issue badges on saved leads
+- Only one file changes: `src/pages/dashboard/SavedLeads.tsx`
+- Remove the outer `{lead.website_issues && lead.website_issues.length > 0 && ...}` wrapper
+- Add `{!lead.has_website && <Badge>No Website</Badge>}` as the first badge
+- Import `Globe` icon (already imported) for the No Website badge
 
