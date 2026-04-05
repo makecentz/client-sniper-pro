@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Globe, Phone, MapPin, Flame, AlertTriangle, Camera, Save } from "lucide-react";
+import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX } from "lucide-react";
 import { type SearchResult, type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -65,7 +65,14 @@ const SearchPanel = () => {
         phone: result.phone,
         address: result.address,
         website: result.website,
+        email: result.email,
         score: result.score,
+        has_website: result.has_website,
+        website_error: result.website_error,
+        no_ssl: result.no_ssl,
+        not_mobile_friendly: result.not_mobile_friendly,
+        outdated_copyright: result.outdated_copyright,
+        website_issues: result.website_issues,
         screenshot_url: screenshots[idx] || null,
       });
       if (error) throw error;
@@ -150,7 +157,7 @@ const SearchPanel = () => {
               <CardContent className="p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-foreground">{result.business_name}</span>
                       {result.score === "hot" ? (
                         <Badge className="bg-hot/10 text-hot border-hot/20">
@@ -165,12 +172,38 @@ const SearchPanel = () => {
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {result.address}</span>
                       {result.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {result.phone}</span>}
+                      {result.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {result.email}</span>}
                       {result.website ? (
                         <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" /> {result.website}</span>
                       ) : (
                         <span className="flex items-center gap-1 text-hot"><Globe className="h-3.5 w-3.5" /> No website</span>
                       )}
                     </div>
+                    {/* Website issue badges */}
+                    {result.website_issues && result.website_issues.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {result.no_ssl && (
+                          <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                            <ShieldOff className="mr-1 h-3 w-3" /> No SSL
+                          </Badge>
+                        )}
+                        {result.website_error && (
+                          <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">
+                            <AlertTriangle className="mr-1 h-3 w-3" /> Site Error
+                          </Badge>
+                        )}
+                        {result.not_mobile_friendly && (
+                          <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                            <Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly
+                          </Badge>
+                        )}
+                        {result.outdated_copyright && (
+                          <Badge variant="outline" className="text-warning border-warning/30 text-xs">
+                            <CalendarX className="mr-1 h-3 w-3" /> Outdated Copyright
+                          </Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     {result.website && (
