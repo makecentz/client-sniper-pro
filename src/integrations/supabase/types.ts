@@ -147,14 +147,21 @@ export type Database = {
           business_name: string
           contacted: boolean
           created_at: string
+          email: string | null
+          has_website: boolean
           id: string
+          no_ssl: boolean
+          not_mobile_friendly: boolean
           notes: string | null
+          outdated_copyright: boolean
           phone: string | null
           score: string | null
           screenshot_url: string | null
           updated_at: string
           user_id: string
           website: string | null
+          website_error: boolean
+          website_issues: string[] | null
         }
         Insert: {
           address?: string | null
@@ -162,14 +169,21 @@ export type Database = {
           business_name: string
           contacted?: boolean
           created_at?: string
+          email?: string | null
+          has_website?: boolean
           id?: string
+          no_ssl?: boolean
+          not_mobile_friendly?: boolean
           notes?: string | null
+          outdated_copyright?: boolean
           phone?: string | null
           score?: string | null
           screenshot_url?: string | null
           updated_at?: string
           user_id: string
           website?: string | null
+          website_error?: boolean
+          website_issues?: string[] | null
         }
         Update: {
           address?: string | null
@@ -177,14 +191,21 @@ export type Database = {
           business_name?: string
           contacted?: boolean
           created_at?: string
+          email?: string | null
+          has_website?: boolean
           id?: string
+          no_ssl?: boolean
+          not_mobile_friendly?: boolean
           notes?: string | null
+          outdated_copyright?: boolean
           phone?: string | null
           score?: string | null
           screenshot_url?: string | null
           updated_at?: string
           user_id?: string
           website?: string | null
+          website_error?: boolean
+          website_issues?: string[] | null
         }
         Relationships: []
       }
