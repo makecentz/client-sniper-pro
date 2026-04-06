@@ -57,6 +57,10 @@ const SavedLeads = () => {
     contact_name: d.contact_name || null,
     last_contacted_at: d.last_contacted_at || null,
     tags: d.tags || [],
+    contact_scrape_status: d.contact_scrape_status || null,
+    contact_scraped_at: d.contact_scraped_at || null,
+    scraped_phones: d.scraped_phones || [],
+    scraped_emails: d.scraped_emails || [],
   });
 
   const fetchLeads = async () => {

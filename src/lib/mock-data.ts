@@ -33,6 +33,11 @@ export interface Lead {
   contact_name: string | null;
   last_contacted_at: string | null;
   tags: string[];
+  // Contact scraper fields
+  contact_scrape_status: string | null;
+  contact_scraped_at: string | null;
+  scraped_phones: string[];
+  scraped_emails: string[];
 }
 
 // Search result type (before saving to DB)
