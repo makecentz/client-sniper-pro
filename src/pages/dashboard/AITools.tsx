@@ -6,11 +6,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, ExternalLink, Video, PhoneCall, Briefcase, Sparkles } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Mail, MessageCircle, Smartphone, FileText, RefreshCw, Copy, ExternalLink, Video, PhoneCall, Briefcase, Sparkles, Globe, ShieldAlert, ShieldCheck, MonitorSmartphone, CalendarClock, AlertTriangle, CheckCircle2, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { type Lead } from "@/lib/mock-data";
 import { toast } from "sonner";
+
+type WebsiteAnalysis = {
+  has_website: boolean;
+  website_error: boolean;
+  no_ssl: boolean;
+  not_mobile_friendly: boolean;
+  outdated_copyright: boolean;
+  website_issues: string[];
+  priority_score: number;
+  priority_label: string;
+};
 
 const AITools = () => {
   const { user } = useAuth();
@@ -22,6 +34,11 @@ const AITools = () => {
   const [dfyNotes, setDfyNotes] = useState("");
   const [dfyOpen, setDfyOpen] = useState(false);
   const [dfySubmitting, setDfySubmitting] = useState(false);
+
+  // Manual website analysis state
+  const [manualUrl, setManualUrl] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<WebsiteAnalysis | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -53,6 +70,73 @@ const AITools = () => {
         })));
       });
   }, [user]);
+
+  const analyzeWebsite = async () => {
+    if (!manualUrl.trim()) {
+      toast.error("Enter a website URL first");
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysisResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-website", {
+        body: { url: manualUrl.trim(), lead_id: selectedLead || undefined },
+      });
+      if (error) { toast.error("Failed to analyze website"); return; }
+      if (data?.error) { toast.error(data.error); return; }
+
+      setAnalysisResult(data);
+
+      // Update local leads state
+      if (selectedLead) {
+        setLeads(prev => prev.map(l => l.id === selectedLead ? {
+          ...l,
+          website: data.website || manualUrl.trim(),
+          has_website: true,
+          website_error: data.website_error,
+          no_ssl: data.no_ssl,
+          not_mobile_friendly: data.not_mobile_friendly,
+          outdated_copyright: data.outdated_copyright,
+          website_issues: data.website_issues,
+          priority_score: data.priority_score,
+          priority_label: data.priority_label,
+          score: "needs_upgrade" as const,
+        } : l));
+      } else if (data.lead_id) {
+        // New lead was created — add to local state and select it
+        const newLead: Lead = {
+          id: data.lead_id,
+          business_name: new URL(manualUrl.trim().startsWith("http") ? manualUrl.trim() : `https://${manualUrl.trim()}`).hostname.replace(/^www\./, ""),
+          phone: "",
+          address: "",
+          website: data.website || manualUrl.trim(),
+          email: null,
+          has_website: true,
+          website_error: data.website_error,
+          no_ssl: data.no_ssl,
+          not_mobile_friendly: data.not_mobile_friendly,
+          outdated_copyright: data.outdated_copyright,
+          website_issues: data.website_issues,
+          score: "needs_upgrade",
+          notes: "",
+          priority_score: data.priority_score,
+          priority_label: data.priority_label,
+          ai_insight: null,
+          status: "new",
+          follow_up_date: null,
+          competitor_insight: null,
+        };
+        setLeads(prev => [newLead, ...prev]);
+        setSelectedLead(data.lead_id);
+      }
+
+      toast.success("Website analyzed & saved!");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const generate = async (type: string) => {
     if (!selectedLead) {
@@ -116,6 +200,13 @@ const AITools = () => {
     }
   };
 
+  const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
+    <Badge variant={ok ? "default" : "destructive"} className="gap-1">
+      {ok ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+      {label}
+    </Badge>
+  );
+
   return (
     <div className="space-y-6">
       <div>
@@ -123,13 +214,14 @@ const AITools = () => {
         <p className="text-sm text-muted-foreground">Generate outreach, proposals, scripts, and more with AI</p>
       </div>
 
+      {/* Lead Selector */}
       <Card className="border-border/50">
         <CardContent className="p-6">
           <div className="space-y-2">
             <Label>Select Lead</Label>
             <Select value={selectedLead} onValueChange={setSelectedLead}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a lead..." />
+                <SelectValue placeholder="Choose a lead (or leave empty to create new)..." />
               </SelectTrigger>
               <SelectContent>
                 {leads.map((l) => (
@@ -138,6 +230,57 @@ const AITools = () => {
               </SelectContent>
             </Select>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Website URL Input */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            Manual Website Analysis
+          </CardTitle>
+          <CardDescription>Enter a website URL to analyze for issues and enrich the lead data</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-3">
+            <Input
+              placeholder="https://example.com"
+              value={manualUrl}
+              onChange={(e) => setManualUrl(e.target.value)}
+              className="flex-1"
+              onKeyDown={(e) => e.key === "Enter" && analyzeWebsite()}
+            />
+            <Button onClick={analyzeWebsite} disabled={analyzing}>
+              {analyzing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Get Info"}
+            </Button>
+          </div>
+
+          {analysisResult && (
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-4 space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">Analysis Results</h4>
+              <div className="flex flex-wrap gap-2">
+                <StatusBadge ok={!analysisResult.website_error} label={analysisResult.website_error ? "Site Error" : "Site OK"} />
+                <StatusBadge ok={!analysisResult.no_ssl} label={analysisResult.no_ssl ? "No SSL" : "SSL Secure"} />
+                <StatusBadge ok={!analysisResult.not_mobile_friendly} label={analysisResult.not_mobile_friendly ? "Not Mobile Friendly" : "Mobile Friendly"} />
+                <StatusBadge ok={!analysisResult.outdated_copyright} label={analysisResult.outdated_copyright ? "Outdated Copyright" : "Copyright OK"} />
+              </div>
+              {analysisResult.website_issues.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Issues Found:</p>
+                  <ul className="text-xs text-muted-foreground list-disc list-inside">
+                    {analysisResult.website_issues.map((issue, i) => (
+                      <li key={i}>{issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>Priority: <Badge variant="outline" className="ml-1">{analysisResult.priority_label}</Badge></span>
+                <span>Score: {analysisResult.priority_score}/100</span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
