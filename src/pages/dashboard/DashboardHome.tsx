@@ -186,6 +186,16 @@ const DashboardHome = () => {
           ))}
         </CardContent>
       </Card>
+
+      <LeadDetailModal
+        lead={modalLead}
+        open={!!modalLead}
+        onOpenChange={(open) => { if (!open) setModalLead(null); }}
+        onLeadUpdated={(updated) => {
+          setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+          setModalLead(updated);
+        }}
+      />
     </div>
   );
 };
