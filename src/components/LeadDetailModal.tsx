@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
-  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2
+  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search
 } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,7 +54,7 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [offers, setOffers] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
-
+  const [scraping, setScraping] = useState(false);
   useEffect(() => {
     if (!lead || !open) return;
     setEditForm({
@@ -179,6 +179,37 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const copyContent = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Copied!");
+  };
+
+  const scrapeContacts = async () => {
+    if (!lead) return;
+    setScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-lead-contacts", {
+        body: { lead_id: lead.id },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || "Scraping failed");
+        return;
+      }
+      const updated = {
+        ...lead,
+        scraped_emails: data.scraped_emails || [],
+        scraped_phones: data.scraped_phones || [],
+        contact_scrape_status: data.status,
+        contact_scraped_at: new Date().toISOString(),
+        email: data.primary_email || lead.email,
+        phone: data.primary_phone || lead.phone,
+      };
+      onLeadUpdated(updated);
+      if (data.status === "success") toast.success("Contact info found!");
+      else if (data.status === "partial") toast.success("Some contact info found");
+      else toast("No contact info found on website");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setScraping(false);
+    }
   };
 
   if (!lead) return null;
