@@ -343,6 +343,16 @@ const SavedLeads = () => {
           <div className="py-12 text-center text-muted-foreground">No leads found</div>
         )}
       </div>
+
+      <LeadDetailModal
+        lead={modalLead}
+        open={!!modalLead}
+        onOpenChange={(open) => { if (!open) setModalLead(null); }}
+        onLeadUpdated={(updated) => {
+          setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+          setModalLead(updated);
+        }}
+      />
     </div>
   );
 };
