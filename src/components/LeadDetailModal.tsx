@@ -316,9 +316,65 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
                     {s.label}
                   </Button>
                 ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={scrapeContacts}
+                    disabled={!lead.website || scraping}
+                  >
+                    {scraping ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Search className="mr-1 h-3 w-3" />}
+                    Find Contact Info
+                  </Button>
+                </div>
               </div>
-            </div>
-          </TabsContent>
+
+              {/* Scraped Contact Info */}
+              {(lead.scraped_emails?.length > 0 || lead.scraped_phones?.length > 0 || lead.contact_scrape_status) && (
+                <div className="border-t border-border/30 pt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Scraped Contact Info</p>
+                    {lead.contact_scrape_status && (
+                      <Badge variant="outline" className={`text-xs ${
+                        lead.contact_scrape_status === "success" ? "text-success border-success/30" :
+                        lead.contact_scrape_status === "partial" ? "text-warning border-warning/30" :
+                        lead.contact_scrape_status === "no_data" ? "text-muted-foreground" :
+                        lead.contact_scrape_status === "error" ? "text-destructive border-destructive/30" :
+                        "text-muted-foreground"
+                      }`}>
+                        {lead.contact_scrape_status}
+                      </Badge>
+                    )}
+                  </div>
+                  {lead.scraped_emails?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Emails found:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lead.scraped_emails.map((email, i) => (
+                          <Badge key={i} variant="outline" className="text-xs cursor-pointer hover:bg-muted/50" onClick={() => copyContent(email)}>
+                            <Mail className="mr-1 h-3 w-3" /> {email} <Copy className="ml-1 h-2.5 w-2.5 opacity-50" />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lead.scraped_phones?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Phones found:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lead.scraped_phones.map((phone, i) => (
+                          <Badge key={i} variant="outline" className="text-xs cursor-pointer hover:bg-muted/50" onClick={() => copyContent(phone)}>
+                            <Phone className="mr-1 h-3 w-3" /> {phone} <Copy className="ml-1 h-2.5 w-2.5 opacity-50" />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lead.contact_scraped_at && (
+                    <p className="text-xs text-muted-foreground">Last scraped: {new Date(lead.contact_scraped_at).toLocaleString()}</p>
+                  )}
+                </div>
+              )}
+            </TabsContent>
 
           <TabsContent value="details" className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
