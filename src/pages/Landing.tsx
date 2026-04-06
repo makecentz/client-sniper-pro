@@ -42,11 +42,11 @@ const Landing = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
         <div className="relative z-10 mx-auto max-w-3xl">
           <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
-            Snipe high-value clients{" "}
+            Find website clients{" "}
             <span className="text-primary">in minutes</span>
           </h1>
           <p className="mb-8 text-lg text-muted-foreground">
-            Find local businesses without websites, generate AI-powered outreach, and close deals faster than ever. Built for agencies, freelancers, and hustlers.
+            Discover businesses that need a website, generate AI-powered outreach, and turn opportunities into paying clients — all in one place
           </p>
           <div className="flex items-center justify-center gap-4">
             <Link to="/signup">
