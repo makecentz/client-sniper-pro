@@ -175,19 +175,58 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_notes: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          lead_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          lead_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          lead_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_notes_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           address: string | null
           ai_audit: string | null
           ai_insight: string | null
           business_name: string
+          category: string | null
+          city: string | null
           competitor_insight: string | null
+          contact_name: string | null
           contacted: boolean
           created_at: string
           email: string | null
           follow_up_date: string | null
           has_website: boolean
           id: string
+          last_contacted_at: string | null
           no_ssl: boolean
           not_mobile_friendly: boolean
           notes: string | null
@@ -197,25 +236,32 @@ export type Database = {
           priority_score: number
           score: string | null
           screenshot_url: string | null
+          state: string | null
           status: string
+          tags: string[]
           updated_at: string
           user_id: string
           website: string | null
           website_error: boolean
           website_issues: string[] | null
+          zip: string | null
         }
         Insert: {
           address?: string | null
           ai_audit?: string | null
           ai_insight?: string | null
           business_name: string
+          category?: string | null
+          city?: string | null
           competitor_insight?: string | null
+          contact_name?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
           follow_up_date?: string | null
           has_website?: boolean
           id?: string
+          last_contacted_at?: string | null
           no_ssl?: boolean
           not_mobile_friendly?: boolean
           notes?: string | null
@@ -225,25 +271,32 @@ export type Database = {
           priority_score?: number
           score?: string | null
           screenshot_url?: string | null
+          state?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
           user_id: string
           website?: string | null
           website_error?: boolean
           website_issues?: string[] | null
+          zip?: string | null
         }
         Update: {
           address?: string | null
           ai_audit?: string | null
           ai_insight?: string | null
           business_name?: string
+          category?: string | null
+          city?: string | null
           competitor_insight?: string | null
+          contact_name?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
           follow_up_date?: string | null
           has_website?: boolean
           id?: string
+          last_contacted_at?: string | null
           no_ssl?: boolean
           not_mobile_friendly?: boolean
           notes?: string | null
@@ -253,12 +306,15 @@ export type Database = {
           priority_score?: number
           score?: string | null
           screenshot_url?: string | null
+          state?: string | null
           status?: string
+          tags?: string[]
           updated_at?: string
           user_id?: string
           website?: string | null
           website_error?: boolean
           website_issues?: string[] | null
+          zip?: string | null
         }
         Relationships: []
       }
