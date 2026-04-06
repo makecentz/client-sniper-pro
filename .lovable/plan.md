@@ -1,81 +1,42 @@
 
 
-## Plan: Phase 2 & 3 — Addictive + Elite Features for ClientHunter AI
+## Plan: Manual Website URL Input on AI Tools Page
 
-This is a large feature set. I'll implement it incrementally across multiple steps.
+### What This Does
+Adds a section below the lead selector on the AI Tools page where users can manually enter a website URL for businesses that have a site but need upgrades. When they click "Get Info", the app will:
+1. Run the website through the same checks used during search (SSL, mobile-friendly, copyright, errors)
+2. Display the business info and detected issues below the input
+3. Save/update the website URL on the selected lead in the database
+4. Allow the AI tools to use this new website data for generating content
 
-### Database Changes (Single Migration)
+### Changes
 
-Add new columns to `leads` table:
-- `priority_score` (integer, default 0)
-- `priority_label` (text, default 'low')
-- `ai_insight` (text, nullable)
-- `status` (text, default 'new') — values: new, contacted, followed_up, closed, lost
-- `follow_up_date` (date, nullable)
-- `competitor_insight` (text, nullable)
+**1. Update `AITools.tsx`**
+- Add a new Card section between the lead selector and the tool grid
+- Contains: URL input field + "Get Info" button
+- On submit: calls a new edge function `analyze-website` that runs the same `checkWebsite` logic from `search-businesses`
+- Displays results: website status, SSL, mobile-friendly, copyright, issues list
+- Updates the selected lead's `website`, `has_website`, and issue flags in the DB
+- Also updates the local `leads` state so AI tools immediately use the new data
+- If no lead is selected, creates a new lead with the business name derived from the URL domain and saves it
 
-Create new tables:
-- `proposals` — id, user_id, lead_id, content, pdf_url, created_at (RLS: user owns)
-- `dfy_requests` — id, user_id, lead_id, notes, status (default 'pending'), created_at (RLS: user owns + admin read)
+**2. Create edge function `supabase/functions/analyze-website/index.ts`**
+- Accepts `{ url, lead_id? }` in the body
+- Runs the same website checks (SSL, fetch for errors, viewport meta tag, copyright year)
+- Returns `{ has_website, website_error, no_ssl, not_mobile_friendly, outdated_copyright, website_issues }`
+- If `lead_id` is provided, updates that lead's website fields using service role client
+- If no `lead_id`, inserts a new lead record with the URL and detected issues, returns the new lead ID
 
-### Edge Function Changes
-
-**1. Update `generate-outreach/index.ts`** — add new prompt types:
-- `video_script` — 15-30 second TikTok/Instagram pitch script
-- `call_script` — opening, questions, objection handling, closing
-- `proposal` — full proposal content with problems found, solution, pricing
-- `why_this_lead` — 1-3 bullet points explaining opportunity (stored as `ai_insight`)
-- `competitor_insight` — competitive analysis summary
-
-**2. Update `search-businesses/index.ts`** — compute `priority_score` (1-100) and `priority_label` during search based on: no website (+40), website issues (+15 each), high reviews but weak site (+20). Return these with results.
-
-### Frontend Changes
-
-**1. New Dashboard Home page** (`src/pages/dashboard/DashboardHome.tsx`)
-- "🔥 Top Leads Today" — top 5 leads by priority_score
-- "Follow-Up Reminders" — leads with follow_up_date <= today
-- Quick stats (total leads, contacted, pending follow-ups)
-- Route: `/dashboard` (move SearchPanel to `/dashboard/search`)
-
-**2. Update `SavedLeads.tsx`**
-- Add status dropdown per lead (New/Contacted/Followed Up/Closed/Lost)
-- Add "Set Follow-Up" button with 1/2/3 day options (popover)
-- Add priority score badge and label
-- Add "Why This Lead?" button → calls AI, shows/stores `ai_insight`
-- Add "Find Competitors" button → calls AI, shows/stores `competitor_insight`
-- Filter by status
-
-**3. Update `AITools.tsx`**
-- Add "Generate Proposal" card
-- Add "Video Pitch Script" card
-- Add "Call Script" card
-- Add "Done For You" CTA button → opens form, submits to `dfy_requests`
-
-**4. Update `DashboardSidebar.tsx`**
-- Add "Dashboard" nav item (home icon) pointing to `/dashboard`
-- Rename search route
-
-**5. Update `App.tsx`** — add new routes
-
-**6. Update `mock-data.ts`** — extend Lead interface with new fields
+**3. UI Flow**
+- User selects a lead (or leaves empty for a new one)
+- Enters website URL, clicks "Get Info"
+- Results appear: green/red badges for each check
+- Lead is updated/created in DB and local state
+- User can now use all AI tools with the enriched website data
 
 ### Technical Details
-
-- Priority scoring logic runs in the edge function during search and is saved with the lead
-- "Why This Lead?" and "Competitor Insight" use the existing `generate-outreach` function with new prompt types, stored on the lead record
-- Proposal PDF generation uses the AI gateway to generate content, then a client-side PDF download (html-to-text style, no server-side PDF library needed)
-- Follow-up reminders are date-based queries, no cron needed — just filter on dashboard load
-- DFY requests table has admin RLS policy so admin page can view all requests
-
-### Files to Create/Modify
-
-1. **Migration** — new columns + new tables
-2. `src/pages/dashboard/DashboardHome.tsx` — new dashboard home
-3. `src/pages/dashboard/SavedLeads.tsx` — status, follow-ups, AI insight, competitors
-4. `src/pages/dashboard/AITools.tsx` — proposal, video script, call script, DFY
-5. `src/lib/mock-data.ts` — updated interfaces
-6. `src/App.tsx` — new routes
-7. `src/components/DashboardSidebar.tsx` — updated nav
-8. `supabase/functions/generate-outreach/index.ts` — new prompt types
-9. `supabase/functions/search-businesses/index.ts` — priority scoring
+- The `checkWebsite` logic is duplicated from `search-businesses` into the new function (keeps functions self-contained)
+- New lead creation uses `user_id` from auth, sets `has_website: true`, `score: "needs_upgrade"`
+- The manual URL input card uses the same styling as existing cards
+- No database migration needed — all fields already exist on the leads table
 
