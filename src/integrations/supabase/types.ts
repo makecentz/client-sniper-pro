@@ -220,6 +220,8 @@ export type Database = {
           city: string | null
           competitor_insight: string | null
           contact_name: string | null
+          contact_scrape_status: string | null
+          contact_scraped_at: string | null
           contacted: boolean
           created_at: string
           email: string | null
@@ -235,6 +237,8 @@ export type Database = {
           priority_label: string
           priority_score: number
           score: string | null
+          scraped_emails: string[]
+          scraped_phones: string[]
           screenshot_url: string | null
           state: string | null
           status: string
@@ -255,6 +259,8 @@ export type Database = {
           city?: string | null
           competitor_insight?: string | null
           contact_name?: string | null
+          contact_scrape_status?: string | null
+          contact_scraped_at?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
@@ -270,6 +276,8 @@ export type Database = {
           priority_label?: string
           priority_score?: number
           score?: string | null
+          scraped_emails?: string[]
+          scraped_phones?: string[]
           screenshot_url?: string | null
           state?: string | null
           status?: string
@@ -290,6 +298,8 @@ export type Database = {
           city?: string | null
           competitor_insight?: string | null
           contact_name?: string | null
+          contact_scrape_status?: string | null
+          contact_scraped_at?: string | null
           contacted?: boolean
           created_at?: string
           email?: string | null
@@ -305,6 +315,8 @@ export type Database = {
           priority_label?: string
           priority_score?: number
           score?: string | null
+          scraped_emails?: string[]
+          scraped_phones?: string[]
           screenshot_url?: string | null
           state?: string | null
           status?: string

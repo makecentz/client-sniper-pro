@@ -10,7 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
-  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2
+  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search
 } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,7 +54,7 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [offers, setOffers] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
-
+  const [scraping, setScraping] = useState(false);
   useEffect(() => {
     if (!lead || !open) return;
     setEditForm({
@@ -181,6 +181,37 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
     toast.success("Copied!");
   };
 
+  const scrapeContacts = async () => {
+    if (!lead) return;
+    setScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-lead-contacts", {
+        body: { lead_id: lead.id },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || "Scraping failed");
+        return;
+      }
+      const updated = {
+        ...lead,
+        scraped_emails: data.scraped_emails || [],
+        scraped_phones: data.scraped_phones || [],
+        contact_scrape_status: data.status,
+        contact_scraped_at: new Date().toISOString(),
+        email: data.primary_email || lead.email,
+        phone: data.primary_phone || lead.phone,
+      };
+      onLeadUpdated(updated);
+      if (data.status === "success") toast.success("Contact info found!");
+      else if (data.status === "partial") toast.success("Some contact info found");
+      else toast("No contact info found on website");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setScraping(false);
+    }
+  };
+
   if (!lead) return null;
 
   const tagsStr = (editForm.tags || []).join(", ");
@@ -285,9 +316,65 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
                     {s.label}
                   </Button>
                 ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={scrapeContacts}
+                    disabled={!lead.website || scraping}
+                  >
+                    {scraping ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : <Search className="mr-1 h-3 w-3" />}
+                    Find Contact Info
+                  </Button>
+                </div>
               </div>
-            </div>
-          </TabsContent>
+
+              {/* Scraped Contact Info */}
+              {(lead.scraped_emails?.length > 0 || lead.scraped_phones?.length > 0 || lead.contact_scrape_status) && (
+                <div className="border-t border-border/30 pt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Scraped Contact Info</p>
+                    {lead.contact_scrape_status && (
+                      <Badge variant="outline" className={`text-xs ${
+                        lead.contact_scrape_status === "success" ? "text-success border-success/30" :
+                        lead.contact_scrape_status === "partial" ? "text-warning border-warning/30" :
+                        lead.contact_scrape_status === "no_data" ? "text-muted-foreground" :
+                        lead.contact_scrape_status === "error" ? "text-destructive border-destructive/30" :
+                        "text-muted-foreground"
+                      }`}>
+                        {lead.contact_scrape_status}
+                      </Badge>
+                    )}
+                  </div>
+                  {lead.scraped_emails?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Emails found:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lead.scraped_emails.map((email, i) => (
+                          <Badge key={i} variant="outline" className="text-xs cursor-pointer hover:bg-muted/50" onClick={() => copyContent(email)}>
+                            <Mail className="mr-1 h-3 w-3" /> {email} <Copy className="ml-1 h-2.5 w-2.5 opacity-50" />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lead.scraped_phones?.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-xs text-muted-foreground">Phones found:</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lead.scraped_phones.map((phone, i) => (
+                          <Badge key={i} variant="outline" className="text-xs cursor-pointer hover:bg-muted/50" onClick={() => copyContent(phone)}>
+                            <Phone className="mr-1 h-3 w-3" /> {phone} <Copy className="ml-1 h-2.5 w-2.5 opacity-50" />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {lead.contact_scraped_at && (
+                    <p className="text-xs text-muted-foreground">Last scraped: {new Date(lead.contact_scraped_at).toLocaleString()}</p>
+                  )}
+                </div>
+              )}
+            </TabsContent>
 
           <TabsContent value="details" className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-4">
