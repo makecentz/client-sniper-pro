@@ -50,6 +50,13 @@ const AITools = () => {
           status: d.status || "new",
           follow_up_date: d.follow_up_date || null,
           competitor_insight: d.competitor_insight || null,
+          category: d.category || null,
+          city: d.city || null,
+          state: d.state || null,
+          zip: d.zip || null,
+          contact_name: d.contact_name || null,
+          last_contacted_at: d.last_contacted_at || null,
+          tags: d.tags || [],
         })));
       });
   }, [user]);
