@@ -25,6 +25,14 @@ export interface Lead {
   status: string;
   follow_up_date: string | null;
   competitor_insight: string | null;
+  // CRM fields
+  category: string | null;
+  city: string | null;
+  state: string | null;
+  zip: string | null;
+  contact_name: string | null;
+  last_contacted_at: string | null;
+  tags: string[];
 }
 
 // Search result type (before saving to DB)

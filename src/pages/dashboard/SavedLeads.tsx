@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Download, Check, X, StickyNote, Trash2, ShieldOff, Smartphone, CalendarX, TrendingUp, Clock, Lightbulb, Users2, Loader2 } from "lucide-react";
+import { Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Download, Check, X, StickyNote, Trash2, ShieldOff, Smartphone, CalendarX, TrendingUp, Clock, Lightbulb, Users2, Loader2, Eye } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import LeadDetailModal from "@/components/LeadDetailModal";
 
 type Filter = "all" | "new" | "contacted" | "followed_up" | "closed" | "lost";
 
@@ -28,6 +29,7 @@ const SavedLeads = () => {
   const [filter, setFilter] = useState<Filter>("all");
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [aiLoadingId, setAiLoadingId] = useState<string | null>(null);
+  const [modalLead, setModalLead] = useState<Lead | null>(null);
 
   const mapLead = (d: any): Lead => ({
     ...d,
@@ -48,6 +50,13 @@ const SavedLeads = () => {
     status: d.status || "new",
     follow_up_date: d.follow_up_date || null,
     competitor_insight: d.competitor_insight || null,
+    category: d.category || null,
+    city: d.city || null,
+    state: d.state || null,
+    zip: d.zip || null,
+    contact_name: d.contact_name || null,
+    last_contacted_at: d.last_contacted_at || null,
+    tags: d.tags || [],
   });
 
   const fetchLeads = async () => {
@@ -165,9 +174,9 @@ const SavedLeads = () => {
 
       <div className="space-y-3">
         {filtered.map((lead) => (
-          <Card key={lead.id} className="border-border/50">
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-start justify-between">
+          <Card key={lead.id} className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setModalLead(lead)}>
+            <CardContent className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-start justify-between" onClick={() => setModalLead(lead)}>
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground">{lead.business_name}</span>
@@ -223,7 +232,11 @@ const SavedLeads = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-1 flex-shrink-0">
+                <div className="flex gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                  {/* View button */}
+                  <Button variant="ghost" size="sm" onClick={() => setModalLead(lead)}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
                   {/* Status dropdown */}
                   <Select value={lead.status} onValueChange={(v) => updateField(lead.id, "status", v)}>
                     <SelectTrigger className="h-8 w-[120px] text-xs">
@@ -330,6 +343,16 @@ const SavedLeads = () => {
           <div className="py-12 text-center text-muted-foreground">No leads found</div>
         )}
       </div>
+
+      <LeadDetailModal
+        lead={modalLead}
+        open={!!modalLead}
+        onOpenChange={(open) => { if (!open) setModalLead(null); }}
+        onLeadUpdated={(updated) => {
+          setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+          setModalLead(updated);
+        }}
+      />
     </div>
   );
 };

@@ -7,12 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { type Lead } from "@/lib/mock-data";
+import LeadDetailModal from "@/components/LeadDetailModal";
 
 const DashboardHome = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalLead, setModalLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -42,6 +44,13 @@ const DashboardHome = () => {
             status: d.status || "new",
             follow_up_date: d.follow_up_date || null,
             competitor_insight: d.competitor_insight || null,
+            category: d.category || null,
+            city: d.city || null,
+            state: d.state || null,
+            zip: d.zip || null,
+            contact_name: d.contact_name || null,
+            last_contacted_at: d.last_contacted_at || null,
+            tags: d.tags || [],
           })));
         }
         setLoading(false);
@@ -149,7 +158,7 @@ const DashboardHome = () => {
             </div>
           )}
           {topLeads.map((lead) => (
-            <div key={lead.id} className="flex items-center justify-between rounded-md border border-border/30 p-3">
+            <div key={lead.id} className="flex items-center justify-between rounded-md border border-border/30 p-3 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setModalLead(lead)}>
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center rounded-full bg-primary/10 h-8 w-8 text-xs font-bold text-primary">
                   {lead.priority_score}
@@ -170,13 +179,23 @@ const DashboardHome = () => {
                   </div>
                 </div>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => navigate("/dashboard/ai-tools")}>
+              <Button size="sm" variant="ghost">
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           ))}
         </CardContent>
       </Card>
+
+      <LeadDetailModal
+        lead={modalLead}
+        open={!!modalLead}
+        onOpenChange={(open) => { if (!open) setModalLead(null); }}
+        onLeadUpdated={(updated) => {
+          setLeads((prev) => prev.map((l) => l.id === updated.id ? updated : l));
+          setModalLead(updated);
+        }}
+      />
     </div>
   );
 };
