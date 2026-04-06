@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX } from "lucide-react";
-import { type SearchResult, type Lead } from "@/lib/mock-data";
+import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2 } from "lucide-react";
+import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -19,6 +19,29 @@ const US_STATES = [
   "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
 ];
 
+type AnalysisResult = {
+  lead_id?: string;
+  website?: string;
+  website_error: boolean;
+  no_ssl: boolean;
+  not_mobile_friendly: boolean;
+  outdated_copyright: boolean;
+  website_issues: string[];
+  priority_score: number;
+  priority_label: string;
+  scraped_name: string | null;
+  scraped_phone: string | null;
+  scraped_email: string | null;
+  copyright_year: number | null;
+};
+
+const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
+  <Badge variant={ok ? "default" : "destructive"} className="gap-1">
+    {ok ? <CheckCircle2 className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
+    {label}
+  </Badge>
+);
+
 const SearchPanel = () => {
   const { user } = useAuth();
   const [city, setCity] = useState("");
@@ -29,6 +52,11 @@ const SearchPanel = () => {
   const [searching, setSearching] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [screenshots, setScreenshots] = useState<Record<number, string>>({});
+
+  // Manual analysis state
+  const [manualUrl, setManualUrl] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
   const handleSearch = async () => {
     if (!city || !businessType) {
@@ -101,6 +129,28 @@ const SearchPanel = () => {
     }
   };
 
+  const analyzeWebsite = async () => {
+    if (!manualUrl.trim()) {
+      toast.error("Enter a website URL first");
+      return;
+    }
+    setAnalyzing(true);
+    setAnalysisResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("analyze-website", {
+        body: { url: manualUrl.trim() },
+      });
+      if (error) { toast.error("Failed to analyze website"); return; }
+      if (data?.error) { toast.error(data.error); return; }
+      setAnalysisResult(data);
+      toast.success("Website analyzed & saved to leads!");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -151,6 +201,98 @@ const SearchPanel = () => {
         </CardContent>
       </Card>
 
+      {/* Manual Website Analysis */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Globe className="h-5 w-5 text-primary" />
+            Manual Website Analysis
+          </CardTitle>
+          <CardDescription>Enter a website URL to scrape business info and detect issues</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex gap-3">
+            <Input
+              placeholder="https://example.com"
+              value={manualUrl}
+              onChange={(e) => setManualUrl(e.target.value)}
+              className="flex-1"
+              onKeyDown={(e) => e.key === "Enter" && analyzeWebsite()}
+            />
+            <Button onClick={analyzeWebsite} disabled={analyzing}>
+              {analyzing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : "Get Info"}
+            </Button>
+          </div>
+
+          {analysisResult && (
+            <div className="rounded-lg border border-border/50 bg-muted/30 p-4 space-y-4">
+              {/* Scraped Business Info */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-foreground">Business Info</h4>
+                <div className="grid gap-2 text-sm">
+                  {analysisResult.scraped_name && (
+                    <div className="flex items-center gap-2 text-foreground">
+                      <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="font-medium">{analysisResult.scraped_name}</span>
+                    </div>
+                  )}
+                  {analysisResult.scraped_phone && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="h-3.5 w-3.5" />
+                      <span>{analysisResult.scraped_phone}</span>
+                    </div>
+                  )}
+                  {analysisResult.scraped_email && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Mail className="h-3.5 w-3.5" />
+                      <span>{analysisResult.scraped_email}</span>
+                    </div>
+                  )}
+                  {analysisResult.copyright_year && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarX className="h-3.5 w-3.5" />
+                      <span>Copyright: {analysisResult.copyright_year}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Website Status Badges */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold text-foreground">Website Analysis</h4>
+                <div className="flex flex-wrap gap-2">
+                  <StatusBadge ok={!analysisResult.website_error} label={analysisResult.website_error ? "Site Error" : "Site OK"} />
+                  <StatusBadge ok={!analysisResult.no_ssl} label={analysisResult.no_ssl ? "No SSL" : "SSL Secure"} />
+                  <StatusBadge ok={!analysisResult.not_mobile_friendly} label={analysisResult.not_mobile_friendly ? "Not Mobile Friendly" : "Mobile Friendly"} />
+                  <StatusBadge ok={!analysisResult.outdated_copyright} label={analysisResult.outdated_copyright ? "Outdated Copyright" : "Copyright OK"} />
+                </div>
+              </div>
+
+              {analysisResult.website_issues.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Issues Found:</p>
+                  <ul className="text-xs text-muted-foreground list-disc list-inside">
+                    {analysisResult.website_issues.map((issue, i) => (
+                      <li key={i}>{issue}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>Priority: <Badge variant="outline" className="ml-1">{analysisResult.priority_label}</Badge></span>
+                <span>Score: {analysisResult.priority_score}/100</span>
+                {analysisResult.lead_id && (
+                  <Badge variant="secondary" className="gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> Saved to Leads
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {results.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-foreground">Results ({results.length})</h2>
@@ -181,7 +323,6 @@ const SearchPanel = () => {
                         <span className="flex items-center gap-1 text-hot"><Globe className="h-3.5 w-3.5" /> No website</span>
                       )}
                     </div>
-                    {/* Website issue badges */}
                     {result.website_issues && result.website_issues.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {result.no_ssl && (
