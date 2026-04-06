@@ -177,7 +177,6 @@ const SavedLeads = () => {
           <Card key={lead.id} className="border-border/50 cursor-pointer hover:border-primary/30 transition-colors" onClick={() => setModalLead(lead)}>
             <CardContent className="p-4 space-y-3" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-start justify-between" onClick={() => setModalLead(lead)}>
-              <div className="flex items-start justify-between">
                 <div className="space-y-1 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-semibold text-foreground">{lead.business_name}</span>
