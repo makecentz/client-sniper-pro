@@ -84,7 +84,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        // Skip token refresh events — they don't change user identity
+        if (event === "TOKEN_REFRESHED") return;
+
         if (session?.user) {
           setTimeout(async () => {
             const mapped = await mapSupabaseUser(session.user);
