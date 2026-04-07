@@ -1,15 +1,14 @@
 
 
-## Fix: Onboarding Keeps Reappearing After Completion
+## Plan: Make Website URLs Clickable in Search Results
 
-### Root Cause
-The `ProtectedRoute` effect that checks `company_settings` depends on `[user]` — the entire user object. Every time the user object reference changes (subscription checks every 60s, lead count refreshes, etc.), the effect re-runs, resets `onboardingChecked` to `false`, and briefly sets `hasSettings` back to its default `false`. This causes a redirect flash back to `/onboarding` even though the data exists in the database.
+### Problem
+Search results already include businesses with websites that need updates (outdated copyright, no SSL, not mobile-friendly, etc.), but the website URL is displayed as plain text — not clickable. This makes it hard to verify the site or pitch the business owner.
 
 ### Fix
 
-**`src/components/ProtectedRoute.tsx`**
-1. Change the effect dependency from `[user]` to `[user?.id]` — only re-check when the actual user identity changes, not on metadata updates
-2. Once `hasSettings` is set to `true`, don't reset it on subsequent effect runs — use a functional check: only query if we haven't already confirmed settings exist
+**`src/pages/dashboard/SearchPanel.tsx`** — one change in the results card (line 342):
+- Replace the plain `<span>` showing `result.website` with a clickable `<a>` tag that opens in a new tab, styled with the primary color and underline on hover (matching the manual analysis section's link style)
 
-This is a one-file, ~5-line change.
+The backend already returns all qualifying businesses (with or without a website). No edge function changes needed.
 
