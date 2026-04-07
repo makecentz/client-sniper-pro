@@ -70,11 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser((prev) => {
         if (!prev) return prev;
+        const newSubscribed = data.subscribed;
+        const newPlan = data.subscribed ? "pro" : prev.plan;
+        const newEnd = data.subscription_end || null;
+        // Only create a new object if something actually changed
+        if (prev.subscribed === newSubscribed && prev.plan === newPlan && prev.subscription_end === newEnd) {
+          return prev;
+        }
         return {
           ...prev,
-          subscribed: data.subscribed,
-          plan: data.subscribed ? "pro" : prev.plan,
-          subscription_end: data.subscription_end || null,
+          subscribed: newSubscribed,
+          plan: newPlan,
+          subscription_end: newEnd,
         };
       });
     } catch (e) {
@@ -84,7 +91,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        // Skip token refresh events — they don't change user identity
+        if (event === "TOKEN_REFRESHED") return;
+
         if (session?.user) {
           setTimeout(async () => {
             const mapped = await mapSupabaseUser(session.user);
