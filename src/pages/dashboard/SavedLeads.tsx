@@ -86,7 +86,7 @@ const SavedLeads = () => {
   });
 
   const updateField = async (id: string, field: string, value: any) => {
-    const { error } = await supabase.from("leads").update({ [field]: value }).eq("id", id);
+    const { error } = await supabase.from("leads").update({ [field]: value } as any).eq("id", id);
     if (error) { toast.error("Update failed"); return; }
     setLeads((prev) => prev.map((l) => l.id === id ? { ...l, [field]: value } : l));
   };

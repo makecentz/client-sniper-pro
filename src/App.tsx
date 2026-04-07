@@ -17,6 +17,7 @@ import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
 import Admin from "./pages/Admin";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
               <Route path="ai-tools" element={<AITools />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
+            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
