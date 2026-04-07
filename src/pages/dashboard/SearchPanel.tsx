@@ -339,7 +339,7 @@ const SearchPanel = () => {
                       {result.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {result.phone}</span>}
                       {result.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {result.email}</span>}
                       {result.website ? (
-                        <span className="flex items-center gap-1"><Globe className="h-3.5 w-3.5" /> {result.website}</span>
+                        <a href={result.website.startsWith("http") ? result.website : `https://${result.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Globe className="h-3.5 w-3.5" /> {result.website}</a>
                       ) : (
                         <span className="flex items-center gap-1 text-hot"><Globe className="h-3.5 w-3.5" /> No website</span>
                       )}
