@@ -15,6 +15,7 @@ const features = [
 ];
 
 const Landing = () => {
+  const { user } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
