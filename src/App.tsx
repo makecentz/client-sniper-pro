@@ -38,7 +38,7 @@ const App = () => (
             <Route
               path="/dashboard"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute key="dashboard">
                   <DashboardLayout />
                 </ProtectedRoute>
               }
@@ -49,7 +49,7 @@ const App = () => (
               <Route path="ai-tools" element={<AITools />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
-            <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute key="onboarding"><Onboarding /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
