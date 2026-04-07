@@ -1,7 +1,7 @@
 import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
