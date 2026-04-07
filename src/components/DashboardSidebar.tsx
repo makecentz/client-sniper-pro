@@ -1,6 +1,6 @@
-import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -88,6 +88,18 @@ export function DashboardSidebar() {
                 <div className="flex items-center gap-1">
                   <Shield className="h-3 w-3" />
                   <span className="capitalize">{user.plan} plan</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="flex items-center gap-1"><Database className="h-3 w-3" /> Saved Leads</span>
+                  <span className={
+                    user.saved_leads_count >= PRO_LEADS_LIMIT
+                      ? "text-destructive font-semibold"
+                      : user.saved_leads_count >= PRO_LEADS_WARNING
+                      ? "text-warning font-semibold"
+                      : "text-foreground"
+                  }>
+                    {user.saved_leads_count}/{PRO_LEADS_LIMIT}
+                  </span>
                 </div>
               </div>
             </SidebarGroupContent>
