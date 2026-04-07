@@ -131,13 +131,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   }, []);
 
+  const refreshLeadCount = useCallback(async () => {
+    if (!user) return;
+    const { count } = await supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id);
+    setUser((prev) => prev ? { ...prev, saved_leads_count: count ?? prev.saved_leads_count } : prev);
+  }, [user?.id]);
+
   const logout = useCallback(async () => {
     await supabase.auth.signOut();
     setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, refreshSubscription: checkSubscription }}>
+    <AuthContext.Provider value={{ user, isLoading, login, signup, logout, refreshSubscription: checkSubscription, refreshLeadCount }}>
       {children}
     </AuthContext.Provider>
   );
