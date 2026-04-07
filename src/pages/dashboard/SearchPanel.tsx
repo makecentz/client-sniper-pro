@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2 } from "lucide-react";
 import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const US_STATES = [
@@ -43,7 +43,7 @@ const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
 );
 
 const SearchPanel = () => {
-  const { user } = useAuth();
+  const { user, refreshLeadCount } = useAuth();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
@@ -58,7 +58,13 @@ const SearchPanel = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
+  const atLimit = (user?.saved_leads_count ?? 0) >= PRO_LEADS_LIMIT;
+
   const handleSearch = async () => {
+    if (atLimit) {
+      toast.error(`You've reached the ${PRO_LEADS_LIMIT} saved leads limit. Delete some leads before searching.`);
+      return;
+    }
     if (!city || !businessType) {
       toast.error("Please enter a city and business type");
       return;
@@ -85,6 +91,10 @@ const SearchPanel = () => {
 
   const handleSaveLead = async (result: SearchResult, idx: number) => {
     if (!user) return;
+    if (atLimit) {
+      toast.error(`Lead limit reached (${PRO_LEADS_LIMIT}). Delete old leads to save new ones.`);
+      return;
+    }
     setSavingId(idx);
     try {
       const { error } = await supabase.from("leads").insert({
@@ -106,7 +116,12 @@ const SearchPanel = () => {
         priority_label: result.priority_label || "low",
       });
       if (error) throw error;
-      toast.success(`Saved "${result.business_name}" to leads`);
+      await refreshLeadCount();
+      if ((user.saved_leads_count + 1) >= PRO_LEADS_WARNING) {
+        toast.warning(`You have ${user.saved_leads_count + 1}/${PRO_LEADS_LIMIT} leads — start deleting old ones.`);
+      } else {
+        toast.success(`Saved "${result.business_name}" to leads`);
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to save lead");
     } finally {
@@ -192,9 +207,9 @@ const SearchPanel = () => {
               <Input placeholder="Plumber, Dentist..." value={businessType} onChange={(e) => setBusinessType(e.target.value)} />
             </div>
             <div className="flex items-end">
-              <Button className="w-full" onClick={handleSearch} disabled={searching}>
+              <Button className="w-full" onClick={handleSearch} disabled={searching || atLimit} title={atLimit ? "Lead limit reached" : undefined}>
                 <Search className="mr-2 h-4 w-4" />
-                {searching ? "Searching..." : "Search"}
+                {searching ? "Searching..." : atLimit ? "Limit Reached" : "Search"}
               </Button>
             </div>
           </div>

@@ -23,7 +23,7 @@ const STATUS_OPTIONS = [
 ];
 
 const SavedLeads = () => {
-  const { user } = useAuth();
+  const { user, refreshLeadCount } = useAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("all");
@@ -101,6 +101,7 @@ const SavedLeads = () => {
     const { error } = await supabase.from("leads").delete().eq("id", id);
     if (error) { toast.error("Delete failed"); return; }
     setLeads((prev) => prev.filter((l) => l.id !== id));
+    await refreshLeadCount();
     toast.success("Lead deleted");
   };
 
