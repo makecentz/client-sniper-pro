@@ -17,7 +17,7 @@ const Onboarding = () => {
     business_name: "",
     website_url: "",
     phone: "",
-    email: "",
+    email: user?.email ?? "",
     website_dev_price: "",
     current_deal: "",
   });
