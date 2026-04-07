@@ -1,47 +1,33 @@
 
 
-## Plan: Enhanced Website Contact Scraper
+## Plan: Post-Signup Onboarding Form
 
 ### Summary
-Upgrade the existing `analyze-website` edge function to also scrape `/contact`, `/contact-us`, `/about`, and `/about-us` pages. Store all found emails/phones as arrays, add scrape status tracking, and add a "Find Contact Info" button to the lead modal.
+After a new user signs up and logs in for the first time, redirect them to an onboarding page that collects their company info (business name, website, phone, email, website dev price, current deal). On submit, upsert this into `company_settings` and redirect to the dashboard. Returning users skip it.
 
-### Database Changes (Migration)
+### How It Works
+1. When a logged-in user navigates to `/dashboard`, check if they have a `company_settings` row
+2. If not, redirect to `/onboarding`
+3. The onboarding page shows a friendly multi-field form with the same fields as Settings > Company Information
+4. On submit, upsert into `company_settings` and navigate to `/dashboard`
 
-Add columns to `leads` table:
-- `contact_scrape_status` (text, default `null`) — values: pending, success, partial, no_data, error
-- `contact_scraped_at` (timestamptz, nullable)
-- `scraped_phones` (text[], default '{}')
-- `scraped_emails` (text[], default '{}')
-
-### Backend: New Edge Function `scrape-lead-contacts`
-
-Separate from `analyze-website` (which does technical audit). This function:
-- Accepts `{ lead_id }`, validates auth + ownership
-- Fetches the lead's website URL
-- Fetches homepage + `/contact`, `/contact-us`, `/about`, `/about-us` (parallel, 6s timeout each, ignore failures)
-- Combines all HTML, extracts all emails and phones using existing regex logic
-- Deduplicates, lowercases emails, prioritizes contact-related prefixes (info@, contact@, hello@, support@)
-- Saves: `scraped_emails`, `scraped_phones`, best email to `email` (if empty), best phone to `phone` (if empty), `contact_scrape_status`, `contact_scraped_at`
-- Returns structured result
-
-### Frontend: Lead Modal Integration
-
-**Overview tab** — add a "Find Contact Info" button in the quick actions area:
-- Disabled if no website exists
-- Shows spinner while scraping
-- On success: updates lead data locally, shows toast
-- On partial/no_data: shows appropriate feedback
-
-**Overview tab** — add a "Contact Info" section showing:
-- Primary email/phone (already shown)
-- Additional scraped emails/phones as smaller badges
-- Scrape status + last scraped timestamp
-- Copy buttons for each
+No database changes needed — `company_settings` table already exists with the right columns and RLS policies.
 
 ### Files Changed
-1. New migration — add `contact_scrape_status`, `contact_scraped_at`, `scraped_phones`, `scraped_emails` columns
-2. `supabase/functions/scrape-lead-contacts/index.ts` — new edge function
-3. `src/lib/mock-data.ts` — add new fields to Lead interface
-4. `src/components/LeadDetailModal.tsx` — add Find Contact Info button + scraped data display
-5. `src/pages/dashboard/SavedLeads.tsx` — update `mapLead` for new fields
+
+**1. `src/pages/Onboarding.tsx`** (new)
+- Full-page form collecting: business name, website URL, phone, email, website dev price, current deal/promotion
+- Styled consistently with the app (dark theme, card layout, logo at top)
+- Submit upserts to `company_settings` via Supabase client
+- On success, navigates to `/dashboard`
+- Skip button available (user can fill in later from settings)
+
+**2. `src/components/ProtectedRoute.tsx`** (edit)
+- After confirming user is authenticated, query `company_settings` for the user
+- If no row exists and current path starts with `/dashboard`, redirect to `/onboarding`
+- Cache the check in state so it only runs once per session
+
+**3. `src/App.tsx`** (edit)
+- Add `/onboarding` route wrapped in `ProtectedRoute` (but excluded from the onboarding redirect check to avoid a loop)
+- Import the new `Onboarding` page
 
