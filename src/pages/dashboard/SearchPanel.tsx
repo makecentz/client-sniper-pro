@@ -236,6 +236,12 @@ const SearchPanel = () => {
                       <span className="font-medium">{analysisResult.scraped_name}</span>
                     </div>
                   )}
+                  {analysisResult.website && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Globe className="h-3.5 w-3.5" />
+                      <a href={analysisResult.website.startsWith("http") ? analysisResult.website : `https://${analysisResult.website}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">{analysisResult.website}</a>
+                    </div>
+                  )}
                   {analysisResult.scraped_phone && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Phone className="h-3.5 w-3.5" />
