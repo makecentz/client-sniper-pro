@@ -244,10 +244,10 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
           <TabsContent value="overview" className="space-y-4 mt-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div className="space-y-2">
-                {lead.phone && <p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {lead.phone}</p>}
-                {lead.email && <p className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {lead.email}</p>}
-                {lead.address && <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> {lead.address}</p>}
-                {lead.website && <p className="flex items-center gap-2"><Globe className="h-4 w-4 text-muted-foreground" /> <a href={lead.website.startsWith("http") ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{lead.website}</a></p>}
+                {lead.phone && <div className="flex items-center justify-between group"><p className="flex items-center gap-2"><Phone className="h-4 w-4 text-muted-foreground" /> {lead.phone}</p><Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copyContent(lead.phone!)}><Copy className="h-3 w-3" /></Button></div>}
+                {lead.email && <div className="flex items-center justify-between group"><p className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /> {lead.email}</p><Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copyContent(lead.email!)}><Copy className="h-3 w-3" /></Button></div>}
+                {lead.address && <div className="flex items-center justify-between group"><p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-muted-foreground" /> {lead.address}</p><Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copyContent(lead.address!)}><Copy className="h-3 w-3" /></Button></div>}
+                {lead.website && <div className="flex items-center justify-between group"><p className="flex items-center gap-2"><Globe className="h-4 w-4 text-muted-foreground" /> <a href={lead.website.startsWith("http") ? lead.website : `https://${lead.website}`} target="_blank" rel="noopener" className="text-primary hover:underline truncate">{lead.website}</a></p><Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => copyContent(lead.website!)}><Copy className="h-3 w-3" /></Button></div>}
                 {lead.contact_name && <p className="flex items-center gap-2"><User className="h-4 w-4 text-muted-foreground" /> {lead.contact_name}</p>}
               </div>
               <div className="space-y-2">
