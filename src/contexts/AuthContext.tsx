@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
+export const PRO_LEADS_LIMIT = 200;
+export const PRO_LEADS_WARNING = 150;
+
 interface User {
   id: string;
   email: string;
@@ -10,6 +13,7 @@ interface User {
   leads_remaining: number;
   subscribed: boolean;
   subscription_end: string | null;
+  saved_leads_count: number;
 }
 
 interface AuthContextType {
@@ -19,6 +23,7 @@ interface AuthContextType {
   signup: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshSubscription: () => Promise<void>;
+  refreshLeadCount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -30,11 +35,17 @@ export const useAuth = () => {
 };
 
 const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
-  const { data: usage } = await supabase
-    .from("usage_tracking")
-    .select("searches_today, leads_remaining, plan")
-    .eq("user_id", supabaseUser.id)
-    .single();
+  const [{ data: usage }, { count }] = await Promise.all([
+    supabase
+      .from("usage_tracking")
+      .select("searches_today, leads_remaining, plan")
+      .eq("user_id", supabaseUser.id)
+      .single(),
+    supabase
+      .from("leads")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", supabaseUser.id),
+  ]);
 
   return {
     id: supabaseUser.id,
@@ -44,6 +55,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     leads_remaining: usage?.leads_remaining ?? 2,
     subscribed: usage?.plan === "pro",
     subscription_end: null,
+    saved_leads_count: count ?? 0,
   };
 };
 
