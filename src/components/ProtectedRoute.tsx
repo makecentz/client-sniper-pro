@@ -21,7 +21,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
       setOnboardingChecked(true);
     };
     check();
-  }, [user]);
+  }, [user, location.pathname]);
 
   if (isLoading || !onboardingChecked) {
     return (
