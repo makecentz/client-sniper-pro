@@ -10,9 +10,10 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
   const [hasSettings, setHasSettings] = useState(false);
 
   useEffect(() => {
-    setOnboardingChecked(false);
     const check = async () => {
       if (!user) { setOnboardingChecked(true); return; }
+      if (hasSettings) { setOnboardingChecked(true); return; }
+      setOnboardingChecked(false);
       const { data } = await supabase
         .from("company_settings")
         .select("id")
@@ -22,7 +23,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
       setOnboardingChecked(true);
     };
     check();
-  }, [user]);
+  }, [user?.id]);
 
   if (isLoading || !onboardingChecked) {
     return (
