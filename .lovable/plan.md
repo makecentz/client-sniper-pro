@@ -1,29 +1,20 @@
 
 
-## Plan: Add Copy Buttons to Lead Detail Modal Overview
+## Plan: Logo Link, Nav Auth State, and Session Persistence
 
-### What Changes
-**`src/components/LeadDetailModal.tsx`** — lines 247-251 in the Overview tab
+### Changes
 
-Replace the plain text display of phone, email, address, and website with rows that include a small copy button on the right side. The existing `copyContent` helper (line 179) already handles clipboard + toast.
+**1. `src/components/DashboardSidebar.tsx`** — Make logo clickable to home
+- Wrap the logo (`Zap` icon + "ClientHunter" text) in a `<Link to="/">` so clicking it navigates to the landing page without logging out
 
-Each contact field row becomes a flex container with `justify-between`:
-- Left side: icon + text (or link for website)
-- Right side: a ghost `Copy` icon button calling `copyContent(value)`
+**2. `src/pages/Landing.tsx`** — Show "My Account" instead of "Get Started" when logged in
+- Import `useAuth` and check if `user` is present
+- When logged in: replace the "Get Started" button with a "My Account" button linking to `/dashboard`
+- Keep "Log In" hidden too when already authenticated (or replace with "Dashboard")
 
-This keeps the layout clean and consistent. Only the Overview tab is changed — the Details tab already has editable inputs.
+**3. Session persistence** — Already handled
+- Supabase auth uses `localStorage` by default, which persists across browser sessions. No change needed here — users stay logged in until they explicitly log out. If the current config overrides this, I'll verify and fix in `AuthContext.tsx`.
 
-### Example Structure
-```tsx
-<div className="flex items-center justify-between group">
-  <p className="flex items-center gap-2">
-    <Phone className="h-4 w-4 text-muted-foreground" /> {lead.phone}
-  </p>
-  <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100" onClick={() => copyContent(lead.phone)}>
-    <Copy className="h-3 w-3" />
-  </Button>
-</div>
-```
-
-Applied to: `phone`, `address`, `email`, `website` — each conditionally rendered as before. The copy button appears on hover for a clean look.
+### Scope
+Three small UI tweaks across two files. No backend changes.
 
