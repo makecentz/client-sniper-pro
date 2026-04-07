@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import heroBg from "@/assets/hero-bg.png";
 import pricingBg from "@/assets/pricing-bg.png";

@@ -50,10 +50,10 @@ export function DashboardSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>
-            <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <Zap className="h-4 w-4 text-primary" />
               {!collapsed && <span className="font-bold">ClientHunter</span>}
-            </div>
+            </Link>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
