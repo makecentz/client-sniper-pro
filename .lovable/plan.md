@@ -1,20 +1,26 @@
 
 
-## Plan: Logo Link, Nav Auth State, and Session Persistence
+## Plan: Add Profile Dropdown to Dashboard Top Bar
 
-### Changes
+### What Changes
 
-**1. `src/components/DashboardSidebar.tsx`** — Make logo clickable to home
-- Wrap the logo (`Zap` icon + "ClientHunter" text) in a `<Link to="/">` so clicking it navigates to the landing page without logging out
+**`src/components/DashboardLayout.tsx`**
+- Import `useAuth`, `Avatar`, `AvatarFallback`, `DropdownMenu` components, and icons (`User`, `Settings`, `LogOut`)
+- In the `<header>`, add a profile dropdown on the right side (using `ml-auto`) containing:
+  - **Trigger**: An `Avatar` showing the user's initials (derived from email) with a chevron
+  - **Dropdown content**:
+    - User email label at the top
+    - "Settings" link → `/dashboard/settings`
+    - "Log out" action → calls `logout()` and navigates to `/`
+- Keep the `SidebarTrigger` on the left as-is
 
-**2. `src/pages/Landing.tsx`** — Show "My Account" instead of "Get Started" when logged in
-- Import `useAuth` and check if `user` is present
-- When logged in: replace the "Get Started" button with a "My Account" button linking to `/dashboard`
-- Keep "Log In" hidden too when already authenticated (or replace with "Dashboard")
-
-**3. Session persistence** — Already handled
-- Supabase auth uses `localStorage` by default, which persists across browser sessions. No change needed here — users stay logged in until they explicitly log out. If the current config overrides this, I'll verify and fix in `AuthContext.tsx`.
+### Visual Layout
+```text
+[ ☰ ]                                    [ JD ▾ ]
+  ^                                         ^
+  sidebar trigger                     avatar dropdown
+```
 
 ### Scope
-Three small UI tweaks across two files. No backend changes.
+One file changed. Uses existing `Avatar`, `DropdownMenu`, and `useAuth` — no new dependencies.
 
