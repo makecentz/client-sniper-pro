@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Users, DollarSign, Search, Activity, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, DollarSign, Search, Activity, Loader2, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -137,7 +139,12 @@ const Admin = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" />Back to Dashboard</Link>
+          </Button>
+          <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
+        </div>
 
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-4">
