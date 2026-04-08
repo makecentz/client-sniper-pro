@@ -5,19 +5,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Users, DollarSign, Search, Activity, Loader2, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-
-interface UserRow {
-  user_id: string;
-  plan: string;
-  searches_today: number;
-  leads_remaining: number;
-  created_at: string;
-  email?: string;
-}
+import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
+import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModal";
 
 interface WebhookRow {
   id: string;
@@ -27,12 +19,14 @@ interface WebhookRow {
 }
 
 const Admin = () => {
-  const [users, setUsers] = useState<UserRow[]>([]);
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookRow[]>([]);
   const [totalLeads, setTotalLeads] = useState(0);
   const [activeToday, setActiveToday] = useState(0);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [searchFilter, setSearchFilter] = useState("");
+  const [selectedUser, setSelectedUser] = useState<AdminUserRow | null>(null);
 
   const handlePlanChange = async (userId: string, newPlan: "free" | "pro") => {
     setUpdating(userId);
@@ -45,11 +39,10 @@ const Admin = () => {
     if (error) {
       toast.error("Failed to update plan");
     } else {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.user_id === userId ? { ...u, plan: newPlan, leads_remaining: leadsRemaining } : u
-        )
-      );
+      const updater = (u: AdminUserRow) =>
+        u.user_id === userId ? { ...u, plan: newPlan, leads_remaining: leadsRemaining } : u;
+      setUsers((prev) => prev.map(updater));
+      setSelectedUser((prev) => prev && prev.user_id === userId ? updater(prev) : prev);
       toast.success(`Plan updated to ${newPlan}`);
     }
     setUpdating(null);
@@ -65,45 +58,80 @@ const Admin = () => {
     if (error) {
       toast.error("Failed to update leads");
     } else {
-      setUsers((prev) =>
-        prev.map((u) =>
-          u.user_id === userId ? { ...u, leads_remaining: newLeads } : u
-        )
-      );
+      const updater = (u: AdminUserRow) =>
+        u.user_id === userId ? { ...u, leads_remaining: newLeads } : u;
+      setUsers((prev) => prev.map(updater));
+      setSelectedUser((prev) => prev && prev.user_id === userId ? updater(prev) : prev);
       toast.success(`Leads updated to ${newLeads}`);
     }
+  };
+
+  const handleResetSearches = async (userId: string) => {
+    setUpdating(userId);
+    const { error } = await supabase
+      .from("usage_tracking")
+      .update({ searches_today: 0 })
+      .eq("user_id", userId);
+
+    if (error) {
+      toast.error("Failed to reset searches");
+    } else {
+      const updater = (u: AdminUserRow) =>
+        u.user_id === userId ? { ...u, searches_today: 0 } : u;
+      setUsers((prev) => prev.map(updater));
+      setSelectedUser((prev) => prev && prev.user_id === userId ? updater(prev) : prev);
+      toast.success("Searches reset to 0");
+    }
+    setUpdating(null);
   };
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
 
-      // Fetch all usage_tracking (admin RLS allows this)
-      const [usageRes, webhookRes, leadsRes, profilesRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("user_id, display_name, created_at"),
+        supabase.from("leads").select("user_id"),
+        supabase.from("company_settings").select("*"),
       ]);
 
       const usageRows = usageRes.data || [];
       const profileRows = profilesRes.data || [];
+      const leadsRows = leadsPerUserRes.data || [];
+      const companyRows = companyRes.data || [];
 
-      // Build a map of user_id -> profile info
-      const profileMap = new Map<string, { display_name: string | null; created_at: string }>();
+      // Build maps
+      const profileMap = new Map<string, { display_name: string | null }>();
       profileRows.forEach((p) => profileMap.set(p.user_id, p));
 
-      // Merge usage with profile emails (display_name is set to email on signup)
-      const merged: UserRow[] = usageRows.map((u) => ({
+      const leadsCountMap = new Map<string, number>();
+      leadsRows.forEach((l) => leadsCountMap.set(l.user_id, (leadsCountMap.get(l.user_id) || 0) + 1));
+
+      const companyMap = new Map<string, typeof companyRows[0]>();
+      companyRows.forEach((c) => companyMap.set(c.user_id, c));
+
+      const merged: AdminUserRow[] = usageRows.map((u) => ({
         user_id: u.user_id,
         plan: u.plan,
         searches_today: u.searches_today,
         leads_remaining: u.leads_remaining,
         created_at: u.created_at,
+        last_search_date: u.last_search_date,
         email: profileMap.get(u.user_id)?.display_name || u.user_id.slice(0, 8),
+        leads_count: leadsCountMap.get(u.user_id) || 0,
+        company: companyMap.get(u.user_id) ? {
+          business_name: companyMap.get(u.user_id)!.business_name,
+          website_url: companyMap.get(u.user_id)!.website_url,
+          phone: companyMap.get(u.user_id)!.phone,
+          email: companyMap.get(u.user_id)!.email,
+          website_dev_price: companyMap.get(u.user_id)!.website_dev_price,
+          current_deal: companyMap.get(u.user_id)!.current_deal,
+        } : undefined,
       }));
 
-      // Count users active today (searched today)
       const today = new Date().toISOString().slice(0, 10);
       const active = usageRows.filter((u) => u.last_search_date === today).length;
 
@@ -119,14 +147,12 @@ const Admin = () => {
 
   const totalUsers = users.length;
   const proUsers = users.filter((u) => u.plan === "pro").length;
+  const freeUsers = users.filter((u) => u.plan === "free").length;
   const totalSearches = users.reduce((sum, u) => sum + u.searches_today, 0);
 
-  const stats = [
-    { label: "Total Users", value: totalUsers.toString(), icon: Users },
-    { label: "Pro Users", value: proUsers.toString(), icon: DollarSign },
-    { label: "Total Leads", value: totalLeads.toString(), icon: Search },
-    { label: "Active Today", value: activeToday.toString(), icon: Activity },
-  ];
+  const filteredUsers = users.filter((u) =>
+    u.email.toLowerCase().includes(searchFilter.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -146,26 +172,28 @@ const Admin = () => {
           <h1 className="text-2xl font-bold text-foreground">Admin Dashboard</h1>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          {stats.map((s) => (
-            <Card key={s.label} className="border-border/50">
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                  <s.icon className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{s.label}</p>
-                  <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <AdminStatsCards
+          totalUsers={totalUsers}
+          proUsers={proUsers}
+          freeUsers={freeUsers}
+          totalLeads={totalLeads}
+          activeToday={activeToday}
+          totalSearches={totalSearches}
+        />
 
         {/* Users */}
         <Card className="border-border/50">
-          <CardHeader><CardTitle>Users ({totalUsers})</CardTitle></CardHeader>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Users ({totalUsers})</CardTitle>
+              <Input
+                placeholder="Search by email..."
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                className="max-w-xs"
+              />
+            </div>
+          </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -174,40 +202,30 @@ const Admin = () => {
                   <TableHead>Plan</TableHead>
                   <TableHead>Searches Today</TableHead>
                   <TableHead>Leads Remaining</TableHead>
+                  <TableHead>Leads Saved</TableHead>
+                  <TableHead>Last Active</TableHead>
                   <TableHead>Joined</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {users.map((u) => (
+                {filteredUsers.map((u) => (
                   <TableRow key={u.user_id}>
                     <TableCell className="font-medium">{u.email}</TableCell>
                     <TableCell>
-                      <Select
-                        value={u.plan}
-                        onValueChange={(val) => handlePlanChange(u.user_id, val as "free" | "pro")}
-                        disabled={updating === u.user_id}
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="free">Free</SelectItem>
-                          <SelectItem value="pro">Pro</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">{u.plan}</Badge>
                     </TableCell>
                     <TableCell>{u.searches_today}</TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        className="w-24"
-                        defaultValue={u.leads_remaining}
-                        onBlur={(e) => handleLeadsChange(u.user_id, parseInt(e.target.value, 10))}
-                        min={0}
-                      />
-                    </TableCell>
+                    <TableCell>{u.leads_remaining}</TableCell>
+                    <TableCell>{u.leads_count}</TableCell>
+                    <TableCell className="text-muted-foreground">{u.last_search_date || "Never"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(u.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="ghost" onClick={() => setSelectedUser(u)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -249,6 +267,16 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
+
+      <UserDetailModal
+        user={selectedUser}
+        open={!!selectedUser}
+        onOpenChange={(open) => !open && setSelectedUser(null)}
+        onPlanChange={handlePlanChange}
+        onLeadsChange={handleLeadsChange}
+        onResetSearches={handleResetSearches}
+        updating={updating}
+      />
     </div>
   );
 };
