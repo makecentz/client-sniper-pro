@@ -186,6 +186,8 @@ const Admin = () => {
 
         <AdminStatsCards totalUsers={totalUsers} proUsers={proUsers} freeUsers={freeUsers} totalLeads={totalLeads} activeToday={activeToday} totalSearches={totalSearches} />
 
+        <RevenueAnalytics users={users} />
+
         <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
