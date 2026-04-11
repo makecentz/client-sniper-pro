@@ -188,8 +188,13 @@ const Admin = () => {
         <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <CardTitle>Users ({totalUsers})</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
               <Input placeholder="Search by email..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} className="max-w-xs" />
+              <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
+            </div>
             </div>
           </CardHeader>
           <CardContent>
