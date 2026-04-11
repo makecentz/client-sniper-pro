@@ -59,7 +59,29 @@ export function RevenueAnalytics({ users, proPriceMonthly = 49, onPriceChange, p
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Revenue & Subscription Analytics</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">Revenue & Subscription Analytics</h2>
+        {onPriceChange && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Pro price/mo:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-muted-foreground">$</span>
+              <Input
+                type="number" min="0" step="1"
+                value={proPriceInput ?? String(proPriceMonthly)}
+                onChange={(e) => onPriceInputChange?.(e.target.value)}
+                className="w-20 h-8"
+              />
+            </div>
+            <Button size="sm" variant="outline" disabled={savingPrice} onClick={() => {
+              const val = parseFloat(proPriceInput ?? "");
+              if (!isNaN(val) && val >= 0) onPriceChange(val);
+            }}>
+              <Save className="mr-1 h-3 w-3" />{savingPrice ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-border/50">
