@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModal";
+import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 
 interface WebhookRow {
   id: string;
@@ -184,6 +185,8 @@ const Admin = () => {
         </div>
 
         <AdminStatsCards totalUsers={totalUsers} proUsers={proUsers} freeUsers={freeUsers} totalLeads={totalLeads} activeToday={activeToday} totalSearches={totalSearches} />
+
+        <RevenueAnalytics users={users} />
 
         <Card className="border-border/50">
           <CardHeader>
