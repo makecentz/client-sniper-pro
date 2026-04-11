@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
-import { DollarSign, TrendingUp, Users } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DollarSign, TrendingUp, Users, Save } from "lucide-react";
 
 interface UserRow {
   user_id: string;
@@ -13,11 +15,13 @@ interface UserRow {
 interface RevenueAnalyticsProps {
   users: UserRow[];
   proPriceMonthly?: number;
+  onPriceChange?: (newPrice: number) => void;
+  proPriceInput?: string;
+  onPriceInputChange?: (val: string) => void;
+  savingPrice?: boolean;
 }
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))"];
-
-export function RevenueAnalytics({ users, proPriceMonthly = 49 }: RevenueAnalyticsProps) {
+export function RevenueAnalytics({ users, proPriceMonthly = 49, onPriceChange, proPriceInput, onPriceInputChange, savingPrice }: RevenueAnalyticsProps) {
   const proUsers = users.filter((u) => u.plan === "pro");
   const freeUsers = users.filter((u) => u.plan === "free");
   const mrr = proUsers.length * proPriceMonthly;
