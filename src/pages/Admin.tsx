@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
@@ -28,6 +28,9 @@ const Admin = () => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUserRow | null>(null);
+  const [proPrice, setProPrice] = useState(49);
+  const [proPriceInput, setProPriceInput] = useState("49");
+  const [savingPrice, setSavingPrice] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
@@ -102,14 +105,20 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("user_id, display_name, created_at"),
         supabase.from("leads").select("user_id"),
         supabase.from("company_settings").select("*"),
+        supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
       ]);
+
+      if (settingsRes.data?.value) {
+        const p = parseFloat(settingsRes.data.value);
+        if (!isNaN(p)) { setProPrice(p); setProPriceInput(String(p)); }
+      }
 
       const usageRows = usageRes.data || [];
       const profileRows = profilesRes.data || [];
@@ -186,7 +195,13 @@ const Admin = () => {
 
         <AdminStatsCards totalUsers={totalUsers} proUsers={proUsers} freeUsers={freeUsers} totalLeads={totalLeads} activeToday={activeToday} totalSearches={totalSearches} />
 
-        <RevenueAnalytics users={users} />
+        <RevenueAnalytics users={users} proPriceMonthly={proPrice} onPriceChange={async (newPrice) => {
+          setSavingPrice(true);
+          const { error } = await supabase.from("admin_settings").update({ value: String(newPrice) }).eq("key", "pro_price_monthly");
+          if (error) { toast.error("Failed to save price"); }
+          else { setProPrice(newPrice); setProPriceInput(String(newPrice)); toast.success(`Pro price updated to $${newPrice}/mo`); }
+          setSavingPrice(false);
+        }} proPriceInput={proPriceInput} onPriceInputChange={setProPriceInput} savingPrice={savingPrice} />
 
         <Card className="border-border/50">
           <CardHeader>

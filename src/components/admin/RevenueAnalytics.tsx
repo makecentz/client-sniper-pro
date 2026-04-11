@@ -1,8 +1,10 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, LineChart, Line, ResponsiveContainer } from "recharts";
-import { DollarSign, TrendingUp, Users } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DollarSign, TrendingUp, Users, Save } from "lucide-react";
 
 interface UserRow {
   user_id: string;
@@ -13,11 +15,13 @@ interface UserRow {
 interface RevenueAnalyticsProps {
   users: UserRow[];
   proPriceMonthly?: number;
+  onPriceChange?: (newPrice: number) => void;
+  proPriceInput?: string;
+  onPriceInputChange?: (val: string) => void;
+  savingPrice?: boolean;
 }
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))"];
-
-export function RevenueAnalytics({ users, proPriceMonthly = 49 }: RevenueAnalyticsProps) {
+export function RevenueAnalytics({ users, proPriceMonthly = 49, onPriceChange, proPriceInput, onPriceInputChange, savingPrice }: RevenueAnalyticsProps) {
   const proUsers = users.filter((u) => u.plan === "pro");
   const freeUsers = users.filter((u) => u.plan === "free");
   const mrr = proUsers.length * proPriceMonthly;
@@ -55,7 +59,29 @@ export function RevenueAnalytics({ users, proPriceMonthly = 49 }: RevenueAnalyti
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">Revenue & Subscription Analytics</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">Revenue & Subscription Analytics</h2>
+        {onPriceChange && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Pro price/mo:</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm text-muted-foreground">$</span>
+              <Input
+                type="number" min="0" step="1"
+                value={proPriceInput ?? String(proPriceMonthly)}
+                onChange={(e) => onPriceInputChange?.(e.target.value)}
+                className="w-20 h-8"
+              />
+            </div>
+            <Button size="sm" variant="outline" disabled={savingPrice} onClick={() => {
+              const val = parseFloat(proPriceInput ?? "");
+              if (!isNaN(val) && val >= 0) onPriceChange(val);
+            }}>
+              <Save className="mr-1 h-3 w-3" />{savingPrice ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="border-border/50">
