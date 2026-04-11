@@ -152,6 +152,25 @@ const Admin = () => {
   const totalSearches = users.reduce((sum, u) => sum + u.searches_today, 0);
   const filteredUsers = users.filter((u) => u.email.toLowerCase().includes(searchFilter.toLowerCase()));
 
+  const handleExportCSV = () => {
+    const headers = ["Email", "Plan", "Searches Today", "Leads Remaining", "Leads Saved", "Last Active", "Joined", "Business Name", "Website", "Phone", "Company Email", "Dev Price", "Current Deal"];
+    const rows = users.map((u) => [
+      u.email, u.plan, u.searches_today, u.leads_remaining, u.leads_count,
+      u.last_search_date || "Never", new Date(u.created_at).toLocaleDateString(),
+      u.company?.business_name || "", u.company?.website_url || "", u.company?.phone || "",
+      u.company?.email || "", u.company?.website_dev_price || "", u.company?.current_deal || "",
+    ]);
+    const csv = [headers, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exported");
+  };
+
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
