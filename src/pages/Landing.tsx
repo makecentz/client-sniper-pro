@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
-import heroBg from "@/assets/hero-bg.png";
 import pricingBg from "@/assets/pricing-bg.png";
+
+const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
 const features = [
   { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry using Outscraper." },
@@ -16,6 +19,19 @@ const features = [
 
 const Landing = () => {
   const { user } = useAuth();
+  const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
+
+  useEffect(() => {
+    supabase
+      .from("admin_settings")
+      .select("value")
+      .eq("key", "hero_video_url")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setHeroVideoUrl(data.value);
+      });
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Nav */}
@@ -45,9 +61,14 @@ const Landing = () => {
 
       {/* Hero */}
       <section className="relative overflow-hidden px-6 py-24 text-center">
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-15"
-          style={{ backgroundImage: `url(${heroBg})` }}
+        <video
+          key={heroVideoUrl}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 h-full w-full object-cover opacity-15"
+          src={heroVideoUrl}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
         <div className="relative z-10 mx-auto max-w-3xl">
