@@ -108,7 +108,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
@@ -116,7 +116,13 @@ const Admin = () => {
         supabase.from("leads").select("user_id"),
         supabase.from("company_settings").select("*"),
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
+        supabase.from("admin_settings").select("*").eq("key", "hero_video_url").maybeSingle(),
       ]);
+
+      if (videoRes.data?.value) {
+        setHeroVideoUrl(videoRes.data.value);
+        setHeroVideoInput(videoRes.data.value);
+      }
 
       if (settingsRes.data?.value) {
         const p = parseFloat(settingsRes.data.value);
@@ -206,7 +212,56 @@ const Admin = () => {
           setSavingPrice(false);
         }} proPriceInput={proPriceInput} onPriceInputChange={setProPriceInput} savingPrice={savingPrice} />
 
+        {/* Hero Video Settings */}
         <Card className="border-border/50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Video className="h-5 w-5 text-primary" />
+              <CardTitle>Hero Video</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Set the background video URL for the landing page hero section. Leave empty to use the default video.
+            </p>
+            <div className="flex items-center gap-3">
+              <Input
+                placeholder="https://example.com/video.mp4"
+                value={heroVideoInput}
+                onChange={(e) => setHeroVideoInput(e.target.value)}
+                className="max-w-lg"
+              />
+              <Button
+                disabled={savingVideo}
+                onClick={async () => {
+                  setSavingVideo(true);
+                  const value = heroVideoInput.trim();
+                  if (heroVideoUrl) {
+                    const { error } = await supabase.from("admin_settings").update({ value }).eq("key", "hero_video_url");
+                    if (error) {
+                      const { error: e2 } = await supabase.from("admin_settings").insert({ key: "hero_video_url", value });
+                      if (e2) toast.error("Failed to save video URL");
+                      else { setHeroVideoUrl(value); toast.success("Hero video URL saved"); }
+                    } else { setHeroVideoUrl(value); toast.success("Hero video URL saved"); }
+                  } else {
+                    const { error } = await supabase.from("admin_settings").insert({ key: "hero_video_url", value });
+                    if (error) toast.error("Failed to save video URL");
+                    else { setHeroVideoUrl(value); toast.success("Hero video URL saved"); }
+                  }
+                  setSavingVideo(false);
+                }}
+              >
+                {savingVideo ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
+            {heroVideoUrl && (
+              <div className="mt-4 rounded-lg border border-border/50 overflow-hidden max-w-md">
+                <video src={heroVideoUrl} className="w-full h-auto" muted autoPlay loop playsInline />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
           <CardHeader>
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
