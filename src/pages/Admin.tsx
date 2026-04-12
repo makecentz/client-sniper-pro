@@ -262,6 +262,7 @@ const Admin = () => {
           </CardContent>
         </Card>
 
+        <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
