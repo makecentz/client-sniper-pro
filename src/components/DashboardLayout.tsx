@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Settings, LogOut } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function DashboardLayout() {
   const { user, logout } = useAuth();
@@ -34,7 +35,8 @@ export function DashboardLayout() {
         <div className="flex-1 flex flex-col">
           <header className="h-12 flex items-center border-b border-border/50 px-4">
             <SidebarTrigger />
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1">
+              <ThemeToggle />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 rounded-full p-0">

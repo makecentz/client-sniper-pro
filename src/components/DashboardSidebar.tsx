@@ -1,4 +1,5 @@
 import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -116,6 +117,7 @@ export function DashboardSidebar() {
             </NavLink>
           </Button>
         )}
+        <ThemeToggle showLabel={!collapsed} />
         <Button variant="ghost" size="sm" className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground" onClick={handleLogout}>
           <LogOut className="h-4 w-4" />
           {!collapsed && <span>Log out</span>}
