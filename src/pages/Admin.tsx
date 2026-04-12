@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
@@ -31,6 +31,9 @@ const Admin = () => {
   const [proPrice, setProPrice] = useState(49);
   const [proPriceInput, setProPriceInput] = useState("49");
   const [savingPrice, setSavingPrice] = useState(false);
+  const [heroVideoUrl, setHeroVideoUrl] = useState("");
+  const [heroVideoInput, setHeroVideoInput] = useState("");
+  const [savingVideo, setSavingVideo] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
