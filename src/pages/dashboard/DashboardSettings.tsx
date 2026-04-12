@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save } from "lucide-react";
+import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
@@ -24,6 +25,7 @@ const STRIPE_PRICES = {
 
 const DashboardSettings = () => {
   const { user, refreshSubscription } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [loadingCheckout, setLoadingCheckout] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
 
@@ -226,6 +228,36 @@ const DashboardSettings = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Appearance */}
+      <Card className="border-border/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sun className="h-5 w-5 text-primary" /> Appearance
+          </CardTitle>
+          <CardDescription>Choose your preferred theme</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-3">
+            <Button
+              variant={theme === "light" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTheme("light")}
+              className="gap-2"
+            >
+              <Sun className="h-4 w-4" /> Light
+            </Button>
+            <Button
+              variant={theme === "dark" ? "default" : "outline"}
+              size="sm"
+              onClick={() => setTheme("dark")}
+              className="gap-2"
+            >
+              <Moon className="h-4 w-4" /> Dark
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Upgrade / Purchase section */}
       <div className="grid gap-6 md:grid-cols-2">
