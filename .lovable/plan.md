@@ -1,54 +1,50 @@
 
 
-## Plan: Editable User Data & Company Settings in Admin Modal
+## Plan: Light/Dark Theme Toggle
 
-### What Changes
+### Approach
+Use Tailwind's `darkMode: ["class"]` (already configured) with a `.dark` class on `<html>`. Store preference in localStorage. Add a theme toggle in both the dashboard settings page and the sidebar.
 
-**1. Database Migration** — Add admin UPDATE/DELETE policies
-- `company_settings`: admin UPDATE and DELETE policies
-- `profiles`: admin UPDATE policy  
-- `usage_tracking`: admin DELETE policy (to fully remove a user's data)
-- `leads`: admin DELETE policy (to allow wiping user leads)
+### Changes
 
-**2. `src/components/admin/UserDetailModal.tsx`** — Major expansion
-- **Profile section**: Make `display_name` editable via Input
-- **Company Settings section**: Convert all 6 fields (business_name, website_url, phone, email, website_dev_price, current_deal) from read-only text to editable Inputs/Textarea, with a "Save" button
-- **Danger Zone section**: Add a "Delete User Data" button (with confirmation dialog) that wipes the user's leads, company settings, usage tracking, and profile — effectively removing all their data
-
-**3. `src/pages/Admin.tsx`** — Wire new callbacks
-- Add `onSaveCompany(userId, companyData)` handler that upserts to `company_settings`
-- Add `onSaveProfile(userId, displayName)` handler that updates `profiles`
-- Add `onDeleteUserData(userId)` handler that deletes from `leads`, `company_settings`, `usage_tracking`, and `profiles`
-- Pass these as props to `UserDetailModal`
-
-### Modal Layout (updated)
+**1. `src/index.css`** — Add light theme variables
+- Current `:root` becomes the dark theme (move under `.dark`)
+- New `:root` gets light theme values: white background, dark text, light grays for cards/borders, same blue primary
 
 ```text
-┌─────────────────────────────────────┐
-│ user@email.com  [Pro]               │
-├─────────────────────────────────────┤
-│ Profile                             │
-│  Display Name: [___________] [Save] │
-│  User ID: xxx   Joined: date       │
-│  Last Active: date  Leads: 5       │
-├─────────────────────────────────────┤
-│ Usage & Quota (unchanged)           │
-│  Plan / Leads Remaining / Searches  │
-├─────────────────────────────────────┤
-│ Company Settings                    │
-│  Business Name: [________]          │
-│  Website: [________]                │
-│  Phone: [________]  Email: [______] │
-│  Dev Price: [________]              │
-│  Current Deal: [________________]   │
-│  [Save Company Info]                │
-├─────────────────────────────────────┤
-│ Danger Zone                         │
-│  [Delete All User Data]             │
-└─────────────────────────────────────┘
+:root (light)                    .dark (current values)
+--background: 0 0% 100%         --background: 222 47% 6%
+--foreground: 222 47% 11%       --foreground: 210 40% 98%
+--card: 0 0% 99%                --card: 222 47% 8%
+--border: 220 13% 91%           --border: 217 33% 17%
+--muted: 220 14% 96%            --muted: 217 33% 14%
+--primary: 217 91% 60% (same)   --primary: 217 91% 60%
+... etc
 ```
 
+**2. `src/hooks/use-theme.ts`** — New hook
+- Reads/writes `theme` in localStorage (`"light"` | `"dark"`)
+- Defaults to `"dark"` (current behavior)
+- Toggles `.dark` class on `document.documentElement`
+- Returns `{ theme, setTheme, toggleTheme }`
+
+**3. `src/components/ThemeToggle.tsx`** — New component
+- Sun/Moon icon button using the hook
+- Compact, reusable
+
+**4. `src/components/DashboardSidebar.tsx`** — Add toggle
+- Add `ThemeToggle` in the sidebar footer, before the logout button
+
+**5. `src/components/DashboardLayout.tsx`** — Add toggle in header
+- Add `ThemeToggle` next to the avatar dropdown for quick access
+
+**6. `src/pages/dashboard/DashboardSettings.tsx`** — Add theme section
+- New card "Appearance" with light/dark selection (radio or switch)
+
+**7. `src/pages/Admin.tsx`** — Theme toggle available via header (no extra work needed since layout already covers it)
+
 ### Scope
-- 1 migration (4 new RLS policies)
-- 2 files updated (UserDetailModal.tsx, Admin.tsx)
+- 0 migrations
+- 2 new files (hook + component)
+- 4 files updated (index.css, DashboardSidebar, DashboardLayout, DashboardSettings)
 
