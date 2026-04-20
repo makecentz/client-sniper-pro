@@ -12,8 +12,12 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,10 +25,8 @@ const Login = () => {
     try {
       await login(email, password);
       toast.success("Logged in successfully");
-      navigate("/dashboard");
     } catch {
       toast.error("Invalid credentials");
-    } finally {
       setLoading(false);
     }
   };
