@@ -10,12 +10,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
-  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search
+  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2
 } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import OfferBuilderModal from "@/components/OfferBuilderModal";
 
 interface LeadNote {
   id: string;
