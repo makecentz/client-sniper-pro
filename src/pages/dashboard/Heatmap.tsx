@@ -67,12 +67,6 @@ const Heatmap = () => {
     });
   }, []);
 
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: apiKey || "",
-    libraries: mapLibraries,
-    id: "google-map-script",
-  });
-
   const handleSearch = async () => {
     if (!/^\d{5}$/.test(zip)) {
       toast({ title: "Invalid ZIP", description: "Enter a 5-digit US ZIP code.", variant: "destructive" });
