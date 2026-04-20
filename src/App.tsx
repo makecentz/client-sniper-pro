@@ -19,6 +19,9 @@ import DashboardSettings from "./pages/dashboard/DashboardSettings";
 import Heatmap from "./pages/dashboard/Heatmap";
 import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CustomerSupport from "./pages/CustomerSupport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +39,9 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/support" element={<CustomerSupport />} />
             <Route
               path="/dashboard"
               element={
