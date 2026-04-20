@@ -16,6 +16,7 @@ import SearchPanel from "./pages/dashboard/SearchPanel";
 import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
+import Heatmap from "./pages/dashboard/Heatmap";
 import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="search" element={<SearchPanel />} />
               <Route path="leads" element={<SavedLeads />} />
               <Route path="ai-tools" element={<AITools />} />
+              <Route path="heatmap" element={<Heatmap />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
             <Route path="/onboarding" element={<ProtectedRoute key="onboarding"><Onboarding /></ProtectedRoute>} />
