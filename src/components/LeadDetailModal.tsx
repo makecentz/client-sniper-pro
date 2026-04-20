@@ -586,6 +586,11 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <OfferBuilderModal
+        lead={lead}
+        open={offerBuilderOpen}
+        onOpenChange={setOfferBuilderOpen}
+      />
     </Dialog>
   );
 };
