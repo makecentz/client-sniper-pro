@@ -545,13 +545,20 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
             )}
 
             <div className="border-t border-border/30 pt-4">
+              <Button
+                onClick={() => setOfferBuilderOpen(true)}
+                className="w-full mb-3 bg-gradient-to-r from-primary to-primary/80"
+                size="lg"
+              >
+                <Wand2 className="mr-2 h-4 w-4" />
+                Open Offer Builder (Before/After + Letter)
+              </Button>
               <p className="text-sm font-medium mb-3">Generate New Content</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { type: "email", icon: Mail, label: "Email" },
                   { type: "dm", icon: MessageCircle, label: "DM" },
                   { type: "sms", icon: Smartphone, label: "SMS" },
-                  { type: "offer", icon: FileText, label: "Offer" },
                   { type: "proposal", icon: FileText, label: "Proposal" },
                   { type: "audit", icon: Sparkles, label: "Audit" },
                   { type: "video_script", icon: Video, label: "Video Script" },
