@@ -37,8 +37,10 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
     return <Navigate to="/login" replace />;
   }
 
-  // Redirect to onboarding if no settings and trying to access dashboard
-  if (!hasSettings && location.pathname.startsWith("/dashboard")) {
+  // Redirect to onboarding only if no settings AND user hasn't dismissed it before.
+  // Once dismissed (skipped or completed), it never auto-opens again — user can finish in Settings.
+  const dismissed = user ? localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1" : false;
+  if (!hasSettings && !dismissed && location.pathname.startsWith("/dashboard")) {
     return <Navigate to="/onboarding" replace />;
   }
 
