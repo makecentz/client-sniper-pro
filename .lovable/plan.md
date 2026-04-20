@@ -1,50 +1,37 @@
 
+## Plan: Add Legal Pages and Footer Links
 
-## Plan: Light/Dark Theme Toggle
+### Overview
+Add Terms of Service, Privacy Policy, and Customer Support pages with standard legal verbage, and update the footer to include navigation links to these pages.
 
-### Approach
-Use Tailwind's `darkMode: ["class"]` (already configured) with a `.dark` class on `<html>`. Store preference in localStorage. Add a theme toggle in both the dashboard settings page and the sidebar.
+### Contact Information to Use
+- **Address:** 5429 Baltimore Ave, Philadelphia PA 19143
+- **Email:** ecomexpertsllc@gmail.com
+- **Phone:** (267) 652-1512
 
-### Changes
+### Implementation Steps
 
-**1. `src/index.css`** — Add light theme variables
-- Current `:root` becomes the dark theme (move under `.dark`)
-- New `:root` gets light theme values: white background, dark text, light grays for cards/borders, same blue primary
+1. **Create Terms of Service Page** (`src/pages/TermsOfService.tsx`)
+   - Standard SaaS terms covering: acceptance of terms, service description, user accounts, acceptable use, intellectual property, limitation of liability, termination, governing law, and contact information
 
-```text
-:root (light)                    .dark (current values)
---background: 0 0% 100%         --background: 222 47% 6%
---foreground: 222 47% 11%       --foreground: 210 40% 98%
---card: 0 0% 99%                --card: 222 47% 8%
---border: 220 13% 91%           --border: 217 33% 17%
---muted: 220 14% 96%            --muted: 217 33% 14%
---primary: 217 91% 60% (same)   --primary: 217 91% 60%
-... etc
-```
+2. **Create Privacy Policy Page** (`src/pages/PrivacyPolicy.tsx`)
+   - Standard privacy policy covering: information collection, use of data, data sharing, cookies, data security, user rights, third-party services, and contact information
 
-**2. `src/hooks/use-theme.ts`** — New hook
-- Reads/writes `theme` in localStorage (`"light"` | `"dark"`)
-- Defaults to `"dark"` (current behavior)
-- Toggles `.dark` class on `document.documentElement`
-- Returns `{ theme, setTheme, toggleTheme }`
+3. **Create Customer Support Page** (`src/pages/CustomerSupport.tsx`)
+   - Support page with: contact methods (email, phone, address), FAQ section, response time expectations, and support hours
 
-**3. `src/components/ThemeToggle.tsx`** — New component
-- Sun/Moon icon button using the hook
-- Compact, reusable
+4. **Add Routes** (`src/App.tsx`)
+   - Add routes for `/terms`, `/privacy`, and `/support`
 
-**4. `src/components/DashboardSidebar.tsx`** — Add toggle
-- Add `ThemeToggle` in the sidebar footer, before the logout button
+5. **Update Footer** (`src/pages/Landing.tsx`)
+   - Replace simple copyright footer with a proper footer containing:
+     - Logo
+     - Navigation links (Terms, Privacy, Support)
+     - Contact information (address, email, phone)
+     - Copyright notice
 
-**5. `src/components/DashboardLayout.tsx`** — Add toggle in header
-- Add `ThemeToggle` next to the avatar dropdown for quick access
-
-**6. `src/pages/dashboard/DashboardSettings.tsx`** — Add theme section
-- New card "Appearance" with light/dark selection (radio or switch)
-
-**7. `src/pages/Admin.tsx`** — Theme toggle available via header (no extra work needed since layout already covers it)
-
-### Scope
-- 0 migrations
-- 2 new files (hook + component)
-- 4 files updated (index.css, DashboardSidebar, DashboardLayout, DashboardSettings)
-
+### Technical Details
+- Use existing shadcn/ui components (Card, Button, Separator)
+- Match existing dark theme styling
+- Ensure responsive layout
+- Use React Router Link components for navigation
