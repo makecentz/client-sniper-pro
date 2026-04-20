@@ -179,12 +179,41 @@ const Landing = () => {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 px-6 py-8">
-        <div className="mx-auto flex max-w-7xl items-center justify-between text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <img src={logo} alt="ClientHunter AI" className="h-12 w-auto" />
+      <footer className="border-t border-border/50 px-6 py-12">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div>
+              <img src={logo} alt="ClientHunter AI" className="mb-3 h-12 w-auto" />
+              <p className="text-sm text-muted-foreground">
+                Find website clients in minutes with AI-powered lead generation.
+              </p>
+            </div>
+            <div>
+              <h4 className="mb-3 text-sm font-semibold text-foreground">Legal</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/terms" className="hover:text-primary">Terms of Service</Link></li>
+                <li><Link to="/privacy" className="hover:text-primary">Privacy Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-3 text-sm font-semibold text-foreground">Support</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link to="/support" className="hover:text-primary">Help Center</Link></li>
+                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">Email Us</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-3 text-sm font-semibold text-foreground">Contact</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>5429 Baltimore Ave<br />Philadelphia, PA 19143</li>
+                <li><a href="tel:+12676521512" className="hover:text-primary">(267) 652-1512</a></li>
+                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">ecomexpertsllc@gmail.com</a></li>
+              </ul>
+            </div>
           </div>
-          <span>© 2026 All rights reserved.</span>
+          <div className="mt-10 border-t border-border/50 pt-6 text-center text-sm text-muted-foreground">
+            © 2026 EcomExperts LLC. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>
