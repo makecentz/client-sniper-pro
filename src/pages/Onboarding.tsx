@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,14 @@ import { Rocket } from "lucide-react";
 const Onboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // If user already saw/dismissed onboarding, never show it again — they can finish in Settings.
+  useEffect(() => {
+    if (user && localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1") {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate]);
+
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     business_name: "",
