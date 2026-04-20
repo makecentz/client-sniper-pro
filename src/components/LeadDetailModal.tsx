@@ -56,6 +56,7 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
   const [scraping, setScraping] = useState(false);
+  const [offerBuilderOpen, setOfferBuilderOpen] = useState(false);
   useEffect(() => {
     if (!lead || !open) return;
     setEditForm({
