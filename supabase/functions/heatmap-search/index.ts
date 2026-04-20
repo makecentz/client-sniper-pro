@@ -88,23 +88,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Geocode the ZIP via Google Geocoding API
-    const mapsKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
-    if (!mapsKey) {
-      return new Response(JSON.stringify({ error: "Maps key not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-    const geoRes = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${zip_code}&components=country:US&key=${mapsKey}`);
-    const geoData = await geoRes.json();
-    if (geoData.status !== "OK" || !geoData.results?.[0]) {
+    // Geocode the ZIP via Zippopotam.us (free, no key required)
+    let lat: number;
+    let lng: number;
+    try {
+      const geoRes = await fetch(`https://api.zippopotam.us/us/${zip_code}`);
+      if (!geoRes.ok) {
+        return new Response(JSON.stringify({ error: "Could not geocode ZIP code" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const geoData = await geoRes.json();
+      const place = geoData?.places?.[0];
+      if (!place) {
+        return new Response(JSON.stringify({ error: "Could not geocode ZIP code" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      lat = parseFloat(place.latitude);
+      lng = parseFloat(place.longitude);
+    } catch (e) {
+      console.error("Geocode error:", e);
       return new Response(JSON.stringify({ error: "Could not geocode ZIP code" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { lat, lng } = geoData.results[0].geometry.location;
 
     // Outscraper search
     const OUTSCRAPER_API_KEY = Deno.env.get("OUTSCRAPER_API_KEY");
