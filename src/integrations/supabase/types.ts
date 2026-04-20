@@ -263,6 +263,7 @@ export type Database = {
           score: string | null
           scraped_emails: string[]
           scraped_phones: string[]
+          screenshot_captured_at: string | null
           screenshot_url: string | null
           state: string | null
           status: string
@@ -302,6 +303,7 @@ export type Database = {
           score?: string | null
           scraped_emails?: string[]
           scraped_phones?: string[]
+          screenshot_captured_at?: string | null
           screenshot_url?: string | null
           state?: string | null
           status?: string
@@ -341,6 +343,7 @@ export type Database = {
           score?: string | null
           scraped_emails?: string[]
           scraped_phones?: string[]
+          screenshot_captured_at?: string | null
           screenshot_url?: string | null
           state?: string | null
           status?: string
@@ -388,6 +391,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      offer_mockups: {
+        Row: {
+          after_image_url: string | null
+          before_image_url: string | null
+          created_at: string
+          design_brief: string | null
+          id: string
+          image_prompt: string | null
+          lead_id: string
+          offer_premium: string | null
+          offer_short: string | null
+          offer_standard: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          after_image_url?: string | null
+          before_image_url?: string | null
+          created_at?: string
+          design_brief?: string | null
+          id?: string
+          image_prompt?: string | null
+          lead_id: string
+          offer_premium?: string | null
+          offer_short?: string | null
+          offer_standard?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          after_image_url?: string | null
+          before_image_url?: string | null
+          created_at?: string
+          design_brief?: string | null
+          id?: string
+          image_prompt?: string | null
+          lead_id?: string
+          offer_premium?: string | null
+          offer_short?: string | null
+          offer_standard?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       offers: {
         Row: {
