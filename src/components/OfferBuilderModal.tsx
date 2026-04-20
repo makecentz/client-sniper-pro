@@ -293,9 +293,10 @@ ${mockup.after_image_url ? `Concept preview: ${mockup.after_image_url}` : ""}`.t
               )}
               <Button size="sm" variant="ghost" onClick={async () => {
                 if (!mockup) return;
-                const field = `offer_${variant}` as const;
-                const { error } = await supabase.from("offer_mockups").update({ [field]: editedOffer }).eq("id", mockup.id);
-                if (error) toast.error("Save failed"); else { toast.success("Offer saved"); setMockup({ ...mockup, [field]: editedOffer }); }
+                const updates: Record<string, string> = {};
+                updates[`offer_${variant}`] = editedOffer;
+                const { error } = await supabase.from("offer_mockups").update(updates as never).eq("id", mockup.id);
+                if (error) toast.error("Save failed"); else { toast.success("Offer saved"); setMockup({ ...mockup, [`offer_${variant}`]: editedOffer }); }
               }}>
                 <Save className="mr-1 h-3 w-3" /> Save Edits
               </Button>
