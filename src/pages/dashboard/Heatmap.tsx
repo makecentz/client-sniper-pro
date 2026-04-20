@@ -381,4 +381,99 @@ const Heatmap = () => {
   );
 };
 
+interface MapViewProps {
+  apiKey: string;
+  center: { lat: number; lng: number } | null;
+  leads: HeatmapLead[];
+  selectedIdx: number | null;
+  setSelectedIdx: (i: number | null) => void;
+  mapOptions: google.maps.MapOptions;
+  mapRef: React.MutableRefObject<google.maps.Map | null>;
+  pinColor: (l: "high" | "medium" | "low") => string;
+  handleViewLead: (l: HeatmapLead) => void;
+  handleSave: (l: HeatmapLead) => void;
+  savingKey: string | null;
+  savedKeys: Set<string>;
+  leadKey: (l: HeatmapLead) => string;
+}
+
+const MapView = ({
+  apiKey, center, leads, selectedIdx, setSelectedIdx, mapOptions, mapRef,
+  pinColor, handleViewLead, handleSave, savingKey, savedKeys, leadKey,
+}: MapViewProps) => {
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: apiKey,
+    libraries: mapLibraries,
+    id: "google-map-script",
+  });
+
+  if (loadError) {
+    return (
+      <div className="flex h-full items-center justify-center text-destructive p-4 text-center">
+        Failed to load Google Maps. Check API key restrictions.
+      </div>
+    );
+  }
+  if (!isLoaded) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={center || { lat: 39.8283, lng: -98.5795 }}
+      zoom={center ? 12 : 4}
+      options={mapOptions}
+      onLoad={(map) => { mapRef.current = map; }}
+    >
+      {leads.map((lead, idx) => (
+        lead.latitude != null && lead.longitude != null && (
+          <Marker
+            key={`${lead.business_name}-${idx}`}
+            position={{ lat: lead.latitude, lng: lead.longitude }}
+            onClick={() => setSelectedIdx(idx)}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 10,
+              fillColor: pinColor(lead.priority_label),
+              fillOpacity: 0.95,
+              strokeColor: "#fff",
+              strokeWeight: 2,
+            }}
+          />
+        )
+      ))}
+      {selectedIdx != null && leads[selectedIdx]?.latitude != null && leads[selectedIdx]?.longitude != null && (
+        <InfoWindow
+          position={{ lat: leads[selectedIdx].latitude!, lng: leads[selectedIdx].longitude! }}
+          onCloseClick={() => setSelectedIdx(null)}
+        >
+          <div className="text-foreground bg-background p-1 min-w-[200px] max-w-[260px] space-y-1.5">
+            <div className="font-semibold text-sm">{leads[selectedIdx].business_name}</div>
+            {leads[selectedIdx].category && <div className="text-xs text-muted-foreground">{leads[selectedIdx].category}</div>}
+            <div className="text-xs">{leads[selectedIdx].address}</div>
+            {leads[selectedIdx].phone && <div className="text-xs flex items-center gap-1"><Phone className="h-3 w-3" />{leads[selectedIdx].phone}</div>}
+            {leads[selectedIdx].rating != null && (
+              <div className="text-xs flex items-center gap-1"><Star className="h-3 w-3 text-warning" />{leads[selectedIdx].rating} ({leads[selectedIdx].reviews ?? 0})</div>
+            )}
+            <Badge variant="outline" className="text-[10px]">Score {leads[selectedIdx].priority_score}</Badge>
+            <div className="flex gap-1 pt-1">
+              <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleViewLead(leads[selectedIdx])}>
+                <ExternalLink className="h-3 w-3 mr-1" /> View
+              </Button>
+              <Button size="sm" className="h-7 text-xs" onClick={() => handleSave(leads[selectedIdx])} disabled={savingKey === leadKey(leads[selectedIdx]) || savedKeys.has(leadKey(leads[selectedIdx]))}>
+                <Bookmark className="h-3 w-3 mr-1" /> {savedKeys.has(leadKey(leads[selectedIdx])) ? "Saved" : "Save"}
+              </Button>
+            </div>
+          </div>
+        </InfoWindow>
+      )}
+    </GoogleMap>
+  );
+};
+
 export default Heatmap;
