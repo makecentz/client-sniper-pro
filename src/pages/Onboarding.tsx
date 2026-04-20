@@ -47,13 +47,16 @@ const Onboarding = () => {
       toast({ title: "Error saving settings", description: error.message, variant: "destructive" });
       return;
     }
+    localStorage.setItem(`onboarding_dismissed_${user.id}`, "1");
     toast({ title: "Welcome aboard!", description: "Your company info has been saved." });
     navigate("/dashboard", { replace: true });
   };
 
   const handleSkip = async () => {
     if (!user) return;
-    // Insert an empty row so onboarding check passes
+    // Mark as dismissed locally so it never auto-opens again. User can complete in Settings.
+    localStorage.setItem(`onboarding_dismissed_${user.id}`, "1");
+    // Best-effort: insert empty row so server-side check also passes.
     await supabase.from("company_settings").upsert(
       { user_id: user.id },
       { onConflict: "user_id" }
