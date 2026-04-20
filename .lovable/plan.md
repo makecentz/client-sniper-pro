@@ -1,37 +1,40 @@
 
-## Plan: Add Legal Pages and Footer Links
 
-### Overview
-Add Terms of Service, Privacy Policy, and Customer Support pages with standard legal verbage, and update the footer to include navigation links to these pages.
+## Fix: Login redirects to /login instead of /dashboard
 
-### Contact Information to Use
-- **Address:** 5429 Baltimore Ave, Philadelphia PA 19143
-- **Email:** ecomexpertsllc@gmail.com
-- **Phone:** (267) 652-1512
+### Root cause
+`Login.tsx` calls `navigate("/dashboard")` immediately after `signInWithPassword` resolves. But `AuthContext` defers setting the user via `setTimeout(..., 0)` inside `onAuthStateChange`. So when `ProtectedRoute` mounts, `user` is still `null` and `isLoading` may already be `false`, causing an immediate bounce back to `/login`.
 
-### Implementation Steps
+### The fix
 
-1. **Create Terms of Service Page** (`src/pages/TermsOfService.tsx`)
-   - Standard SaaS terms covering: acceptance of terms, service description, user accounts, acceptable use, intellectual property, limitation of liability, termination, governing law, and contact information
+**Update `src/pages/Login.tsx`:**
+- Remove the manual `navigate("/dashboard")` call from `handleSubmit`.
+- Add a `useEffect` that watches `user` from `useAuth()` and navigates to `/dashboard` only once the auth context has actually populated the user.
+- Keep the success toast tied to the successful `signInWithPassword` call.
 
-2. **Create Privacy Policy Page** (`src/pages/PrivacyPolicy.tsx`)
-   - Standard privacy policy covering: information collection, use of data, data sharing, cookies, data security, user rights, third-party services, and contact information
+```tsx
+const { login, user } = useAuth();
 
-3. **Create Customer Support Page** (`src/pages/CustomerSupport.tsx`)
-   - Support page with: contact methods (email, phone, address), FAQ section, response time expectations, and support hours
+useEffect(() => {
+  if (user) navigate("/dashboard", { replace: true });
+}, [user, navigate]);
 
-4. **Add Routes** (`src/App.tsx`)
-   - Add routes for `/terms`, `/privacy`, and `/support`
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  try {
+    await login(email, password);
+    toast.success("Logged in successfully");
+    // navigation happens via useEffect once user is set
+  } catch {
+    toast.error("Invalid credentials");
+    setLoading(false);
+  }
+};
+```
 
-5. **Update Footer** (`src/pages/Landing.tsx`)
-   - Replace simple copyright footer with a proper footer containing:
-     - Logo
-     - Navigation links (Terms, Privacy, Support)
-     - Contact information (address, email, phone)
-     - Copyright notice
+This guarantees `ProtectedRoute` sees a valid `user` when the dashboard route mounts, so it won't bounce back to `/login`.
 
-### Technical Details
-- Use existing shadcn/ui components (Card, Button, Separator)
-- Match existing dark theme styling
-- Ensure responsive layout
-- Use React Router Link components for navigation
+### Files changed
+- `src/pages/Login.tsx`
+
