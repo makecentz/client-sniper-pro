@@ -147,7 +147,7 @@ ${editedOffer}
 
 I put together a quick visual concept of how a redesigned ${lead.business_name} site could look — happy to share it on a quick call.
 
-${mockup.after_image_url ? `Concept preview: ${mockup.after_image_url}` : ""}`.trim()
+${mockup.after_image_url ? `Concept preview: [View Mockup](${mockup.after_image_url})` : ""}`.trim()
     : "";
 
   if (!lead) return null;
