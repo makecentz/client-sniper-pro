@@ -38,6 +38,10 @@ export interface Lead {
   contact_scraped_at: string | null;
   scraped_phones: string[];
   scraped_emails: string[];
+  // Reputation / quality fields
+  rating: number | null;
+  review_count: number | null;
+  quality_score: number | null;
 }
 
 // Search result type (before saving to DB)
@@ -47,7 +51,7 @@ export interface SearchResult {
   address: string;
   website: string | null;
   email: string | null;
-  score: "hot" | "needs_upgrade";
+  score: "hot" | "needs_upgrade" | "no_website" | "outdated" | "weak_site" | "low_reputation";
   has_website: boolean;
   website_error: boolean;
   no_ssl: boolean;
@@ -56,4 +60,7 @@ export interface SearchResult {
   website_issues: string[];
   priority_score: number;
   priority_label: string;
+  rating: number | null;
+  review_count: number;
+  quality_score: number;
 }
