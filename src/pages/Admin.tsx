@@ -265,10 +265,45 @@ const Admin = () => {
               </Button>
             </div>
             {heroVideoUrl && (
-              <div className="mt-4 rounded-lg border border-border/50 overflow-hidden max-w-md">
-                <video src={heroVideoUrl} className="w-full h-auto" muted autoPlay loop playsInline />
+              <div className="mt-4 rounded-lg border border-border/50 overflow-hidden max-w-md relative bg-background">
+                <video src={heroVideoUrl} className="w-full h-auto" muted autoPlay loop playsInline style={{ opacity: heroVideoOpacity / 100 }} />
               </div>
             )}
+
+            <div className="mt-6 max-w-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Video Opacity</label>
+                <span className="text-sm tabular-nums text-muted-foreground">{heroVideoOpacity}%</span>
+              </div>
+              <Slider
+                value={[heroVideoOpacity]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(v) => setHeroVideoOpacity(v[0])}
+              />
+              <Button
+                size="sm"
+                disabled={savingOpacity}
+                onClick={async () => {
+                  setSavingOpacity(true);
+                  const value = String(heroVideoOpacity);
+                  const { data: existing } = await supabase
+                    .from("admin_settings")
+                    .select("id")
+                    .eq("key", "hero_video_opacity")
+                    .maybeSingle();
+                  const { error } = existing
+                    ? await supabase.from("admin_settings").update({ value }).eq("key", "hero_video_opacity")
+                    : await supabase.from("admin_settings").insert({ key: "hero_video_opacity", value });
+                  if (error) toast.error("Failed to save opacity");
+                  else toast.success(`Opacity saved (${heroVideoOpacity}%)`);
+                  setSavingOpacity(false);
+                }}
+              >
+                {savingOpacity ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Opacity"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

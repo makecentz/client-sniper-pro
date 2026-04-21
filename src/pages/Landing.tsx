@@ -21,15 +21,22 @@ const features = [
 const Landing = () => {
   const { user } = useAuth();
   const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
+  const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
 
   useEffect(() => {
     supabase
       .from("admin_settings")
-      .select("value")
-      .eq("key", "hero_video_url")
-      .maybeSingle()
+      .select("key,value")
+      .in("key", ["hero_video_url", "hero_video_opacity"])
       .then(({ data }) => {
-        if (data?.value) setHeroVideoUrl(data.value);
+        if (!data) return;
+        for (const row of data) {
+          if (row.key === "hero_video_url" && row.value) setHeroVideoUrl(row.value);
+          if (row.key === "hero_video_opacity" && row.value) {
+            const o = parseInt(row.value, 10);
+            if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)) / 100);
+          }
+        }
       });
   }, []);
 
@@ -68,7 +75,8 @@ const Landing = () => {
           loop
           muted
           playsInline
-          className="absolute inset-0 h-full w-full object-cover opacity-50"
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ opacity: heroVideoOpacity }}
           src={heroVideoUrl}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
