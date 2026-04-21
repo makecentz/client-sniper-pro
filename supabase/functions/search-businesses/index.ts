@@ -5,26 +5,28 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-async function checkWebsite(url: string): Promise<{
+interface WebsiteCheck {
   website_error: boolean;
   no_ssl: boolean;
   not_mobile_friendly: boolean;
   outdated_copyright: boolean;
+  copyright_year: number | null;
   website_issues: string[];
-}> {
+}
+
+async function checkWebsite(url: string): Promise<WebsiteCheck> {
   const issues: string[] = [];
   let websiteError = false;
   let noSsl = false;
   let notMobileFriendly = false;
   let outdatedCopyright = false;
+  let copyrightYear: number | null = null;
 
-  // Check SSL
   if (url.startsWith("http://")) {
     noSsl = true;
     issues.push("No SSL");
   }
 
-  // Fetch the website with timeout
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
@@ -42,13 +44,11 @@ async function checkWebsite(url: string): Promise<{
 
     const html = await res.text();
 
-    // Check mobile friendliness
     if (!html.toLowerCase().includes('name="viewport"') && !html.toLowerCase().includes("name='viewport'")) {
       notMobileFriendly = true;
       issues.push("Not Mobile Friendly");
     }
 
-    // Check copyright year
     const copyrightRegex = /(?:©|&copy;|copyright)\s*(\d{4})/gi;
     const years: number[] = [];
     let match;
@@ -56,10 +56,10 @@ async function checkWebsite(url: string): Promise<{
       years.push(parseInt(match[1]));
     }
     if (years.length > 0) {
-      const maxYear = Math.max(...years);
-      if (maxYear < 2022) {
+      copyrightYear = Math.max(...years);
+      if (copyrightYear < 2022) {
         outdatedCopyright = true;
-        issues.push(`Outdated Copyright (${maxYear})`);
+        issues.push(`Outdated Copyright (${copyrightYear})`);
       }
     }
   } catch {
@@ -67,7 +67,55 @@ async function checkWebsite(url: string): Promise<{
     issues.push("Website Unreachable");
   }
 
-  return { website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly, outdated_copyright: outdatedCopyright, website_issues: issues };
+  return { website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly, outdated_copyright: outdatedCopyright, copyright_year: copyrightYear, website_issues: issues };
+}
+
+interface ScoreInput {
+  has_website: boolean;
+  website_error: boolean;
+  no_ssl: boolean;
+  not_mobile_friendly: boolean;
+  outdated_copyright: boolean;
+  copyright_year: number | null;
+  rating: number | null;
+  review_count: number;
+}
+
+function computeQualityScore(s: ScoreInput) {
+  let penalty = 0;
+  const reasons: string[] = [];
+
+  if (!s.has_website) { penalty += 60; reasons.push("No website"); }
+  if (s.website_error) { penalty += 25; reasons.push("Website unreachable / error"); }
+  if (s.no_ssl) { penalty += 20; reasons.push("No SSL"); }
+  if (s.not_mobile_friendly) { penalty += 20; reasons.push("Not mobile friendly"); }
+  if (s.outdated_copyright) {
+    if (s.copyright_year !== null && s.copyright_year < 2019) {
+      penalty += 25; reasons.push(`Very outdated copyright (${s.copyright_year})`);
+    } else {
+      penalty += 15; reasons.push(`Outdated copyright (${s.copyright_year ?? "unknown"})`);
+    }
+  }
+  if (s.rating !== null) {
+    if (s.rating < 3.5) { penalty += 20; reasons.push(`Low rating (${s.rating})`); }
+    else if (s.rating < 4.0) { penalty += 10; reasons.push(`Below-average rating (${s.rating})`); }
+  }
+  if (s.review_count < 3) { penalty += 15; reasons.push(`Very few reviews (${s.review_count})`); }
+  else if (s.review_count < 10) { penalty += 10; reasons.push(`Few reviews (${s.review_count})`); }
+
+  const quality_score = Math.max(0, 100 - penalty);
+  const priority_score = 100 - quality_score;
+  const priority_label = priority_score >= 60 ? "high" : priority_score >= 30 ? "medium" : "low";
+
+  let score: string;
+  if (priority_score >= 70) score = "hot";
+  else if (!s.has_website) score = "no_website";
+  else if (s.outdated_copyright) score = "outdated";
+  else if (s.website_error || s.no_ssl || s.not_mobile_friendly) score = "weak_site";
+  else if ((s.rating !== null && s.rating < 4.0) || s.review_count < 10) score = "low_reputation";
+  else score = "needs_upgrade";
+
+  return { quality_score, priority_score, priority_label, score, reasons };
 }
 
 Deno.serve(async (req) => {
@@ -89,7 +137,6 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Verify user
     const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -103,30 +150,25 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Parse and validate input
     const body = await req.json();
     const { city, state, business_type, zip_code } = body;
 
     if (!city || typeof city !== "string" || city.length > 100) {
       return new Response(JSON.stringify({ error: "Invalid city" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (!business_type || typeof business_type !== "string" || business_type.length > 100) {
       return new Response(JSON.stringify({ error: "Invalid business type" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     if (zip_code && (typeof zip_code !== "string" || !/^\d{1,10}$/.test(zip_code))) {
       return new Response(JSON.stringify({ error: "Invalid zip code" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Check usage limits
     const { data: usage } = await supabase
       .from("usage_tracking")
       .select("searches_today, leads_remaining, plan, last_search_date")
@@ -135,8 +177,7 @@ Deno.serve(async (req) => {
 
     if (!usage) {
       return new Response(JSON.stringify({ error: "Usage record not found" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -146,78 +187,72 @@ Deno.serve(async (req) => {
 
     if (searchesToday >= maxSearches) {
       return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches." }), {
-        status: 429,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Call Outscraper API
     const OUTSCRAPER_API_KEY = Deno.env.get("OUTSCRAPER_API_KEY");
     if (!OUTSCRAPER_API_KEY) {
       return new Response(JSON.stringify({ error: "Outscraper API key not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const query = `${business_type} in ${city}${state ? `, ${state}` : ""}${zip_code ? ` ${zip_code}` : ""}`;
-    const limit = usage.plan === "pro" ? 20 : 5;
+    // Pull more results than we display so we can filter by quality_score
+    const limit = usage.plan === "pro" ? 40 : 15;
 
     const outscraper = await fetch(
       `https://api.app.outscraper.com/maps/search-v3?query=${encodeURIComponent(query)}&limit=${limit}&async=false`,
-      {
-        headers: { "X-API-KEY": OUTSCRAPER_API_KEY },
-      }
+      { headers: { "X-API-KEY": OUTSCRAPER_API_KEY } }
     );
 
     if (!outscraper.ok) {
       const errText = await outscraper.text();
       console.error("Outscraper error:", outscraper.status, errText);
       return new Response(JSON.stringify({ error: "Search service error" }), {
-        status: 502,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const outsData = await outscraper.json();
     const rawResults = outsData?.data?.[0] || [];
 
-    // Process each result with website quality checks in parallel
     const leadPromises = rawResults.map(async (r: any) => {
       const website = r.site || null;
       const hasWebsite = !!website && website !== "";
       const email = r.email || (r.emails && r.emails.length > 0 ? r.emails[0] : null) || null;
+      const rating: number | null = typeof r.rating === "number" ? r.rating : null;
+      const reviewCount: number = typeof r.reviews === "number" ? r.reviews : 0;
 
-      let websiteCheck = {
+      let websiteCheck: WebsiteCheck = {
         website_error: false,
         no_ssl: false,
         not_mobile_friendly: false,
         outdated_copyright: false,
-        website_issues: [] as string[],
+        copyright_year: null,
+        website_issues: [],
       };
 
       if (hasWebsite) {
         websiteCheck = await checkWebsite(website);
       }
 
-      const isHot = !hasWebsite || websiteCheck.website_error || websiteCheck.no_ssl || websiteCheck.not_mobile_friendly || websiteCheck.outdated_copyright;
+      const { quality_score, priority_score, priority_label, score, reasons } = computeQualityScore({
+        has_website: hasWebsite,
+        website_error: websiteCheck.website_error,
+        no_ssl: websiteCheck.no_ssl,
+        not_mobile_friendly: websiteCheck.not_mobile_friendly,
+        outdated_copyright: websiteCheck.outdated_copyright,
+        copyright_year: websiteCheck.copyright_year,
+        rating,
+        review_count: reviewCount,
+      });
+
       const allIssues = [...websiteCheck.website_issues];
       if (!hasWebsite) allIssues.unshift("No Website");
-
-      // Compute priority score (1-100)
-      let priorityScore = 0;
-      if (!hasWebsite) priorityScore += 40;
-      if (websiteCheck.website_error) priorityScore += 15;
-      if (websiteCheck.no_ssl) priorityScore += 15;
-      if (websiteCheck.not_mobile_friendly) priorityScore += 15;
-      if (websiteCheck.outdated_copyright) priorityScore += 15;
-      // Boost for businesses with reviews but weak web presence
-      const rating = r.rating || 0;
-      const reviewCount = r.reviews || 0;
-      if (rating >= 4.0 && reviewCount >= 10 && isHot) priorityScore += 20;
-      priorityScore = Math.min(priorityScore, 100);
-
-      const priorityLabel = priorityScore >= 60 ? "high" : priorityScore >= 30 ? "medium" : "low";
+      if (rating !== null && rating < 4.0) allIssues.push(`Low rating (${rating})`);
+      if (reviewCount < 10) allIssues.push(`Few reviews (${reviewCount})`);
 
       return {
         business_name: r.name || "Unknown Business",
@@ -231,32 +266,34 @@ Deno.serve(async (req) => {
         not_mobile_friendly: websiteCheck.not_mobile_friendly,
         outdated_copyright: websiteCheck.outdated_copyright,
         website_issues: allIssues,
-        score: isHot ? "hot" : "needs_upgrade",
-        priority_score: priorityScore,
-        priority_label: priorityLabel,
+        score,
+        priority_score,
+        priority_label,
+        rating,
+        review_count: reviewCount,
+        quality_score,
+        quality_reasons: reasons,
       };
     });
 
-    const leads = await Promise.all(leadPromises);
+    const allLeads = await Promise.all(leadPromises);
+    // Surface only actionable leads (quality_score <= 90)
+    const leads = allLeads
+      .filter((l) => l.quality_score <= 90)
+      .sort((a, b) => a.quality_score - b.quality_score);
 
-    // Update usage tracking
     await supabase
       .from("usage_tracking")
-      .update({
-        searches_today: searchesToday + 1,
-        last_search_date: today,
-      })
+      .update({ searches_today: searchesToday + 1, last_search_date: today })
       .eq("user_id", user.id);
 
-    return new Response(JSON.stringify({ leads }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    return new Response(JSON.stringify({ leads, total_scanned: allLeads.length }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("search-businesses error:", err);
     return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });

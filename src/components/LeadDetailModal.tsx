@@ -10,7 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
-  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2
+  User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2,
+  Star, MessageSquare, TrendingDown
 } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
@@ -288,6 +289,21 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
               {lead.website_error && <Badge variant="outline" className="text-destructive border-destructive/30 text-xs"><AlertTriangle className="mr-1 h-3 w-3" /> Site Error</Badge>}
               {lead.not_mobile_friendly && <Badge variant="outline" className="text-warning border-warning/30 text-xs"><Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly</Badge>}
               {lead.outdated_copyright && <Badge variant="outline" className="text-warning border-warning/30 text-xs"><CalendarX className="mr-1 h-3 w-3" /> Outdated ©</Badge>}
+              {typeof lead.rating === "number" && (
+                <Badge variant="outline" className={`text-xs ${lead.rating < 4.0 ? "text-warning border-warning/30" : "text-muted-foreground border-border"}`}>
+                  <Star className="mr-1 h-3 w-3" /> {lead.rating}
+                </Badge>
+              )}
+              {typeof lead.review_count === "number" && (
+                <Badge variant="outline" className={`text-xs ${lead.review_count < 10 ? "text-warning border-warning/30" : "text-muted-foreground border-border"}`}>
+                  <MessageSquare className="mr-1 h-3 w-3" /> {lead.review_count} reviews
+                </Badge>
+              )}
+              {typeof lead.quality_score === "number" && (
+                <Badge variant="outline" className={`text-xs ${lead.quality_score <= 50 ? "text-hot border-hot/30" : lead.quality_score <= 75 ? "text-warning border-warning/30" : "text-muted-foreground border-border"}`}>
+                  <TrendingDown className="mr-1 h-3 w-3" /> Quality {lead.quality_score}/100
+                </Badge>
+              )}
             </div>
 
             {lead.tags && lead.tags.length > 0 && (

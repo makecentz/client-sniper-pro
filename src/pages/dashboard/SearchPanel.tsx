@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2 } from "lucide-react";
+import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown } from "lucide-react";
 import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
@@ -114,6 +114,9 @@ const SearchPanel = () => {
         screenshot_url: screenshots[idx] || null,
         priority_score: result.priority_score || 0,
         priority_label: result.priority_label || "low",
+        rating: result.rating,
+        review_count: result.review_count ?? 0,
+        quality_score: result.quality_score ?? 100,
       });
       if (error) throw error;
       await refreshLeadCount();
@@ -324,13 +327,39 @@ const SearchPanel = () => {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-foreground">{result.business_name}</span>
-                      {result.score === "hot" ? (
+                      {result.score === "hot" && (
                         <Badge className="bg-hot/10 text-hot border-hot/20">
                           <Flame className="mr-1 h-3 w-3" /> Hot Lead
                         </Badge>
-                      ) : (
+                      )}
+                      {result.score === "no_website" && (
+                        <Badge className="bg-hot/10 text-hot border-hot/20">
+                          <Globe className="mr-1 h-3 w-3" /> No Website
+                        </Badge>
+                      )}
+                      {result.score === "outdated" && (
+                        <Badge className="bg-warning/10 text-warning border-warning/20">
+                          <CalendarX className="mr-1 h-3 w-3" /> Outdated Site
+                        </Badge>
+                      )}
+                      {result.score === "weak_site" && (
+                        <Badge className="bg-warning/10 text-warning border-warning/20">
+                          <AlertTriangle className="mr-1 h-3 w-3" /> Weak Site
+                        </Badge>
+                      )}
+                      {result.score === "low_reputation" && (
+                        <Badge className="bg-warning/10 text-warning border-warning/20">
+                          <TrendingDown className="mr-1 h-3 w-3" /> Low Reputation
+                        </Badge>
+                      )}
+                      {result.score === "needs_upgrade" && (
                         <Badge className="bg-warning/10 text-warning border-warning/20">
                           <AlertTriangle className="mr-1 h-3 w-3" /> Needs Upgrade
+                        </Badge>
+                      )}
+                      {typeof result.quality_score === "number" && (
+                        <Badge variant="outline" className="text-xs">
+                          Quality {result.quality_score}/100
                         </Badge>
                       )}
                     </div>
@@ -342,6 +371,12 @@ const SearchPanel = () => {
                         <a href={result.website.startsWith("http") ? result.website : `https://${result.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Globe className="h-3.5 w-3.5" /> {result.website}</a>
                       ) : (
                         <span className="flex items-center gap-1 text-hot"><Globe className="h-3.5 w-3.5" /> No website</span>
+                      )}
+                      {result.rating !== null && result.rating !== undefined && (
+                        <span className="flex items-center gap-1"><Star className="h-3.5 w-3.5" /> {result.rating}</span>
+                      )}
+                      {typeof result.review_count === "number" && (
+                        <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {result.review_count} reviews</span>
                       )}
                     </div>
                     {result.website_issues && result.website_issues.length > 0 && (

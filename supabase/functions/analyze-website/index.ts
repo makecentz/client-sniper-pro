@@ -159,13 +159,24 @@ Deno.serve(async (req) => {
     console.log("Analyzing website:", formattedUrl);
     const result = await checkWebsite(formattedUrl);
 
-    let priorityScore = 0;
-    if (result.website_error) priorityScore += 15;
-    if (result.no_ssl) priorityScore += 15;
-    if (result.not_mobile_friendly) priorityScore += 15;
-    if (result.outdated_copyright) priorityScore += 15;
-    priorityScore = Math.min(priorityScore, 100);
+    // Quality score model (matches search-businesses)
+    let penalty = 0;
+    if (result.website_error) penalty += 25;
+    if (result.no_ssl) penalty += 20;
+    if (result.not_mobile_friendly) penalty += 20;
+    if (result.outdated_copyright) {
+      penalty += (result.copyright_year !== null && result.copyright_year < 2019) ? 25 : 15;
+    }
+    const quality_score = Math.max(0, 100 - penalty);
+    const priorityScore = 100 - quality_score;
     const priorityLabel = priorityScore >= 60 ? "high" : priorityScore >= 30 ? "medium" : "low";
+    const scoreLabel = priorityScore >= 70
+      ? "hot"
+      : result.outdated_copyright
+        ? "outdated"
+        : (result.website_error || result.no_ssl || result.not_mobile_friendly)
+          ? "weak_site"
+          : "needs_upgrade";
 
     const updateData: Record<string, unknown> = {
       website: formattedUrl,
@@ -175,9 +186,10 @@ Deno.serve(async (req) => {
       not_mobile_friendly: result.not_mobile_friendly,
       outdated_copyright: result.outdated_copyright,
       website_issues: result.website_issues,
-      score: "needs_upgrade",
+      score: scoreLabel,
       priority_score: priorityScore,
       priority_label: priorityLabel,
+      quality_score,
     };
 
     // Populate scraped fields if available
