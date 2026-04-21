@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Eye, Download, Settings, Video } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
@@ -35,6 +36,8 @@ const Admin = () => {
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [heroVideoInput, setHeroVideoInput] = useState("");
   const [savingVideo, setSavingVideo] = useState(false);
+  const [heroVideoOpacity, setHeroVideoOpacity] = useState(50);
+  const [savingOpacity, setSavingOpacity] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
@@ -109,7 +112,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
@@ -118,11 +121,17 @@ const Admin = () => {
         supabase.from("company_settings").select("*"),
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_url").maybeSingle(),
+        supabase.from("admin_settings").select("*").eq("key", "hero_video_opacity").maybeSingle(),
       ]);
 
       if (videoRes.data?.value) {
         setHeroVideoUrl(videoRes.data.value);
         setHeroVideoInput(videoRes.data.value);
+      }
+
+      if (opacityRes.data?.value) {
+        const o = parseInt(opacityRes.data.value, 10);
+        if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)));
       }
 
       if (settingsRes.data?.value) {
