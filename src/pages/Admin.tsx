@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModal";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
+import { SocialProofManager } from "@/components/admin/SocialProofManager";
 
 interface WebhookRow {
   id: string;
@@ -261,6 +262,8 @@ const Admin = () => {
             )}
           </CardContent>
         </Card>
+
+        <SocialProofManager />
 
         <Card className="border-border/50">
           <CardHeader>
