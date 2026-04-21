@@ -58,8 +58,12 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [generatedContent, setGeneratedContent] = useState("");
   const [scraping, setScraping] = useState(false);
   const [offerBuilderOpen, setOfferBuilderOpen] = useState(false);
+  const [screenshotError, setScreenshotError] = useState(false);
+  const [screenshotKey, setScreenshotKey] = useState(0);
   useEffect(() => {
     if (!lead || !open) return;
+    setScreenshotError(false);
+    setScreenshotKey((k) => k + 1);
     setEditForm({
       business_name: lead.business_name,
       phone: lead.phone,
