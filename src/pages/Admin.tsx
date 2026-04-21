@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, Eye, Download, Settings, Video } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
@@ -35,6 +36,8 @@ const Admin = () => {
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [heroVideoInput, setHeroVideoInput] = useState("");
   const [savingVideo, setSavingVideo] = useState(false);
+  const [heroVideoOpacity, setHeroVideoOpacity] = useState(50);
+  const [savingOpacity, setSavingOpacity] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
@@ -109,7 +112,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
@@ -118,11 +121,17 @@ const Admin = () => {
         supabase.from("company_settings").select("*"),
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_url").maybeSingle(),
+        supabase.from("admin_settings").select("*").eq("key", "hero_video_opacity").maybeSingle(),
       ]);
 
       if (videoRes.data?.value) {
         setHeroVideoUrl(videoRes.data.value);
         setHeroVideoInput(videoRes.data.value);
+      }
+
+      if (opacityRes.data?.value) {
+        const o = parseInt(opacityRes.data.value, 10);
+        if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)));
       }
 
       if (settingsRes.data?.value) {
@@ -256,10 +265,45 @@ const Admin = () => {
               </Button>
             </div>
             {heroVideoUrl && (
-              <div className="mt-4 rounded-lg border border-border/50 overflow-hidden max-w-md">
-                <video src={heroVideoUrl} className="w-full h-auto" muted autoPlay loop playsInline />
+              <div className="mt-4 rounded-lg border border-border/50 overflow-hidden max-w-md relative bg-background">
+                <video src={heroVideoUrl} className="w-full h-auto" muted autoPlay loop playsInline style={{ opacity: heroVideoOpacity / 100 }} />
               </div>
             )}
+
+            <div className="mt-6 max-w-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-foreground">Video Opacity</label>
+                <span className="text-sm tabular-nums text-muted-foreground">{heroVideoOpacity}%</span>
+              </div>
+              <Slider
+                value={[heroVideoOpacity]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(v) => setHeroVideoOpacity(v[0])}
+              />
+              <Button
+                size="sm"
+                disabled={savingOpacity}
+                onClick={async () => {
+                  setSavingOpacity(true);
+                  const value = String(heroVideoOpacity);
+                  const { data: existing } = await supabase
+                    .from("admin_settings")
+                    .select("id")
+                    .eq("key", "hero_video_opacity")
+                    .maybeSingle();
+                  const { error } = existing
+                    ? await supabase.from("admin_settings").update({ value }).eq("key", "hero_video_opacity")
+                    : await supabase.from("admin_settings").insert({ key: "hero_video_opacity", value });
+                  if (error) toast.error("Failed to save opacity");
+                  else toast.success(`Opacity saved (${heroVideoOpacity}%)`);
+                  setSavingOpacity(false);
+                }}
+              >
+                {savingOpacity ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Opacity"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
