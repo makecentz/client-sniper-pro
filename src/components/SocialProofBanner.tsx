@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { X, TrendingUp } from "lucide-react";
+import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import socialProofIcon from "@/assets/social-proof-icon.png";
 
 type Settings = {
   enabled: boolean;
@@ -164,8 +165,8 @@ export const SocialProofBanner = () => {
       )}
       style={{ boxShadow: "0 0 24px hsl(var(--primary) / 0.25), 0 8px 30px rgba(0,0,0,0.4)" }}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-        <TrendingUp className="h-4 w-4" />
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <img src={socialProofIcon} alt="" className="h-10 w-10 object-contain" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium leading-snug truncate">{message}</p>
