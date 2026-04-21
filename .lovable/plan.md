@@ -1,65 +1,40 @@
 
 
-## Plan: Expand Search to Include Businesses With Underperforming Websites
+## Fix: Search not returning businesses *with* websites
 
-### Goal
-Currently the search treats "no website" as the primary signal for a hot lead. Expand the logic so businesses **with** websites are also surfaced when their overall quality score is **90 or less** — meaning outdated copyright, missing SSL, not mobile friendly, low Google review rating, or low review count.
+### Root cause
+Outscraper's `maps/search-v3` endpoint returns Google Maps results, which are heavily skewed toward businesses **with** websites. But our query `"barbershop in Philadelphia, PA"` with `limit=40` is returning a list where the businesses without websites happen to dominate the top results — and our score model penalizes them so heavily (−60) that they outrank everything else.
 
-### Changes
+Looking more carefully at `search-businesses/index.ts`:
 
-**1. Update `supabase/functions/search-businesses/index.ts`**
+1. **Sorting**: `leads.sort((a, b) => a.quality_score - b.quality_score)` puts the *worst* score first — i.e. all the no-website businesses (score 40) bubble to the top, pushing weak-website ones (score 60–90) off the visible part of the list.
+2. **No SSL false positive**: the `if (url.startsWith("http://"))` check fires *before* we follow redirects. Most modern sites are listed by Outscraper as `http://...` but redirect to `https`. We're flagging clean sites as "No SSL" — but more importantly, we never re-check the final URL.
+3. **Result limit on UI side**: `SearchPanel.tsx` likely renders all returned leads, but if 30+ no-website leads come back first, the user perceives "only no-website results."
+4. **Outscraper field name**: we read `r.site`, but Outscraper sometimes returns the website under `r.website` or `r.site` depending on the endpoint version. If `site` is undefined for businesses that DO have websites, every result gets flagged as no-website.
 
-Replace the binary "hot vs needs_upgrade" classification with a unified **quality score (0–100)** where lower = worse = better lead. Surface any business with `quality_score <= 90`.
+### The fix
 
-Quality score model (start at 100, subtract for each issue):
-- No website: −60
-- Website unreachable / HTTP error: −25
-- No SSL: −20
-- Not mobile friendly: −20
-- Outdated copyright (< 2022): −15 (older = larger penalty, e.g. < 2019: −25)
-- Google rating < 4.0: −10
-- Google rating < 3.5: −20
-- Review count < 10: −10
-- Review count < 3: −15
+**1. `supabase/functions/search-businesses/index.ts`**
 
-Then:
-- `quality_score = max(0, 100 - penalties)`
-- Lead is included in results if `quality_score <= 90`
-- Map to existing `priority_score` (invert): `priority_score = 100 - quality_score`
-- `priority_label`: high (≥60), medium (≥30), low (<30)
-- `score` field: `"no_website"` if no site, `"outdated"` if outdated copyright, `"weak_site"` for any other website issue, `"low_reputation"` if only review issues. Keep `"hot"` reserved for top-priority (priority_score ≥ 70).
+- Read website from multiple possible Outscraper fields: `r.site || r.website || r.url || null`. Log the first raw result so we can verify field names in logs.
+- Fix SSL check: only flag `no_ssl` if the **final** URL (after redirect) is still `http://`. Capture `res.url` from the fetch response.
+- Diversify results: instead of pure ascending sort by `quality_score`, interleave so users see a mix of no-website + weak-website leads. Concretely:
+  - Split into two buckets: `noWebsite` (score ≤ 40) and `weakWebsite` (41 ≤ score ≤ 90).
+  - Sort each bucket ascending by score.
+  - Interleave: first 5 from each, then alternate, so the result list always shows both categories.
+- Increase the Outscraper limit so we get more businesses *with* websites in the candidate pool: `limit = pro ? 60 : 20`.
+- Add `console.log` lines for: raw count, count with website, count without, final returned count by category. This makes future debugging trivial via edge function logs.
 
-Also:
-- Capture `rating` and `review_count` from Outscraper response and store them on the lead row (requires schema additions below).
-- Filter out businesses that score above 90 (i.e. clean modern sites with strong reviews) so users only see actionable leads.
+**2. Verification**
+After deploying, run a search for "barbershop in Philadelphia, PA" and check the edge function logs to confirm:
+- raw results contain businesses with websites
+- the website field is being read correctly
+- the final response includes both `no_website` and `weak_site`/`outdated`/`low_reputation` leads
 
-**2. Schema additions (migration)**
-
-Add to `leads` table:
-- `rating numeric` (nullable) — Google rating
-- `review_count integer` (nullable, default 0) — Google review count
-- `quality_score integer` (nullable, default 100) — overall lead quality (lower = better target)
-
-**3. Update `supabase/functions/analyze-website/index.ts`**
-
-Apply the same quality scoring model when a user manually analyzes a single URL, so the priority/score fields stay consistent across both entry points.
-
-**4. UI updates**
-
-- `src/pages/dashboard/SearchPanel.tsx`: Show rating + review count badge on each result card. Update the score badge legend to include the new score values (`outdated`, `weak_site`, `low_reputation`).
-- `src/components/LeadDetailModal.tsx`: Display rating, review count, and quality score breakdown so users understand *why* a lead was flagged.
-- `src/lib/mock-data.ts` / TypeScript Lead type: add the new fields.
-
-### Technical Notes
-- Outscraper already returns `rating` and `reviews` — we just need to persist them.
-- The existing `priority_score` logic stays compatible (still 0–100, higher = more urgent), so heatmap and existing sorts keep working.
-- No breaking changes to existing leads — new columns are nullable with sensible defaults.
-
-### Files Changed
+### Files changed
 - `supabase/functions/search-businesses/index.ts`
-- `supabase/functions/analyze-website/index.ts`
-- `src/pages/dashboard/SearchPanel.tsx`
-- `src/components/LeadDetailModal.tsx`
-- `src/lib/mock-data.ts`
-- New migration: add `rating`, `review_count`, `quality_score` columns to `leads`
+
+### Out of scope
+- No DB schema changes
+- No UI changes (the UI already renders whatever the function returns)
 
