@@ -86,7 +86,7 @@ export const SocialProofManager = () => {
     if (!settings) return;
     setSavingSettings(true);
     const { id, created_at, updated_at, ...payload } = settings;
-    const { error } = await supabase.from("social_proof_settings").update(payload).eq("id", 1);
+    const { error } = await supabase.from("social_proof_settings").update(payload as never).eq("id", 1);
     if (error) toast.error("Failed to save settings");
     else toast.success("Settings saved");
     setSavingSettings(false);
@@ -94,7 +94,7 @@ export const SocialProofManager = () => {
 
   // ============ EVENT HANDLERS ============
   const toggleEvent = async (id: string, field: "is_active" | "is_approved", value: boolean) => {
-    const { error } = await supabase.from("social_proof_events").update({ [field]: value }).eq("id", id);
+    const { error } = await supabase.from("social_proof_events").update({ [field]: value } as never).eq("id", id);
     if (error) return toast.error("Update failed");
     setEvents((prev) => prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)));
   };
