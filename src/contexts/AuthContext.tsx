@@ -65,6 +65,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkSubscription = useCallback(async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
       const { data, error } = await supabase.functions.invoke("check-subscription");
       if (error || !data) return;
       
@@ -73,7 +75,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const newSubscribed = data.subscribed;
         const newPlan = data.subscribed ? "pro" : prev.plan;
         const newEnd = data.subscription_end || null;
-        // Only create a new object if something actually changed
         if (prev.subscribed === newSubscribed && prev.plan === newPlan && prev.subscription_end === newEnd) {
           return prev;
         }
