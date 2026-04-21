@@ -22,11 +22,6 @@ async function checkWebsite(url: string): Promise<WebsiteCheck> {
   let outdatedCopyright = false;
   let copyrightYear: number | null = null;
 
-  if (url.startsWith("http://")) {
-    noSsl = true;
-    issues.push("No SSL");
-  }
-
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
@@ -36,6 +31,13 @@ async function checkWebsite(url: string): Promise<WebsiteCheck> {
       redirect: "follow",
     });
     clearTimeout(timeout);
+
+    // Only flag No SSL if the FINAL URL (after redirects) is still http://
+    const finalUrl = res.url || url;
+    if (finalUrl.startsWith("http://")) {
+      noSsl = true;
+      issues.push("No SSL");
+    }
 
     if (res.status >= 400) {
       websiteError = true;
@@ -199,8 +201,8 @@ Deno.serve(async (req) => {
     }
 
     const query = `${business_type} in ${city}${state ? `, ${state}` : ""}${zip_code ? ` ${zip_code}` : ""}`;
-    // Pull more results than we display so we can filter by quality_score
-    const limit = usage.plan === "pro" ? 40 : 15;
+    // Pull more results so we get a healthy mix of with-website + no-website businesses
+    const limit = usage.plan === "pro" ? 60 : 20;
 
     const outscraper = await fetch(
       `https://api.app.outscraper.com/maps/search-v3?query=${encodeURIComponent(query)}&limit=${limit}&async=false`,
@@ -218,9 +220,17 @@ Deno.serve(async (req) => {
     const outsData = await outscraper.json();
     const rawResults = outsData?.data?.[0] || [];
 
+    console.log(`[search-businesses] raw_count=${rawResults.length}`);
+    if (rawResults.length > 0) {
+      console.log(`[search-businesses] sample_keys=${JSON.stringify(Object.keys(rawResults[0]))}`);
+      console.log(`[search-businesses] sample_site_fields=${JSON.stringify({ site: rawResults[0].site, website: rawResults[0].website, url: rawResults[0].url })}`);
+    }
+
     const leadPromises = rawResults.map(async (r: any) => {
-      const website = r.site || null;
-      const hasWebsite = !!website && website !== "";
+      // Outscraper field naming varies — try common ones
+      const rawSite = r.site || r.website || r.url || r.domain || null;
+      const website = rawSite && typeof rawSite === "string" && rawSite.trim() !== "" ? rawSite.trim() : null;
+      const hasWebsite = !!website;
       const email = r.email || (r.emails && r.emails.length > 0 ? r.emails[0] : null) || null;
       const rating: number | null = typeof r.rating === "number" ? r.rating : null;
       const reviewCount: number = typeof r.reviews === "number" ? r.reviews : 0;
@@ -277,10 +287,31 @@ Deno.serve(async (req) => {
     });
 
     const allLeads = await Promise.all(leadPromises);
+
+    const withWebsiteCount = allLeads.filter((l) => l.has_website).length;
+    const withoutWebsiteCount = allLeads.length - withWebsiteCount;
+    console.log(`[search-businesses] processed=${allLeads.length} with_website=${withWebsiteCount} without_website=${withoutWebsiteCount}`);
+
     // Surface only actionable leads (quality_score <= 90)
-    const leads = allLeads
-      .filter((l) => l.quality_score <= 90)
+    const actionable = allLeads.filter((l) => l.quality_score <= 90);
+
+    // Split into buckets so the result feed mixes both lead types
+    const noWebsiteBucket = actionable
+      .filter((l) => !l.has_website)
       .sort((a, b) => a.quality_score - b.quality_score);
+    const weakWebsiteBucket = actionable
+      .filter((l) => l.has_website)
+      .sort((a, b) => a.quality_score - b.quality_score);
+
+    // Interleave: alternate between weak-website and no-website so users always see a mix
+    const leads: typeof actionable = [];
+    const maxLen = Math.max(noWebsiteBucket.length, weakWebsiteBucket.length);
+    for (let i = 0; i < maxLen; i++) {
+      if (weakWebsiteBucket[i]) leads.push(weakWebsiteBucket[i]);
+      if (noWebsiteBucket[i]) leads.push(noWebsiteBucket[i]);
+    }
+
+    console.log(`[search-businesses] returned=${leads.length} weak_website=${weakWebsiteBucket.length} no_website=${noWebsiteBucket.length}`);
 
     await supabase
       .from("usage_tracking")
