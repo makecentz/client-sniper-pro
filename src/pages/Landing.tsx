@@ -68,7 +68,7 @@ const Landing = () => {
           loop
           muted
           playsInline
-          className="absolute inset-0 h-full w-full object-cover opacity-15"
+          className="absolute inset-0 h-full w-full object-cover opacity-50"
           src={heroVideoUrl}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
