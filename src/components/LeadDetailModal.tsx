@@ -58,8 +58,12 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [generatedContent, setGeneratedContent] = useState("");
   const [scraping, setScraping] = useState(false);
   const [offerBuilderOpen, setOfferBuilderOpen] = useState(false);
+  const [screenshotError, setScreenshotError] = useState(false);
+  const [screenshotKey, setScreenshotKey] = useState(0);
   useEffect(() => {
     if (!lead || !open) return;
+    setScreenshotError(false);
+    setScreenshotKey((k) => k + 1);
     setEditForm({
       business_name: lead.business_name,
       phone: lead.phone,
@@ -315,8 +319,31 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
             )}
 
             {lead.screenshot_url && (
-              <div className="rounded-md overflow-hidden border border-border/30">
-                <img src={lead.screenshot_url} alt={`${lead.business_name} website`} className="w-full h-48 object-cover object-top" />
+              <div className="rounded-md overflow-hidden border border-border/30 relative">
+                {!screenshotError ? (
+                  <img
+                    key={screenshotKey}
+                    src={`${lead.screenshot_url}${screenshotKey > 0 ? `?retry=${screenshotKey}` : ""}`}
+                    alt={`${lead.business_name} website`}
+                    className="w-full h-48 object-cover object-top"
+                    onError={() => setScreenshotError(true)}
+                  />
+                ) : (
+                  <div className="w-full h-48 flex flex-col items-center justify-center gap-3 bg-muted/30 text-muted-foreground">
+                    <Globe className="h-10 w-10 opacity-40" />
+                    <p className="text-xs">Screenshot unavailable</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setScreenshotError(false);
+                        setScreenshotKey((k) => k + 1);
+                      }}
+                    >
+                      <Loader2 className="mr-1 h-3 w-3" /> Retry
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
