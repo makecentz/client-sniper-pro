@@ -540,6 +540,278 @@ export type Database = {
           },
         ]
       }
+      social_proof_city_pool: {
+        Row: {
+          active: boolean
+          city: string
+          created_at: string
+          display_label: string
+          id: string
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          city: string
+          created_at?: string
+          display_label: string
+          id?: string
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          city?: string
+          created_at?: string
+          display_label?: string
+          id?: string
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_events: {
+        Row: {
+          city: string
+          click_action: string | null
+          clicks: number
+          created_at: string
+          created_by: string | null
+          custom_message: string | null
+          display_location: string | null
+          end_date: string | null
+          event_type: string
+          first_name: string
+          id: string
+          impressions: number
+          is_active: boolean
+          is_approved: boolean
+          is_real_event: boolean
+          last_initial: string
+          linked_url: string | null
+          priority: number
+          rendered_message: string | null
+          source_type: string
+          start_date: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          click_action?: string | null
+          clicks?: number
+          created_at?: string
+          created_by?: string | null
+          custom_message?: string | null
+          display_location?: string | null
+          end_date?: string | null
+          event_type: string
+          first_name: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          is_approved?: boolean
+          is_real_event?: boolean
+          last_initial: string
+          linked_url?: string | null
+          priority?: number
+          rendered_message?: string | null
+          source_type: string
+          start_date?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          click_action?: string | null
+          clicks?: number
+          created_at?: string
+          created_by?: string | null
+          custom_message?: string | null
+          display_location?: string | null
+          end_date?: string | null
+          event_type?: string
+          first_name?: string
+          id?: string
+          impressions?: number
+          is_active?: boolean
+          is_approved?: boolean
+          is_real_event?: boolean
+          last_initial?: string
+          linked_url?: string | null
+          priority?: number
+          rendered_message?: string | null
+          source_type?: string
+          start_date?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_impressions_log: {
+        Row: {
+          clicked: boolean
+          clicked_at: string | null
+          event_id: string | null
+          id: string
+          session_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          clicked?: boolean
+          clicked_at?: string | null
+          event_id?: string | null
+          id?: string
+          session_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          clicked?: boolean
+          clicked_at?: string | null
+          event_id?: string | null
+          id?: string
+          session_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_proof_impressions_log_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "social_proof_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_proof_name_pool: {
+        Row: {
+          active: boolean
+          created_at: string
+          first_name: string
+          id: string
+          last_initial: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          first_name: string
+          id?: string
+          last_initial: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          first_name?: string
+          id?: string
+          last_initial?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_settings: {
+        Row: {
+          animation_type: string
+          auto_approve_demo_bookings: boolean
+          auto_approve_signups: boolean
+          auto_approve_trials: boolean
+          auto_expire_days: number | null
+          auto_rotate: boolean
+          click_action: string | null
+          created_at: string
+          delay_between_seconds: number
+          display_duration_seconds: number
+          enabled: boolean
+          id: number
+          loop_notifications: boolean
+          mobile_enabled: boolean
+          position: string
+          randomize_order: boolean
+          require_approval_client_wins: boolean
+          require_approval_closed_leads: boolean
+          show_city_state: boolean
+          show_close_button: boolean
+          source_mode: string
+          updated_at: string
+        }
+        Insert: {
+          animation_type?: string
+          auto_approve_demo_bookings?: boolean
+          auto_approve_signups?: boolean
+          auto_approve_trials?: boolean
+          auto_expire_days?: number | null
+          auto_rotate?: boolean
+          click_action?: string | null
+          created_at?: string
+          delay_between_seconds?: number
+          display_duration_seconds?: number
+          enabled?: boolean
+          id?: number
+          loop_notifications?: boolean
+          mobile_enabled?: boolean
+          position?: string
+          randomize_order?: boolean
+          require_approval_client_wins?: boolean
+          require_approval_closed_leads?: boolean
+          show_city_state?: boolean
+          show_close_button?: boolean
+          source_mode?: string
+          updated_at?: string
+        }
+        Update: {
+          animation_type?: string
+          auto_approve_demo_bookings?: boolean
+          auto_approve_signups?: boolean
+          auto_approve_trials?: boolean
+          auto_expire_days?: number | null
+          auto_rotate?: boolean
+          click_action?: string | null
+          created_at?: string
+          delay_between_seconds?: number
+          display_duration_seconds?: number
+          enabled?: boolean
+          id?: number
+          loop_notifications?: boolean
+          mobile_enabled?: boolean
+          position?: string
+          randomize_order?: boolean
+          require_approval_client_wins?: boolean
+          require_approval_closed_leads?: boolean
+          show_city_state?: boolean
+          show_close_button?: boolean
+          source_mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      social_proof_templates: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          is_default: boolean
+          template_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          is_default?: boolean
+          template_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_default?: boolean
+          template_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string

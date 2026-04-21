@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 import pricingBg from "@/assets/pricing-bg.png";
+import { SocialProofBanner } from "@/components/SocialProofBanner";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
@@ -216,6 +217,7 @@ const Landing = () => {
           </div>
         </div>
       </footer>
+      <SocialProofBanner />
     </div>
   );
 };
