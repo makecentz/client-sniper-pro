@@ -260,6 +260,9 @@ export type Database = {
           phone: string | null
           priority_label: string
           priority_score: number
+          quality_score: number | null
+          rating: number | null
+          review_count: number | null
           score: string | null
           scraped_emails: string[]
           scraped_phones: string[]
@@ -300,6 +303,9 @@ export type Database = {
           phone?: string | null
           priority_label?: string
           priority_score?: number
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
           score?: string | null
           scraped_emails?: string[]
           scraped_phones?: string[]
@@ -340,6 +346,9 @@ export type Database = {
           phone?: string | null
           priority_label?: string
           priority_score?: number
+          quality_score?: number | null
+          rating?: number | null
+          review_count?: number | null
           score?: string | null
           scraped_emails?: string[]
           scraped_phones?: string[]
