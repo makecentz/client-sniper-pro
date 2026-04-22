@@ -12,7 +12,7 @@ import { SocialProofBanner } from "@/components/SocialProofBanner";
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
 const features = [
-  { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry using Outscraper." },
+  { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry." },
   { icon: Target, title: "Score Leads", desc: "Auto-score leads: no website = 🔥 Hot Lead, weak site = ⚠️ Needs Upgrade." },
   { icon: MessageSquare, title: "AI Outreach", desc: "Generate personalized emails, DMs, and SMS with AI in seconds." },
   { icon: DollarSign, title: "Close Deals", desc: "Send offers and follow-ups directly from the platform." },
