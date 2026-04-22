@@ -27,7 +27,27 @@ interface HeatmapLead {
   priority_score: number;
   priority_label: "high" | "medium" | "low";
   distance_miles: number | null;
+  has_website: boolean;
+  website: string | null;
+  website_issues: string[];
+  score: string;
+  quality_score?: number;
+  no_ssl?: boolean;
+  not_mobile_friendly?: boolean;
+  outdated_copyright?: boolean;
+  website_error?: boolean;
 }
+
+const badgeForLead = (lead: HeatmapLead): { label: string; tone: "destructive" | "warning" } => {
+  if (!lead.has_website) return { label: "No Website", tone: "destructive" };
+  const issues = lead.website_issues || [];
+  const first = issues.find((i) => i !== "No Website");
+  if (first?.startsWith("No SSL")) return { label: "No SSL", tone: "warning" };
+  if (first?.startsWith("Outdated")) return { label: "Outdated", tone: "warning" };
+  if (first?.startsWith("Not Mobile")) return { label: "Not Mobile", tone: "warning" };
+  if (first?.startsWith("HTTP") || first?.startsWith("Website Unreachable")) return { label: "Site Error", tone: "warning" };
+  return { label: "Weak Site", tone: "warning" };
+};
 
 const RADIUS_OPTIONS = [1, 3, 5, 10, 25];
 const containerStyle = { width: "100%", height: "100%" };
@@ -100,7 +120,7 @@ const Heatmap = () => {
         mapRef.current.panTo(data.center);
       }
       if (!data.leads?.length) {
-        toast({ title: "No results", description: "No no-website businesses found in this area. Try a larger radius or another ZIP." });
+        toast({ title: "No results", description: "No qualifying leads found in this area. Try a larger radius or another ZIP." });
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -135,12 +155,19 @@ const Heatmap = () => {
         phone: lead.phone,
         address: lead.address,
         category: lead.category,
-        has_website: false,
-        website: null,
-        score: "hot",
+        has_website: lead.has_website,
+        website: lead.website,
+        score: lead.score || (lead.has_website ? "weak_site" : "no_website"),
         priority_score: lead.priority_score,
         priority_label: lead.priority_label,
-        website_issues: ["No Website"],
+        website_issues: lead.website_issues || [],
+        no_ssl: !!lead.no_ssl,
+        not_mobile_friendly: !!lead.not_mobile_friendly,
+        outdated_copyright: !!lead.outdated_copyright,
+        website_error: !!lead.website_error,
+        quality_score: lead.quality_score ?? null,
+        rating: lead.rating,
+        review_count: lead.reviews ?? 0,
         status: "new",
       });
       if (error) throw error;
@@ -175,12 +202,19 @@ const Heatmap = () => {
           phone: lead.phone,
           address: lead.address,
           category: lead.category,
-          has_website: false,
-          website: null,
-          score: "hot",
+          has_website: lead.has_website,
+          website: lead.website,
+          score: lead.score || (lead.has_website ? "weak_site" : "no_website"),
           priority_score: lead.priority_score,
           priority_label: lead.priority_label,
-          website_issues: ["No Website"],
+          website_issues: lead.website_issues || [],
+          no_ssl: !!lead.no_ssl,
+          not_mobile_friendly: !!lead.not_mobile_friendly,
+          outdated_copyright: !!lead.outdated_copyright,
+          website_error: !!lead.website_error,
+          quality_score: lead.quality_score ?? null,
+          rating: lead.rating,
+          review_count: lead.reviews ?? 0,
           status: "new",
         })
         .select("*")
@@ -201,7 +235,7 @@ const Heatmap = () => {
       score: (row!.score as "hot" | "needs_upgrade") || "hot",
       notes: row!.notes || "",
       tags: row!.tags || [],
-      website_issues: row!.website_issues || ["No Website"],
+      website_issues: row!.website_issues || [],
     } as Lead);
   };
 
@@ -222,7 +256,7 @@ const Heatmap = () => {
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <MapPin className="h-6 w-6 text-primary" /> Heatmap
         </h1>
-        <p className="text-sm text-muted-foreground">Find local businesses without websites — your hottest leads.</p>
+        <p className="text-sm text-muted-foreground">Find local businesses that need help — no websites or weak ones.</p>
       </div>
 
       {/* Search controls */}
@@ -263,7 +297,7 @@ const Heatmap = () => {
             <div className="flex items-end gap-2">
               <Button onClick={handleSearch} disabled={searching || keyLoading} className="w-full">
                 {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                <span className="ml-2">Find Website Leads</span>
+                <span className="ml-2">Find Leads</span>
               </Button>
             </div>
           </div>
@@ -318,7 +352,7 @@ const Heatmap = () => {
           <CardContent className="p-3 space-y-2 max-h-[560px] overflow-y-auto">
             {leads.length === 0 && !searching && (
               <div className="text-sm text-muted-foreground text-center py-8">
-                {center ? "No no-website businesses found. Try a larger radius or another ZIP." : "Enter a ZIP code to start."}
+                {center ? "No qualifying leads found in this area. Try a larger radius or another ZIP." : "Enter a ZIP code to start."}
               </div>
             )}
             {searching && (
@@ -345,7 +379,13 @@ const Heatmap = () => {
                       <div className="font-medium text-sm text-foreground truncate">{lead.business_name}</div>
                       {lead.category && <div className="text-xs text-muted-foreground truncate">{lead.category}</div>}
                     </div>
-                    <Badge variant="outline" className="text-[10px] text-destructive border-destructive/40 shrink-0">No Website</Badge>
+                    {(() => {
+                      const b = badgeForLead(lead);
+                      const cls = b.tone === "destructive"
+                        ? "text-destructive border-destructive/40"
+                        : "text-warning border-warning/40";
+                      return <Badge variant="outline" className={`text-[10px] shrink-0 ${cls}`}>{b.label}</Badge>;
+                    })()}
                   </div>
                   <div className="text-xs text-muted-foreground mt-1 truncate">{lead.address}</div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
