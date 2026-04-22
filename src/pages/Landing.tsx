@@ -156,7 +156,7 @@ const Landing = () => {
               <CardContent className="p-6">
                 <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Popular</div>
                 <h3 className="mb-1 text-lg font-semibold text-foreground">Pro</h3>
-                <div className="mb-4 text-3xl font-bold text-foreground">$29<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <div className="mb-4 text-3xl font-bold text-foreground">$49<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Unlimited searches</li>
                   <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> AI website audits</li>
