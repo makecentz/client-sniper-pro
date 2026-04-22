@@ -27,7 +27,27 @@ interface HeatmapLead {
   priority_score: number;
   priority_label: "high" | "medium" | "low";
   distance_miles: number | null;
+  has_website: boolean;
+  website: string | null;
+  website_issues: string[];
+  score: string;
+  quality_score?: number;
+  no_ssl?: boolean;
+  not_mobile_friendly?: boolean;
+  outdated_copyright?: boolean;
+  website_error?: boolean;
 }
+
+const badgeForLead = (lead: HeatmapLead): { label: string; tone: "destructive" | "warning" } => {
+  if (!lead.has_website) return { label: "No Website", tone: "destructive" };
+  const issues = lead.website_issues || [];
+  const first = issues.find((i) => i !== "No Website");
+  if (first?.startsWith("No SSL")) return { label: "No SSL", tone: "warning" };
+  if (first?.startsWith("Outdated")) return { label: "Outdated", tone: "warning" };
+  if (first?.startsWith("Not Mobile")) return { label: "Not Mobile", tone: "warning" };
+  if (first?.startsWith("HTTP") || first?.startsWith("Website Unreachable")) return { label: "Site Error", tone: "warning" };
+  return { label: "Weak Site", tone: "warning" };
+};
 
 const RADIUS_OPTIONS = [1, 3, 5, 10, 25];
 const containerStyle = { width: "100%", height: "100%" };
