@@ -310,36 +310,63 @@ const Heatmap = () => {
 
       {/* Map + results */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* Map */}
-        <Card className="border-border/50 lg:col-span-2 overflow-hidden">
-          <CardContent className="p-0 h-[600px] relative">
-            {keyLoading ? (
-              <div className="flex h-full items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        {/* Map + legend */}
+        <div className="lg:col-span-2 space-y-4">
+          <Card className="border-border/50 overflow-hidden">
+            <CardContent className="p-0 h-[600px] relative">
+              {keyLoading ? (
+                <div className="flex h-full items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : !apiKey ? (
+                <div className="flex h-full items-center justify-center text-muted-foreground p-4 text-center">
+                  Map key unavailable.
+                </div>
+              ) : (
+                <MapView
+                  apiKey={apiKey}
+                  center={center}
+                  leads={leads}
+                  selectedIdx={selectedIdx}
+                  setSelectedIdx={setSelectedIdx}
+                  mapOptions={mapOptions}
+                  mapRef={mapRef}
+                  pinColor={pinColor}
+                  handleViewLead={handleViewLead}
+                  handleSave={handleSave}
+                  savingKey={savingKey}
+                  savedKeys={savedKeys}
+                  leadKey={leadKey}
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Legend */}
+          <Card className="border-border/50">
+            <CardContent className="p-4">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Pin colors</span>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full ring-2 ring-background" style={{ backgroundColor: "#ef4444" }} />
+                  <span className="text-sm text-foreground">High priority</span>
+                  <span className="text-xs text-muted-foreground">— hot lead, needs help now</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full ring-2 ring-background" style={{ backgroundColor: "#f59e0b" }} />
+                  <span className="text-sm text-foreground">Medium priority</span>
+                  <span className="text-xs text-muted-foreground">— weak site or low reputation</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="h-3 w-3 rounded-full ring-2 ring-background" style={{ backgroundColor: "#3b82f6" }} />
+                  <span className="text-sm text-foreground">Low priority</span>
+                  <span className="text-xs text-muted-foreground">— minor improvements</span>
+                </div>
               </div>
-            ) : !apiKey ? (
-              <div className="flex h-full items-center justify-center text-muted-foreground p-4 text-center">
-                Map key unavailable.
-              </div>
-            ) : (
-              <MapView
-                apiKey={apiKey}
-                center={center}
-                leads={leads}
-                selectedIdx={selectedIdx}
-                setSelectedIdx={setSelectedIdx}
-                mapOptions={mapOptions}
-                mapRef={mapRef}
-                pinColor={pinColor}
-                handleViewLead={handleViewLead}
-                handleSave={handleSave}
-                savingKey={savingKey}
-                savedKeys={savedKeys}
-                leadKey={leadKey}
-              />
-            )}
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
+
 
         {/* Results panel */}
         <Card className="border-border/50">
