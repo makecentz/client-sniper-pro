@@ -38,7 +38,7 @@ serve(async (req) => {
     }
 
     // Determine mode based on priceId
-    const isSubscription = priceId === "price_1TItjkIEsTwcnIOwOaiVh714";
+    const isSubscription = priceId === "price_1TOyHSIEsTwcnIOwGpAkXs8j";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,

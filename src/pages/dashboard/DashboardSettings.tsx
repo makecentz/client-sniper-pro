@@ -14,7 +14,7 @@ import { useSearchParams } from "react-router-dom";
 
 const STRIPE_PRICES = {
   pro: {
-    price_id: "price_1TItjkIEsTwcnIOwOaiVh714",
+    price_id: "price_1TOyHSIEsTwcnIOwGpAkXs8j",
     product_id: "prod_UHSfSAAJLpI9AT",
   },
   lead_pack: {
@@ -266,7 +266,7 @@ const DashboardSettings = () => {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Zap className="h-5 w-5 text-yellow-500" /> Pro Plan
             </CardTitle>
-            <CardDescription>$29/month — unlock the full platform</CardDescription>
+            <CardDescription>$49/month — unlock the full platform</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-1.5 text-sm text-muted-foreground">
@@ -283,7 +283,7 @@ const DashboardSettings = () => {
                 disabled={loadingCheckout === "pro"}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $29/mo"}
+                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $49/mo"}
               </Button>
             )}
           </CardContent>
