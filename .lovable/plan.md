@@ -1,40 +1,34 @@
 
 
-## Fix: Search not returning businesses *with* websites
+## Change Pro Subscription Price from $29 → $49
 
-### Root cause
-Outscraper's `maps/search-v3` endpoint returns Google Maps results, which are heavily skewed toward businesses **with** websites. But our query `"barbershop in Philadelphia, PA"` with `limit=40` is returning a list where the businesses without websites happen to dominate the top results — and our score model penalizes them so heavily (−60) that they outrank everything else.
+### What changes
 
-Looking more carefully at `search-businesses/index.ts`:
+**1. Stripe (new price required)**
+Stripe prices are immutable. I'll create a **new recurring price of $49/month** on the existing Pro product (`prod_UHSfSAAJLpI9AT`) using the Stripe tool, then swap the price ID throughout the code. The old $29 price will be left in Stripe (existing subscribers stay on it until they re-checkout) — new checkouts will use the $49 price.
 
-1. **Sorting**: `leads.sort((a, b) => a.quality_score - b.quality_score)` puts the *worst* score first — i.e. all the no-website businesses (score 40) bubble to the top, pushing weak-website ones (score 60–90) off the visible part of the list.
-2. **No SSL false positive**: the `if (url.startsWith("http://"))` check fires *before* we follow redirects. Most modern sites are listed by Outscraper as `http://...` but redirect to `https`. We're flagging clean sites as "No SSL" — but more importantly, we never re-check the final URL.
-3. **Result limit on UI side**: `SearchPanel.tsx` likely renders all returned leads, but if 30+ no-website leads come back first, the user perceives "only no-website results."
-4. **Outscraper field name**: we read `r.site`, but Outscraper sometimes returns the website under `r.website` or `r.site` depending on the endpoint version. If `site` is undefined for businesses that DO have websites, every result gets flagged as no-website.
+**2. Code updates**
 
-### The fix
+| File | Change |
+|------|--------|
+| `src/pages/dashboard/DashboardSettings.tsx` | Update `STRIPE_PRICES.pro.price_id` to new ID. Change copy `$29/month` → `$49/month` and button label `Upgrade to Pro — $29/mo` → `$49/mo` |
+| `src/pages/Landing.tsx` | Pricing card: `$29` → `$49` |
+| `supabase/functions/create-checkout/index.ts` | Update the hardcoded subscription price ID check on line 41 to the new price ID |
+| `src/pages/Admin.tsx` | Seed the `admin_settings.pro_price_monthly` value to `49` if it's currently `29` (so the admin Revenue Analytics MRR calculations match). The admin slider already defaults to 49 in `RevenueAnalytics.tsx` — no change needed there. |
 
-**1. `supabase/functions/search-businesses/index.ts`**
+**3. Database**
+Run a one-line update so the admin setting reflects the new price:
+```sql
+UPDATE admin_settings SET value = '49' WHERE key = 'pro_price_monthly';
+```
 
-- Read website from multiple possible Outscraper fields: `r.site || r.website || r.url || null`. Log the first raw result so we can verify field names in logs.
-- Fix SSL check: only flag `no_ssl` if the **final** URL (after redirect) is still `http://`. Capture `res.url` from the fetch response.
-- Diversify results: instead of pure ascending sort by `quality_score`, interleave so users see a mix of no-website + weak-website leads. Concretely:
-  - Split into two buckets: `noWebsite` (score ≤ 40) and `weakWebsite` (41 ≤ score ≤ 90).
-  - Sort each bucket ascending by score.
-  - Interleave: first 5 from each, then alternate, so the result list always shows both categories.
-- Increase the Outscraper limit so we get more businesses *with* websites in the candidate pool: `limit = pro ? 60 : 20`.
-- Add `console.log` lines for: raw count, count with website, count without, final returned count by category. This makes future debugging trivial via edge function logs.
+### What is NOT changing
+- Existing active Stripe subscribers remain billed at $29 until they cancel/re-subscribe (standard Stripe behavior). If you want to migrate them to $49, that's a separate one-off action I can run after.
+- The `lead_pack` one-time price is unaffected.
+- Admin-editable price slider keeps working — it only drives MRR display math, not Stripe.
 
-**2. Verification**
-After deploying, run a search for "barbershop in Philadelphia, PA" and check the edge function logs to confirm:
-- raw results contain businesses with websites
-- the website field is being read correctly
-- the final response includes both `no_website` and `weak_site`/`outdated`/`low_reputation` leads
-
-### Files changed
-- `supabase/functions/search-businesses/index.ts`
-
-### Out of scope
-- No DB schema changes
-- No UI changes (the UI already renders whatever the function returns)
+### Order of operations
+1. Create new $49/month Stripe price on existing Pro product → capture new `price_xxx` ID
+2. Update the 4 files above with new ID and new copy
+3. Run the `admin_settings` SQL update via migration
 
