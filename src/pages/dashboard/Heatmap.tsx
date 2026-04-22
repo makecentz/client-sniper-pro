@@ -120,7 +120,7 @@ const Heatmap = () => {
         mapRef.current.panTo(data.center);
       }
       if (!data.leads?.length) {
-        toast({ title: "No results", description: "No no-website businesses found in this area. Try a larger radius or another ZIP." });
+        toast({ title: "No results", description: "No qualifying leads found in this area. Try a larger radius or another ZIP." });
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -155,12 +155,19 @@ const Heatmap = () => {
         phone: lead.phone,
         address: lead.address,
         category: lead.category,
-        has_website: false,
-        website: null,
-        score: "hot",
+        has_website: lead.has_website,
+        website: lead.website,
+        score: lead.score || (lead.has_website ? "weak_site" : "no_website"),
         priority_score: lead.priority_score,
         priority_label: lead.priority_label,
-        website_issues: ["No Website"],
+        website_issues: lead.website_issues || [],
+        no_ssl: !!lead.no_ssl,
+        not_mobile_friendly: !!lead.not_mobile_friendly,
+        outdated_copyright: !!lead.outdated_copyright,
+        website_error: !!lead.website_error,
+        quality_score: lead.quality_score ?? null,
+        rating: lead.rating,
+        review_count: lead.reviews ?? 0,
         status: "new",
       });
       if (error) throw error;
@@ -195,12 +202,19 @@ const Heatmap = () => {
           phone: lead.phone,
           address: lead.address,
           category: lead.category,
-          has_website: false,
-          website: null,
-          score: "hot",
+          has_website: lead.has_website,
+          website: lead.website,
+          score: lead.score || (lead.has_website ? "weak_site" : "no_website"),
           priority_score: lead.priority_score,
           priority_label: lead.priority_label,
-          website_issues: ["No Website"],
+          website_issues: lead.website_issues || [],
+          no_ssl: !!lead.no_ssl,
+          not_mobile_friendly: !!lead.not_mobile_friendly,
+          outdated_copyright: !!lead.outdated_copyright,
+          website_error: !!lead.website_error,
+          quality_score: lead.quality_score ?? null,
+          rating: lead.rating,
+          review_count: lead.reviews ?? 0,
           status: "new",
         })
         .select("*")
@@ -221,7 +235,7 @@ const Heatmap = () => {
       score: (row!.score as "hot" | "needs_upgrade") || "hot",
       notes: row!.notes || "",
       tags: row!.tags || [],
-      website_issues: row!.website_issues || ["No Website"],
+      website_issues: row!.website_issues || [],
     } as Lead);
   };
 
