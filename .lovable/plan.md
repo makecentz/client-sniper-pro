@@ -1,42 +1,60 @@
+## Link / Unlink Google Account in Settings
 
+Let users who signed up with email/password connect (or disconnect) a Google account from their profile. Once linked, they can sign in with either method.
 
-## Mirror Search Panel Logic in Heatmap
+### What the user sees
 
-The Heatmap currently only shows businesses **without** websites. The Search panel returns BOTH no-website AND weak-website leads (low quality_score). I'll align the Heatmap to use the same scoring + bucketing logic.
+A new **"Connected Accounts"** card on the Settings page (`/dashboard/settings`), placed right under the **Account** card.
 
-### Edge function: `supabase/functions/heatmap-search/index.ts`
+It lists each sign-in method available on their profile:
 
-Replace the no-website-only filter with the full Search-panel pipeline:
+- **Email & Password** — always shown, marked "Primary".
+- **Google** — shows one of two states:
+  - Not linked: "Connect your Google account to sign in faster" + **Connect Google** button.
+  - Linked: shows the Google email + **Disconnect** button (with confirmation dialog).
 
-1. **Add `checkWebsite()`** — port verbatim from `search-businesses` (SSL, mobile-friendly, copyright, reachability checks via 5s fetch).
-2. **Add `computeQualityScore()`** — port verbatim (no website +60, no SSL +20, not mobile +20, outdated copyright +15/25, low rating +10/20, few reviews +10/15).
-3. **For each Outscraper result within the radius**:
-   - If it has a website → run `checkWebsite()` and score it
-   - If no website → score directly (skip fetch)
-   - Keep only `quality_score <= 90` (actionable)
-   - Apply min-rating filter and `exclude_saved` as today
-4. **Bucket + interleave** — same as Search: alternate weak-website and no-website so the map shows a healthy mix.
-5. **Return enriched lead shape** including `has_website`, `website`, `website_issues`, `score` (`hot` / `weak_site` / `outdated` / `low_reputation` / `no_website`), and `quality_score`.
+Toasts confirm success/failure for both actions. Disconnect is blocked (with an explanatory toast) if Google is the user's only remaining sign-in method — they must keep at least one way to log in.
 
-Note: website checks add latency. To stay snappy, run them with `Promise.all()` (already the pattern in Search) and keep the Outscraper limit at 20 (free) / 50 (pro).
+### How it works (technical)
 
-### Frontend: `src/pages/dashboard/Heatmap.tsx`
+1. **Enable Google as a managed OAuth provider** in Lovable Cloud (uses the built-in managed credentials — no Google Cloud Console setup needed from the user).
 
-1. **Extend `HeatmapLead` type** to include `has_website: boolean`, `website: string | null`, `website_issues: string[]`, `score: string`.
-2. **Result card badge** — replace hardcoded "No Website" badge with dynamic logic:
-   - No website → red "No Website"
-   - Has website → amber "Weak Site" (or specific reason like "No SSL", "Outdated", "Low Reviews" based on first issue)
-3. **`handleSave` / `handleViewLead`** — stop hardcoding `has_website: false`, `website: null`, `website_issues: ["No Website"]`. Use the lead's actual values so saved leads carry their real data into Saved Leads.
-4. **Map pin color** — keep current high/med/low coloring (already driven by `priority_label`, which the new scoring sets correctly).
-5. **Empty-state copy** — change "No no-website businesses found" → "No qualifying leads found in this area. Try a larger radius or another ZIP."
-6. **Header copy** — change "Find local businesses without websites" → "Find local businesses that need help — no websites or weak ones."
-7. **Button label** — "Find Website Leads" → "Find Leads".
+2. **Read identities**: `supabase.auth.getUserIdentities()` returns the list of providers attached to the current user (`email`, `google`, etc.). The Settings card derives its UI state from this list.
+
+3. **Link Google**:
+   ```ts
+   await supabase.auth.linkIdentity({
+     provider: "google",
+     options: { redirectTo: `${window.location.origin}/dashboard/settings` },
+   });
+   ```
+   This redirects the user through Google's consent screen, then back to Settings. Supabase attaches the new identity to the existing account (no new user is created). On return, we re-fetch identities and show the linked state.
+
+4. **Unlink Google**:
+   ```ts
+   const { data: { identities } } = await supabase.auth.getUserIdentities();
+   const googleIdentity = identities.find(i => i.provider === "google");
+   await supabase.auth.unlinkIdentity(googleIdentity);
+   ```
+   Guarded so the user always has at least one identity left.
+
+5. **Prerequisite — enable identity linking** on the auth project (`configure_auth` with `manual_linking_enabled: true`). Without this flag, `linkIdentity` returns an error.
+
+### Files touched
+
+- `src/pages/dashboard/DashboardSettings.tsx` — add the new "Connected Accounts" card + handlers.
+- (new) `src/hooks/use-linked-identities.ts` — small hook wrapping `getUserIdentities`, used by the card.
+- Cloud auth config — enable Google provider + manual identity linking via the configure tools (no code file).
 
 ### Out of scope
-- No DB schema changes (existing `leads` columns already cover this).
-- No changes to Search panel itself.
-- Plan/usage limits stay the same (still counts as one search).
 
-### Risk
-Adding website fetches per result will slow Heatmap searches from ~2s to ~5–8s for 20 results (matching Search panel timing). Acceptable for parity.
+- No changes to the Login or Signup pages (Google sign-in on those pages is a separate request).
+- No DB schema changes — identities live in `auth.users` and are managed by Supabase.
+- No changes to `AuthContext` — identities are read directly where needed.
 
+### Edge cases handled
+
+- User clicks Connect, completes Google flow → returns to `/dashboard/settings`, list refreshes automatically.
+- User cancels Google consent → toast "Google connection canceled", state unchanged.
+- Unlink attempted when Google is the only identity → blocked with "You must keep at least one sign-in method" toast.
+- Google account already linked to a different ClientHunter user → Supabase rejects with a clear error, surfaced as a toast.
