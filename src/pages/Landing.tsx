@@ -88,7 +88,7 @@ const Landing = () => {
           <p className="mb-8 text-lg text-muted-foreground">
             Discover businesses that need a website, generate AI-powered outreach, and turn opportunities into paying clients — all in one place
           </p>
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <Link to="/signup">
               <Button size="lg" className="px-8 text-base">
                 Start Free
@@ -97,6 +97,12 @@ const Landing = () => {
             <Link to="/login">
               <Button variant="outline" size="lg" className="px-8 text-base">
                 Log In
+              </Button>
+            </Link>
+            <Link to={user ? "/dashboard/search" : "/signup?redirect=/dashboard/search"}>
+              <Button variant="secondary" size="lg" className="px-8 text-base">
+                <Search className="mr-2 h-4 w-4" />
+                Try a Sample Search
               </Button>
             </Link>
           </div>
