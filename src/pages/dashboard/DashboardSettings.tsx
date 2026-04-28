@@ -45,6 +45,74 @@ const DashboardSettings = () => {
     current_deal: "",
   });
 
+  // Connected identities (sign-in methods)
+  type Identity = { identity_id: string; provider: string; identity_data?: Record<string, any> };
+  const [identities, setIdentities] = useState<Identity[]>([]);
+  const [identitiesLoading, setIdentitiesLoading] = useState(true);
+  const [linkingGoogle, setLinkingGoogle] = useState(false);
+  const [unlinkingGoogle, setUnlinkingGoogle] = useState(false);
+
+  const loadIdentities = useCallback(async () => {
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (!error && data?.identities) {
+      setIdentities(data.identities as Identity[]);
+    }
+    setIdentitiesLoading(false);
+  }, []);
+
+  useEffect(() => {
+    loadIdentities();
+  }, [loadIdentities]);
+
+  // If returning from Google OAuth link flow, refresh + toast
+  useEffect(() => {
+    const linked = searchParams.get("linked");
+    if (linked === "google") {
+      toast.success("Google account connected");
+      loadIdentities();
+    } else if (linked === "error") {
+      toast.error(searchParams.get("error_description") || "Failed to connect Google");
+    }
+  }, [searchParams, loadIdentities]);
+
+  const googleIdentity = identities.find((i) => i.provider === "google");
+  const emailIdentity = identities.find((i) => i.provider === "email");
+
+  const handleLinkGoogle = async () => {
+    setLinkingGoogle(true);
+    try {
+      const { data, error } = await supabase.auth.linkIdentity({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/dashboard/settings?linked=google` },
+      });
+      if (error) throw error;
+      // Browser will redirect to Google; nothing else to do.
+      if (data?.url) window.location.href = data.url;
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start Google connection");
+      setLinkingGoogle(false);
+    }
+  };
+
+  const handleUnlinkGoogle = async () => {
+    if (!googleIdentity) return;
+    if (identities.length <= 1) {
+      toast.error("You must keep at least one sign-in method");
+      return;
+    }
+    setUnlinkingGoogle(true);
+    try {
+      const { error } = await supabase.auth.unlinkIdentity(googleIdentity as any);
+      if (error) throw error;
+      toast.success("Google account disconnected");
+      await loadIdentities();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to disconnect Google");
+    } finally {
+      setUnlinkingGoogle(false);
+    }
+  };
+
   useEffect(() => {
     const payment = searchParams.get("payment");
     if (payment === "success") {
