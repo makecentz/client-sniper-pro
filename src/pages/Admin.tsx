@@ -5,7 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings, Video } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,6 +40,11 @@ const Admin = () => {
   const [savingVideo, setSavingVideo] = useState(false);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(50);
   const [savingOpacity, setSavingOpacity] = useState(false);
+  const [footerAddress, setFooterAddress] = useState("");
+  const [footerPhone, setFooterPhone] = useState("");
+  const [footerEmail, setFooterEmail] = useState("");
+  const [footerCompanyName, setFooterCompanyName] = useState("");
+  const [savingFooter, setSavingFooter] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
@@ -112,7 +119,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes, footerRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
@@ -122,7 +129,17 @@ const Admin = () => {
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_url").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_opacity").maybeSingle(),
+        supabase.from("admin_settings").select("key,value").in("key", ["footer_address", "footer_phone", "footer_email", "footer_company_name"]),
       ]);
+
+      if (footerRes.data) {
+        for (const row of footerRes.data) {
+          if (row.key === "footer_address") setFooterAddress(row.value || "");
+          if (row.key === "footer_phone") setFooterPhone(row.value || "");
+          if (row.key === "footer_email") setFooterEmail(row.value || "");
+          if (row.key === "footer_company_name") setFooterCompanyName(row.value || "");
+        }
+      }
 
       if (videoRes.data?.value) {
         setHeroVideoUrl(videoRes.data.value);
@@ -304,6 +321,90 @@ const Admin = () => {
                 {savingOpacity ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Opacity"}
               </Button>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Footer Contact Info */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-primary" />
+              <CardTitle>Footer Contact Info</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Contact details shown in the footer of the public landing page.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="footer-company">Company Name</Label>
+                <Input
+                  id="footer-company"
+                  placeholder="EcomExperts LLC"
+                  value={footerCompanyName}
+                  onChange={(e) => setFooterCompanyName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="footer-phone">Phone</Label>
+                <Input
+                  id="footer-phone"
+                  placeholder="(267) 652-1512"
+                  value={footerPhone}
+                  onChange={(e) => setFooterPhone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="footer-email">Email</Label>
+                <Input
+                  id="footer-email"
+                  type="email"
+                  placeholder="hello@example.com"
+                  value={footerEmail}
+                  onChange={(e) => setFooterEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="footer-address">Address (use new lines for multi-line)</Label>
+                <Textarea
+                  id="footer-address"
+                  rows={3}
+                  placeholder={"5429 Baltimore Ave\nPhiladelphia, PA 19143"}
+                  value={footerAddress}
+                  onChange={(e) => setFooterAddress(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button
+              disabled={savingFooter}
+              onClick={async () => {
+                setSavingFooter(true);
+                const entries: Array<{ key: string; value: string }> = [
+                  { key: "footer_address", value: footerAddress },
+                  { key: "footer_phone", value: footerPhone },
+                  { key: "footer_email", value: footerEmail },
+                  { key: "footer_company_name", value: footerCompanyName },
+                ];
+                let hadError = false;
+                for (const entry of entries) {
+                  const { data: existing } = await supabase
+                    .from("admin_settings")
+                    .select("id")
+                    .eq("key", entry.key)
+                    .maybeSingle();
+                  const { error } = existing
+                    ? await supabase.from("admin_settings").update({ value: entry.value }).eq("key", entry.key)
+                    : await supabase.from("admin_settings").insert({ key: entry.key, value: entry.value });
+                  if (error) hadError = true;
+                }
+                if (hadError) toast.error("Failed to save some footer settings");
+                else toast.success("Footer contact info saved");
+                setSavingFooter(false);
+              }}
+            >
+              {savingFooter ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Footer Info"}
+            </Button>
           </CardContent>
         </Card>
 

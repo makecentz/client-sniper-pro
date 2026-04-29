@@ -22,12 +22,23 @@ const Landing = () => {
   const { user } = useAuth();
   const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
+  const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
+  const [footerPhone, setFooterPhone] = useState("(267) 652-1512");
+  const [footerEmail, setFooterEmail] = useState("ecomexpertsllc@gmail.com");
+  const [footerCompanyName, setFooterCompanyName] = useState("EcomExperts LLC");
 
   useEffect(() => {
     supabase
       .from("admin_settings")
       .select("key,value")
-      .in("key", ["hero_video_url", "hero_video_opacity"])
+      .in("key", [
+        "hero_video_url",
+        "hero_video_opacity",
+        "footer_address",
+        "footer_phone",
+        "footer_email",
+        "footer_company_name",
+      ])
       .then(({ data }) => {
         if (!data) return;
         for (const row of data) {
@@ -36,9 +47,16 @@ const Landing = () => {
             const o = parseInt(row.value, 10);
             if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)) / 100);
           }
+          if (row.key === "footer_address" && row.value) setFooterAddress(row.value);
+          if (row.key === "footer_phone" && row.value) setFooterPhone(row.value);
+          if (row.key === "footer_email" && row.value) setFooterEmail(row.value);
+          if (row.key === "footer_company_name" && row.value) setFooterCompanyName(row.value);
         }
       });
   }, []);
+
+  const phoneHref = `tel:+${footerPhone.replace(/[^\d]/g, "")}`;
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="min-h-screen bg-background">
@@ -214,20 +232,20 @@ const Landing = () => {
               <h4 className="mb-3 text-sm font-semibold text-foreground">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/support" className="hover:text-primary">Help Center</Link></li>
-                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">Email Us</a></li>
+                <li><a href={`mailto:${footerEmail}`} className="hover:text-primary">Email Us</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-3 text-sm font-semibold text-foreground">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>5429 Baltimore Ave<br />Philadelphia, PA 19143</li>
-                <li><a href="tel:+12676521512" className="hover:text-primary">(267) 652-1512</a></li>
-                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">ecomexpertsllc@gmail.com</a></li>
+                <li className="whitespace-pre-line">{footerAddress}</li>
+                <li><a href={phoneHref} className="hover:text-primary">{footerPhone}</a></li>
+                <li><a href={`mailto:${footerEmail}`} className="hover:text-primary">{footerEmail}</a></li>
               </ul>
             </div>
           </div>
           <div className="mt-10 border-t border-border/50 pt-6 text-center text-sm text-muted-foreground">
-            © 2026 EcomExperts LLC. All rights reserved.
+            © {currentYear} {footerCompanyName}. All rights reserved.
           </div>
         </div>
       </footer>
