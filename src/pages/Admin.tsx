@@ -324,6 +324,90 @@ const Admin = () => {
           </CardContent>
         </Card>
 
+        {/* Footer Contact Info */}
+        <Card className="border-border/50">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Phone className="h-5 w-5 text-primary" />
+              <CardTitle>Footer Contact Info</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Contact details shown in the footer of the public landing page.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="footer-company">Company Name</Label>
+                <Input
+                  id="footer-company"
+                  placeholder="EcomExperts LLC"
+                  value={footerCompanyName}
+                  onChange={(e) => setFooterCompanyName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="footer-phone">Phone</Label>
+                <Input
+                  id="footer-phone"
+                  placeholder="(267) 652-1512"
+                  value={footerPhone}
+                  onChange={(e) => setFooterPhone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="footer-email">Email</Label>
+                <Input
+                  id="footer-email"
+                  type="email"
+                  placeholder="hello@example.com"
+                  value={footerEmail}
+                  onChange={(e) => setFooterEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="footer-address">Address (use new lines for multi-line)</Label>
+                <Textarea
+                  id="footer-address"
+                  rows={3}
+                  placeholder={"5429 Baltimore Ave\nPhiladelphia, PA 19143"}
+                  value={footerAddress}
+                  onChange={(e) => setFooterAddress(e.target.value)}
+                />
+              </div>
+            </div>
+            <Button
+              disabled={savingFooter}
+              onClick={async () => {
+                setSavingFooter(true);
+                const entries: Array<{ key: string; value: string }> = [
+                  { key: "footer_address", value: footerAddress },
+                  { key: "footer_phone", value: footerPhone },
+                  { key: "footer_email", value: footerEmail },
+                  { key: "footer_company_name", value: footerCompanyName },
+                ];
+                let hadError = false;
+                for (const entry of entries) {
+                  const { data: existing } = await supabase
+                    .from("admin_settings")
+                    .select("id")
+                    .eq("key", entry.key)
+                    .maybeSingle();
+                  const { error } = existing
+                    ? await supabase.from("admin_settings").update({ value: entry.value }).eq("key", entry.key)
+                    : await supabase.from("admin_settings").insert({ key: entry.key, value: entry.value });
+                  if (error) hadError = true;
+                }
+                if (hadError) toast.error("Failed to save some footer settings");
+                else toast.success("Footer contact info saved");
+                setSavingFooter(false);
+              }}
+            >
+              {savingFooter ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Footer Info"}
+            </Button>
+          </CardContent>
+        </Card>
+
         <SocialProofManager />
 
         <Card className="border-border/50">
