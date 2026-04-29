@@ -232,20 +232,20 @@ const Landing = () => {
               <h4 className="mb-3 text-sm font-semibold text-foreground">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/support" className="hover:text-primary">Help Center</Link></li>
-                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">Email Us</a></li>
+                <li><a href={`mailto:${footerEmail}`} className="hover:text-primary">Email Us</a></li>
               </ul>
             </div>
             <div>
               <h4 className="mb-3 text-sm font-semibold text-foreground">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>5429 Baltimore Ave<br />Philadelphia, PA 19143</li>
-                <li><a href="tel:+12676521512" className="hover:text-primary">(267) 652-1512</a></li>
-                <li><a href="mailto:ecomexpertsllc@gmail.com" className="hover:text-primary">ecomexpertsllc@gmail.com</a></li>
+                <li className="whitespace-pre-line">{footerAddress}</li>
+                <li><a href={phoneHref} className="hover:text-primary">{footerPhone}</a></li>
+                <li><a href={`mailto:${footerEmail}`} className="hover:text-primary">{footerEmail}</a></li>
               </ul>
             </div>
           </div>
           <div className="mt-10 border-t border-border/50 pt-6 text-center text-sm text-muted-foreground">
-            © 2026 EcomExperts LLC. All rights reserved.
+            © {currentYear} {footerCompanyName}. All rights reserved.
           </div>
         </div>
       </footer>
