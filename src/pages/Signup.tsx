@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Mail } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -82,6 +83,8 @@ const Signup = () => {
             </div>
           ) : (
             <>
+              <GoogleAuthButton />
+              <AuthDivider />
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
