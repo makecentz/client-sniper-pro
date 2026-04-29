@@ -119,7 +119,7 @@ const Admin = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes] = await Promise.all([
+      const [usageRes, webhookRes, leadsRes, profilesRes, leadsPerUserRes, companyRes, settingsRes, videoRes, opacityRes, footerRes] = await Promise.all([
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
@@ -129,7 +129,17 @@ const Admin = () => {
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_url").maybeSingle(),
         supabase.from("admin_settings").select("*").eq("key", "hero_video_opacity").maybeSingle(),
+        supabase.from("admin_settings").select("key,value").in("key", ["footer_address", "footer_phone", "footer_email", "footer_company_name"]),
       ]);
+
+      if (footerRes.data) {
+        for (const row of footerRes.data) {
+          if (row.key === "footer_address") setFooterAddress(row.value || "");
+          if (row.key === "footer_phone") setFooterPhone(row.value || "");
+          if (row.key === "footer_email") setFooterEmail(row.value || "");
+          if (row.key === "footer_company_name") setFooterCompanyName(row.value || "");
+        }
+      }
 
       if (videoRes.data?.value) {
         setHeroVideoUrl(videoRes.data.value);
