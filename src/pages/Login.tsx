@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
 import { toast } from "sonner";
+import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -42,6 +43,8 @@ const Login = () => {
           <CardDescription>Sign in to your ClientHunter AI account</CardDescription>
         </CardHeader>
         <CardContent>
+          <GoogleAuthButton />
+          <AuthDivider />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

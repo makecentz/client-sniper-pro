@@ -1,60 +1,40 @@
-## Link / Unlink Google Account in Settings
+## Add "Continue with Google" to Login & Signup
 
-Let users who signed up with email/password connect (or disconnect) a Google account from their profile. Once linked, they can sign in with either method.
+Google is already enabled as a managed OAuth provider (set up when we added Connect/Disconnect in Settings). This task adds a Google button to the public auth pages so new and returning users can choose Google instead of email/password.
 
 ### What the user sees
 
-A new **"Connected Accounts"** card on the Settings page (`/dashboard/settings`), placed right under the **Account** card.
+On both **Signup** (`/signup`) and **Login** (`/login`):
 
-It lists each sign-in method available on their profile:
+```text
+[ Continue with Google ]
+─────── or ───────
+Email    [____________]
+Password [____________]
+[ Create Account / Sign In ]
+```
 
-- **Email & Password** — always shown, marked "Primary".
-- **Google** — shows one of two states:
-  - Not linked: "Connect your Google account to sign in faster" + **Connect Google** button.
-  - Linked: shows the Google email + **Disconnect** button (with confirmation dialog).
-
-Toasts confirm success/failure for both actions. Disconnect is blocked (with an explanatory toast) if Google is the user's only remaining sign-in method — they must keep at least one way to log in.
-
-### How it works (technical)
-
-1. **Enable Google as a managed OAuth provider** in Lovable Cloud (uses the built-in managed credentials — no Google Cloud Console setup needed from the user).
-
-2. **Read identities**: `supabase.auth.getUserIdentities()` returns the list of providers attached to the current user (`email`, `google`, etc.). The Settings card derives its UI state from this list.
-
-3. **Link Google**:
-   ```ts
-   await supabase.auth.linkIdentity({
-     provider: "google",
-     options: { redirectTo: `${window.location.origin}/dashboard/settings` },
-   });
-   ```
-   This redirects the user through Google's consent screen, then back to Settings. Supabase attaches the new identity to the existing account (no new user is created). On return, we re-fetch identities and show the linked state.
-
-4. **Unlink Google**:
-   ```ts
-   const { data: { identities } } = await supabase.auth.getUserIdentities();
-   const googleIdentity = identities.find(i => i.provider === "google");
-   await supabase.auth.unlinkIdentity(googleIdentity);
-   ```
-   Guarded so the user always has at least one identity left.
-
-5. **Prerequisite — enable identity linking** on the auth project (`configure_auth` with `manual_linking_enabled: true`). Without this flag, `linkIdentity` returns an error.
+- The Google button is full-width, outlined, with the official multi-color G icon.
+- A thin "or" divider separates it from the email/password form.
+- Clicking it redirects through Google's consent screen, then back to `/dashboard`.
+- If the user cancels or Google returns an error, a toast explains and the form remains usable.
+- On the Signup page, the button is hidden in the post-submit "Check your email" view (no longer relevant once they've submitted).
 
 ### Files touched
 
-- `src/pages/dashboard/DashboardSettings.tsx` — add the new "Connected Accounts" card + handlers.
-- (new) `src/hooks/use-linked-identities.ts` — small hook wrapping `getUserIdentities`, used by the card.
-- Cloud auth config — enable Google provider + manual identity linking via the configure tools (no code file).
+- **New** `src/components/GoogleAuthButton.tsx` — reusable button + thin "or" divider, wraps `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" })`. Handles the three result cases: `error` (toast), `redirected` (do nothing, browser is leaving), tokens-returned (navigate to `/dashboard`).
+- **Edit** `src/pages/Signup.tsx` — render `<GoogleAuthButton />` + `<AuthDivider />` above the email/password form.
+- **Edit** `src/pages/Login.tsx` — same insertion above the existing form.
 
 ### Out of scope
 
-- No changes to the Login or Signup pages (Google sign-in on those pages is a separate request).
-- No DB schema changes — identities live in `auth.users` and are managed by Supabase.
-- No changes to `AuthContext` — identities are read directly where needed.
+- No backend changes — Google provider is already configured with managed credentials.
+- No changes to `AuthContext` — the existing `onAuthStateChange` listener picks up the OAuth session automatically on redirect back.
+- No changes to the Settings "Connected Accounts" card (already built).
+- No Apple / GitHub / other providers.
 
 ### Edge cases handled
 
-- User clicks Connect, completes Google flow → returns to `/dashboard/settings`, list refreshes automatically.
-- User cancels Google consent → toast "Google connection canceled", state unchanged.
-- Unlink attempted when Google is the only identity → blocked with "You must keep at least one sign-in method" toast.
-- Google account already linked to a different ClientHunter user → Supabase rejects with a clear error, surfaced as a toast.
+- User already signed in and lands on `/login` or `/signup` → existing redirect to `/dashboard` still applies.
+- Google account email matches an existing email/password user → Supabase auto-links by email (managed behavior); user lands in dashboard.
+- User cancels Google consent → returned with an error param; toast shown.
