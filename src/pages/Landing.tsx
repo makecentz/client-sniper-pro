@@ -22,12 +22,23 @@ const Landing = () => {
   const { user } = useAuth();
   const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
+  const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
+  const [footerPhone, setFooterPhone] = useState("(267) 652-1512");
+  const [footerEmail, setFooterEmail] = useState("ecomexpertsllc@gmail.com");
+  const [footerCompanyName, setFooterCompanyName] = useState("EcomExperts LLC");
 
   useEffect(() => {
     supabase
       .from("admin_settings")
       .select("key,value")
-      .in("key", ["hero_video_url", "hero_video_opacity"])
+      .in("key", [
+        "hero_video_url",
+        "hero_video_opacity",
+        "footer_address",
+        "footer_phone",
+        "footer_email",
+        "footer_company_name",
+      ])
       .then(({ data }) => {
         if (!data) return;
         for (const row of data) {
@@ -36,9 +47,16 @@ const Landing = () => {
             const o = parseInt(row.value, 10);
             if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)) / 100);
           }
+          if (row.key === "footer_address" && row.value) setFooterAddress(row.value);
+          if (row.key === "footer_phone" && row.value) setFooterPhone(row.value);
+          if (row.key === "footer_email" && row.value) setFooterEmail(row.value);
+          if (row.key === "footer_company_name" && row.value) setFooterCompanyName(row.value);
         }
       });
   }, []);
+
+  const phoneHref = `tel:+${footerPhone.replace(/[^\d]/g, "")}`;
+  const currentYear = new Date().getFullYear();
 
   return (
     <div className="min-h-screen bg-background">
