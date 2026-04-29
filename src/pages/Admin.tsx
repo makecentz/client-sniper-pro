@@ -5,7 +5,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings, Video } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -38,6 +40,11 @@ const Admin = () => {
   const [savingVideo, setSavingVideo] = useState(false);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(50);
   const [savingOpacity, setSavingOpacity] = useState(false);
+  const [footerAddress, setFooterAddress] = useState("");
+  const [footerPhone, setFooterPhone] = useState("");
+  const [footerEmail, setFooterEmail] = useState("");
+  const [footerCompanyName, setFooterCompanyName] = useState("");
+  const [savingFooter, setSavingFooter] = useState(false);
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
