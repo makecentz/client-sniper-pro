@@ -195,6 +195,27 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
     toast.success("Copied!");
   };
 
+  const generateWebsitePrompt = async (force = false) => {
+    if (!lead) return;
+    setGeneratingPrompt(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-website-prompt", {
+        body: { lead_id: lead.id, force },
+      });
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Failed to generate prompt");
+        return;
+      }
+      setWebsitePrompt(data.prompt);
+      setWebsitePromptPhotos(data.photos || []);
+      toast.success(data.cached ? "Loaded saved prompt" : "Lovable.dev prompt generated!");
+    } catch {
+      toast.error("Something went wrong");
+    } finally {
+      setGeneratingPrompt(false);
+    }
+  };
+
   const scrapeContacts = async () => {
     if (!lead) return;
     setScraping(true);
