@@ -62,6 +62,9 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
   const [offerBuilderOpen, setOfferBuilderOpen] = useState(false);
   const [screenshotError, setScreenshotError] = useState(false);
   const [screenshotKey, setScreenshotKey] = useState(0);
+  const [websitePrompt, setWebsitePrompt] = useState("");
+  const [websitePromptPhotos, setWebsitePromptPhotos] = useState<string[]>([]);
+  const [generatingPrompt, setGeneratingPrompt] = useState(false);
   useEffect(() => {
     if (!lead || !open) return;
     setScreenshotError(false);
