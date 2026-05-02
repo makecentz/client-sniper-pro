@@ -83,6 +83,8 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
       tags: lead.tags || [],
     });
     setGeneratedContent("");
+    setWebsitePrompt((lead as any).website_prompt || "");
+    setWebsitePromptPhotos(((lead as any).gmaps_photos as string[]) || []);
     fetchNotes();
     fetchRelatedContent();
   }, [lead, open]);
