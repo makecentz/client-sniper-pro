@@ -13,11 +13,13 @@ import {
   User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2,
   Star, MessageSquare, TrendingDown
 } from "lucide-react";
+import { Globe2, Lock, ExternalLink } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import OfferBuilderModal from "@/components/OfferBuilderModal";
+import { Link } from "react-router-dom";
 
 interface LeadNote {
   id: string;
