@@ -624,6 +624,89 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
                 <Wand2 className="mr-2 h-4 w-4" />
                 Open Offer Builder (Before/After + Letter)
               </Button>
+
+              {/* Lovable.dev demo website prompt — Pro */}
+              <div className="rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 mb-3 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Globe2 className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold">Build Demo Website Prompt</span>
+                      <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px]">PRO</Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Generate a Lovable.dev prompt from this lead's Google listing + photos so you can spin up a demo site to show them.
+                    </p>
+                  </div>
+                </div>
+
+                {user?.plan !== "pro" ? (
+                  <div className="flex items-center justify-between rounded-md bg-background/40 border border-border/40 p-3">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <Lock className="h-3 w-3" /> Upgrade to Pro to unlock
+                    </p>
+                    <Link to="/dashboard/settings">
+                      <Button size="sm" variant="default">Upgrade</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => generateWebsitePrompt(false)}
+                        disabled={generatingPrompt}
+                      >
+                        {generatingPrompt ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : (
+                          <Wand2 className="mr-1 h-3 w-3" />
+                        )}
+                        {websitePrompt ? "Regenerate Prompt" : "Generate Lovable.dev Prompt"}
+                      </Button>
+                      {websitePrompt && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => copyContent(websitePrompt)}>
+                            <Copy className="mr-1 h-3 w-3" /> Copy
+                          </Button>
+                          <a
+                            href={`https://lovable.dev/?prompt=${encodeURIComponent(websitePrompt)}`}
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            <Button size="sm" variant="outline">
+                              <ExternalLink className="mr-1 h-3 w-3" /> Open in Lovable.dev
+                            </Button>
+                          </a>
+                        </>
+                      )}
+                    </div>
+
+                    {websitePromptPhotos.length > 0 && (
+                      <div className="flex gap-2 overflow-x-auto pb-1">
+                        {websitePromptPhotos.slice(0, 8).map((url, i) => (
+                          <img
+                            key={i}
+                            src={url}
+                            alt={`Listing photo ${i + 1}`}
+                            className="h-16 w-24 object-cover rounded border border-border/40 flex-shrink-0"
+                            onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {websitePrompt && (
+                      <Textarea
+                        value={websitePrompt}
+                        onChange={(e) => setWebsitePrompt(e.target.value)}
+                        className="min-h-[180px] font-mono text-xs bg-background/60"
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+
               <p className="text-sm font-medium mb-3">Generate New Content</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
