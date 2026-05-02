@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
+import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3, Sparkles, Flame, Wand2, ArrowRight, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
