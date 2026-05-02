@@ -1,40 +1,74 @@
-## Add "Continue with Google" to Login & Signup
+# Lovable.dev Website Prompt Generator (Pro)
 
-Google is already enabled as a managed OAuth provider (set up when we added Connect/Disconnect in Settings). This task adds a Google button to the public auth pages so new and returning users can choose Google instead of email/password.
+A new premium action in the **AI Content** tab of the lead detail modal that turns a saved lead's Google Maps listing into a ready-to-paste prompt for Lovable.dev. The user can copy it, drop it into Lovable, and instantly have a demo website to show the prospect.
 
-### What the user sees
+## What the user sees
 
-On both **Signup** (`/signup`) and **Login** (`/login`):
+In the AI Content tab (in `LeadDetailModal.tsx`), directly below the "Open Offer Builder" button, add a new highlighted card:
 
-```text
-[ Continue with Google ]
-─────── or ───────
-Email    [____________]
-Password [____________]
-[ Create Account / Sign In ]
-```
+- **Title:** "Build Demo Website Prompt"
+- **Sub-label:** "Pro feature — generates a Lovable.dev prompt using their Google listing + photos so you can build a demo site to pitch."
+- **Primary button:** `Generate Lovable.dev Prompt` (with a Wand/Sparkles icon)
+- A small **PRO** badge in the corner.
 
-- The Google button is full-width, outlined, with the official multi-color G icon.
-- A thin "or" divider separates it from the email/password form.
-- Clicking it redirects through Google's consent screen, then back to `/dashboard`.
-- If the user cancels or Google returns an error, a toast explains and the form remains usable.
-- On the Signup page, the button is hidden in the post-submit "Check your email" view (no longer relevant once they've submitted).
+Behavior by plan:
+- **Free users:** button is disabled with a tooltip "Upgrade to Pro to unlock" and a small "Upgrade" link routing to billing/settings.
+- **Pro users:** clicking calls a new edge function, then shows the result in an editable `Textarea` with a **Copy** button and an **Open Lovable.dev** link (`https://lovable.dev/?prompt=...`) that pre-fills the prompt.
 
-### Files touched
+The generated prompt block also lists the Google photos it pulled (small thumbnail row) so the user can confirm the source material.
 
-- **New** `src/components/GoogleAuthButton.tsx` — reusable button + thin "or" divider, wraps `lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/dashboard" })`. Handles the three result cases: `error` (toast), `redirected` (do nothing, browser is leaving), tokens-returned (navigate to `/dashboard`).
-- **Edit** `src/pages/Signup.tsx` — render `<GoogleAuthButton />` + `<AuthDivider />` above the email/password form.
-- **Edit** `src/pages/Login.tsx` — same insertion above the existing form.
+## What gets included in the prompt
 
-### Out of scope
+The prompt is structured for Lovable.dev to scaffold a small marketing site:
 
-- No backend changes — Google provider is already configured with managed credentials.
-- No changes to `AuthContext` — the existing `onAuthStateChange` listener picks up the OAuth session automatically on redirect back.
-- No changes to the Settings "Connected Accounts" card (already built).
-- No Apple / GitHub / other providers.
+- Business name, category, address, city/state/zip
+- Phone, email, website (if any), hours (if available)
+- Rating + review count, a few representative review snippets (if available)
+- 3–8 photo URLs from the Google listing (hero + gallery)
+- Suggested page structure (Hero, About, Services, Gallery, Reviews, Contact + map embed)
+- Brand tone hint inferred from category (e.g. "modern, trustworthy" for HVAC)
+- Explicit instructions: use the photos as gallery/hero, embed the address in a map, list real contact info, add a contact form
 
-### Edge cases handled
+## Technical plan
 
-- User already signed in and lands on `/login` or `/signup` → existing redirect to `/dashboard` still applies.
-- Google account email matches an existing email/password user → Supabase auto-links by email (managed behavior); user lands in dashboard.
-- User cancels Google consent → returned with an error param; toast shown.
+### 1. New edge function `generate-website-prompt`
+- Auth required (JWT verified, same pattern as `generate-outreach`).
+- **Pro gate:** look up the user's plan via the existing usage/subscription table used by `check-subscription`; return 403 with `{ error: "Pro plan required" }` if not pro.
+- Body: `{ lead_id }`. Loads the lead row server-side (don't trust client).
+- Calls Outscraper Google Maps "Place Photos" / Place details endpoint using `OUTSCRAPER_API_KEY` (already configured) keyed by the lead's `google_id`/`place_id` if present, otherwise by name + address. Caches the result on the lead row (new columns below) so repeat clicks are free.
+- Calls Lovable AI Gateway (`google/gemini-3-flash-preview`, no streaming) with a system prompt that asks it to write the final Lovable.dev build prompt as Markdown, embedding the photo URLs and business facts.
+- Returns `{ prompt, photos: string[], cached: boolean }`.
+
+### 2. Database (one migration)
+Add nullable columns to `leads` to cache the listing data so we don't re-hit Outscraper:
+- `gmaps_photos text[]`
+- `gmaps_place_id text`
+- `gmaps_hours jsonb`
+- `gmaps_reviews jsonb`
+- `website_prompt text`
+- `website_prompt_generated_at timestamptz`
+
+No RLS changes needed (existing lead policies cover it).
+
+### 3. Frontend changes (`src/components/LeadDetailModal.tsx`)
+- Read `plan` from `useAuth()`; treat `plan === "pro"` as unlocked.
+- Add a new section in the `<TabsContent value="ai">` block above "Generate New Content".
+- New state: `websitePrompt`, `websitePromptPhotos`, `generatingPrompt`.
+- Handler `generateWebsitePrompt()` invokes the new edge function, sets state, toasts on error (handle 402/429/403 like other generators).
+- Render the result in an editable Textarea + Copy button + "Open in Lovable.dev" anchor.
+- If `lead.website_prompt` already exists on load, pre-populate the Textarea.
+
+### 4. UX details
+- Use the same `Card` / button styling as the existing "Open Offer Builder" CTA so it feels native.
+- Show a small loading skeleton while generating (Outscraper + AI can take ~5–10s).
+- After generation, surface the photo thumbnails in a horizontal scroll row.
+
+## Out of scope
+- Actually building the site inside the app (the user takes the prompt to Lovable.dev themselves).
+- Editing/curating which photos to include — v1 just uses the top 8 from Google.
+
+## Files touched
+- `supabase/functions/generate-website-prompt/index.ts` (new)
+- `supabase/config.toml` (register function — uses default JWT verification)
+- New migration adding the cache columns to `leads`
+- `src/components/LeadDetailModal.tsx` (UI + handler)
