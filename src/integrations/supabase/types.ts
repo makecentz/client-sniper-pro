@@ -250,6 +250,10 @@ export type Database = {
           created_at: string
           email: string | null
           follow_up_date: string | null
+          gmaps_hours: Json | null
+          gmaps_photos: string[] | null
+          gmaps_place_id: string | null
+          gmaps_reviews: Json | null
           has_website: boolean
           id: string
           last_contacted_at: string | null
@@ -276,6 +280,8 @@ export type Database = {
           website: string | null
           website_error: boolean
           website_issues: string[] | null
+          website_prompt: string | null
+          website_prompt_generated_at: string | null
           zip: string | null
         }
         Insert: {
@@ -293,6 +299,10 @@ export type Database = {
           created_at?: string
           email?: string | null
           follow_up_date?: string | null
+          gmaps_hours?: Json | null
+          gmaps_photos?: string[] | null
+          gmaps_place_id?: string | null
+          gmaps_reviews?: Json | null
           has_website?: boolean
           id?: string
           last_contacted_at?: string | null
@@ -319,6 +329,8 @@ export type Database = {
           website?: string | null
           website_error?: boolean
           website_issues?: string[] | null
+          website_prompt?: string | null
+          website_prompt_generated_at?: string | null
           zip?: string | null
         }
         Update: {
@@ -336,6 +348,10 @@ export type Database = {
           created_at?: string
           email?: string | null
           follow_up_date?: string | null
+          gmaps_hours?: Json | null
+          gmaps_photos?: string[] | null
+          gmaps_place_id?: string | null
+          gmaps_reviews?: Json | null
           has_website?: boolean
           id?: string
           last_contacted_at?: string | null
@@ -362,6 +378,8 @@ export type Database = {
           website?: string | null
           website_error?: boolean
           website_issues?: string[] | null
+          website_prompt?: string | null
+          website_prompt_generated_at?: string | null
           zip?: string | null
         }
         Relationships: []
