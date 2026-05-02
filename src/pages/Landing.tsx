@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3 } from "lucide-react";
+import { Search, Target, MessageSquare, DollarSign, Zap, Shield, BarChart3, Sparkles, Flame, Wand2, ArrowRight, Check } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
@@ -145,6 +145,120 @@ const Landing = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Hot Feature: Lovable.dev one-prompt websites */}
+      <section className="relative overflow-hidden border-t border-border/50 px-6 py-24">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background to-background" />
+        <div className="absolute -top-40 left-1/2 h-96 w-[600px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            <div>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
+                <Flame className="h-3.5 w-3.5" /> Hot · Pro Feature
+              </div>
+              <h2 className="mb-4 text-4xl font-bold leading-tight text-foreground md:text-5xl">
+                Pitch a real website in <span className="text-primary">60 seconds</span>.
+              </h2>
+              <p className="mb-6 text-lg text-muted-foreground">
+                Every Pro lead comes with a one-click <span className="font-semibold text-foreground">Lovable.dev</span> prompt built from their Google listing — photos, hours, reviews, and contact info, all included. Paste it into Lovable and walk into your sales call with a working demo site.
+              </p>
+              <ul className="mb-8 space-y-3">
+                {[
+                  "Pulls real photos from the prospect's Google Maps listing",
+                  "Auto-fills business name, address, phone & hours",
+                  "Generates a copy-paste prompt for Lovable.dev",
+                  "Open in Lovable.dev with one click",
+                ].map((line) => (
+                  <li key={line} className="flex items-start gap-3 text-sm text-foreground">
+                    <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <div className="mb-6 flex items-center gap-3 text-sm text-muted-foreground">
+                <span>Powered by</span>
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border/60 bg-card/60 px-2.5 py-1 font-bold tracking-tight text-foreground">
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  lovable<span className="text-primary">.dev</span>
+                </span>
+              </div>
+              <Link to={user ? "/dashboard/settings" : "/signup"}>
+                <Button size="lg" className="group bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  Unlock with Pro
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent blur-2xl" />
+              <div className="relative rounded-xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
+                <div className="flex items-center gap-2 border-b border-border/50 px-4 py-3">
+                  <div className="flex gap-1.5">
+                    <span className="h-3 w-3 rounded-full bg-red-500/80" />
+                    <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                    <span className="h-3 w-3 rounded-full bg-green-500/80" />
+                  </div>
+                  <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-center text-[11px] text-muted-foreground">
+                    lovable.dev / new-project
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-5 gap-0 text-xs">
+                  <div className="col-span-2 border-r border-border/40 bg-background/40 p-4 font-mono leading-relaxed">
+                    <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">Prompt</p>
+                    <p className="text-foreground/90">
+                      Build a modern marketing site for{" "}
+                      <span className="text-primary">Joe's Pizza</span> (Brooklyn, NY).
+                    </p>
+                    <p className="mt-2 text-foreground/70">Use these Google photos as the hero & gallery:</p>
+                    <p className="mt-1 truncate text-primary/80">maps.google.com/photo/1.jpg</p>
+                    <p className="truncate text-primary/80">maps.google.com/photo/2.jpg</p>
+                    <p className="mt-2 text-foreground/70">
+                      Phone: <span className="text-foreground">(555) 123-4567</span>
+                    </p>
+                    <p className="text-foreground/70">
+                      Hours: <span className="text-foreground">Mon–Sun 11a–11p</span>
+                    </p>
+                    <div className="mt-3 inline-flex items-center gap-1 rounded bg-primary/20 px-2 py-0.5 text-[10px] text-primary">
+                      <Sparkles className="h-2.5 w-2.5" /> Generating…
+                    </div>
+                  </div>
+
+                  <div className="col-span-3 bg-background/20 p-3">
+                    <div className="overflow-hidden rounded-md border border-border/40 bg-background">
+                      <div className="relative h-20 bg-gradient-to-br from-orange-500/40 via-red-500/30 to-amber-400/30">
+                        <div className="absolute inset-0 flex flex-col justify-end p-2">
+                          <div className="h-2 w-20 rounded bg-white/80" />
+                          <div className="mt-1 h-1.5 w-28 rounded bg-white/50" />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-1 p-2">
+                        <div className="h-8 rounded bg-orange-400/30" />
+                        <div className="h-8 rounded bg-red-400/30" />
+                        <div className="h-8 rounded bg-amber-400/30" />
+                      </div>
+                      <div className="space-y-1 border-t border-border/30 p-2">
+                        <div className="h-1.5 w-3/4 rounded bg-foreground/30" />
+                        <div className="h-1.5 w-1/2 rounded bg-foreground/20" />
+                        <div className="mt-1.5 h-3 w-16 rounded bg-primary/60" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-primary/40 bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-lg lg:-right-6 lg:-top-4">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                Generated from Google Maps
+              </div>
+            </div>
           </div>
         </div>
       </section>
