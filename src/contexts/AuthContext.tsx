@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
+import { processReferralOnSignup, getReferralCookie } from "@/lib/affiliate";
 
 export const PRO_LEADS_LIMIT = 200;
 export const PRO_LEADS_WARNING = 150;
@@ -101,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const mapped = await mapSupabaseUser(session.user);
             setUser(mapped);
             setIsLoading(false);
+            if (getReferralCookie()) processReferralOnSignup();
           }, 0);
         } else {
           setUser(null);

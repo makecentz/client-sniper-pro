@@ -17,11 +17,13 @@ import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
 import Heatmap from "./pages/dashboard/Heatmap";
+import Affiliate from "./pages/dashboard/Affiliate";
 import Admin from "./pages/Admin";
 import Onboarding from "./pages/Onboarding";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CustomerSupport from "./pages/CustomerSupport";
+import AffiliateProgram from "./pages/AffiliateProgram";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +44,7 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/support" element={<CustomerSupport />} />
+            <Route path="/affiliate-program" element={<AffiliateProgram />} />
             <Route
               path="/dashboard"
               element={
@@ -55,6 +58,7 @@ const App = () => (
               <Route path="leads" element={<SavedLeads />} />
               <Route path="ai-tools" element={<AITools />} />
               <Route path="heatmap" element={<Heatmap />} />
+              <Route path="affiliate" element={<Affiliate />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
             <Route path="/onboarding" element={<ProtectedRoute key="onboarding"><Onboarding /></ProtectedRoute>} />

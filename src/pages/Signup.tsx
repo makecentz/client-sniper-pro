@@ -1,21 +1,29 @@
-import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail } from "lucide-react";
+import { Mail, Gift } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
+import { trackReferralClick, getReferralCookie } from "@/lib/affiliate";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [searchParams] = useSearchParams();
   const { signup, user } = useAuth();
+  const refCode = searchParams.get("ref") || getReferralCookie();
+
+  useEffect(() => {
+    const r = searchParams.get("ref");
+    if (r) trackReferralClick(r);
+  }, [searchParams]);
 
   // If user is already authenticated (auto-confirm), redirect to dashboard
   if (user) {
@@ -83,6 +91,12 @@ const Signup = () => {
             </div>
           ) : (
             <>
+              {refCode && (
+                <div className="mb-4 flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 text-xs">
+                  <Gift className="h-4 w-4 text-primary" />
+                  <span>Signing up with referral code <strong>{refCode}</strong></span>
+                </div>
+              )}
               <GoogleAuthButton />
               <AuthDivider />
               <form onSubmit={handleSubmit} className="space-y-4">
