@@ -96,14 +96,13 @@ const Onboarding = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="business_name">Business Name *</Label>
+              <Label htmlFor="business_name">Business Name</Label>
               <Input
                 id="business_name"
                 name="business_name"
-                placeholder="Acme Web Design"
+                placeholder="Acme Web Design (optional)"
                 value={form.business_name}
                 onChange={handleChange}
-                required
               />
             </div>
             <div className="space-y-2">
