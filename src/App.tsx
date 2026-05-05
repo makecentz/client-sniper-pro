@@ -24,6 +24,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CustomerSupport from "./pages/CustomerSupport";
 import AffiliateProgram from "./pages/AffiliateProgram";
+import AffiliateSignup from "./pages/AffiliateSignup";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/support" element={<CustomerSupport />} />
             <Route path="/affiliate-program" element={<AffiliateProgram />} />
+            <Route path="/affiliate-signup" element={<AffiliateSignup />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route
               path="/dashboard"

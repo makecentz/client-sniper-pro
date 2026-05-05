@@ -1,59 +1,73 @@
-# Hot Feature Section: Instant Lovable.dev Demo Sites
 
-Add a bold, attention-grabbing section to the landing page (`src/pages/Landing.tsx`) that promotes the Pro-only "Build Demo Website Prompt" feature — the one that turns a saved lead's Google listing into a one-click Lovable.dev prompt.
+## Goals
 
-## Placement
+1. Business name no longer required during business onboarding.
+2. Dedicated affiliate signup flow that collects the affiliate's personal info + I-9, restricted to United States.
+3. Affiliate accounts skip the "Set Up Your Business" onboarding form.
 
-Insert a new section between the **Features** ("How It Works") section and the **Pricing** section, so it's the climax of the marketing flow right before the upgrade CTA.
+## Changes
 
-## Visual design
+### 1. Onboarding — make business name optional
+**File:** `src/pages/Onboarding.tsx`
+- Remove `required` from the business_name input and drop the `*` from the label.
+- Update copy to clarify it's optional.
 
-A two-column layout (stacked on mobile) inside a glowing gradient card:
+### 2. Database — affiliate profile + I-9 storage
+**New migration:**
+- Create table `affiliate_profiles`:
+  - `user_id uuid PK` (one row per user)
+  - `first_name`, `last_name`, `email`, `phone`, `address_line1`, `address_line2`, `city`, `state`, `zip`, `country` (must be `'US'`)
+  - `payout_method` (`paypal` | `bank` | `check`), `payout_details` text
+  - `i9_file_path text` (path inside storage), `i9_uploaded_at timestamptz`
+  - `created_at`, `updated_at`
+- RLS:
+  - `SELECT/INSERT/UPDATE` where `auth.uid() = user_id`
+  - Admins `SELECT/UPDATE` via `has_role`
+- Add CHECK constraint on `country = 'US'` (rejected at DB level as a safety net).
+- Create **private** storage bucket `affiliate-documents` with RLS:
+  - Users can `INSERT/SELECT/UPDATE` objects whose first path segment equals their `auth.uid()`.
+  - Admins (has_role admin) can `SELECT` all objects in this bucket.
 
-**Left column — copy:**
-- Small "🔥 HOT — PRO FEATURE" eyebrow badge (primary glow + flame icon)
-- Headline: **"Pitch a real website in 60 seconds."**
-- Sub-copy: "Every Pro lead comes with a one-click Lovable.dev prompt built from their Google listing — photos, hours, reviews, contact info, all included. Paste it into Lovable.dev and walk into your sales call with a working demo site."
-- Bullet list with check icons:
-  - Pulls real photos from the prospect's Google Maps listing
-  - Auto-fills business name, address, phone, hours
-  - Generates a copy-paste prompt for Lovable.dev
-  - Open in Lovable.dev with one click
-- "Powered by" row with the Lovable wordmark/logo
-- Primary CTA: **"Unlock with Pro"** → routes to `/signup` (or `/dashboard/settings` for logged-in free users)
+### 3. Affiliate-specific signup page
+**New file:** `src/pages/AffiliateSignup.tsx` at route `/affiliate-signup`
+Flow:
+- **Step 1 — Account:** email + password (uses `signup()` from `AuthContext`, same as `Signup.tsx`); also captures referral cookie if present.
+- **Step 2 — Affiliate profile (after auth/email confirm):**
+  - Country select (default United States). If user picks anything else → block submit and show: "Sorry, the ClientHunter affiliate program is currently only available to U.S. residents."
+  - First name, last name, phone, full US address, state (US states dropdown), zip (5-digit validation).
+  - Payout method + details.
+  - I-9 file upload (`.pdf,.jpg,.jpeg,.png`, max 5 MB) → uploaded to `affiliate-documents/<user_id>/i9-<timestamp>.<ext>`.
+  - On submit: upsert `affiliate_profiles`, mark `localStorage.onboarding_dismissed_<user_id> = "1"` and `affiliate_signup_<user_id> = "1"` so the business onboarding never appears, then `invoke("affiliate-create-link")` and redirect to `/dashboard/affiliate`.
+- Validate inputs with `zod`.
 
-**Right column — visual mockup:**
-A faux Lovable.dev editor screen (pure CSS/HTML, no external image) so we don't ship copyrighted assets:
-- macOS-style window chrome (3 traffic-light dots)
-- URL pill showing `lovable.dev`
-- Left side: a "prompt" panel showing a syntax-highlighted snippet like:
-  ```
-  Build a modern marketing site for
-  Joe's Pizza (Brooklyn, NY).
-  Use these Google photos as the hero…
-  Phone: (555) 123-4567
-  Hours: Mon–Sun 11am–11pm
-  ```
-- Right side: a tiny mocked website preview (hero block, gallery thumbnails, contact card) inside the same window
-- Soft glow + tilt/perspective for a premium look
-- Floating badge over the mockup: "✨ Generated from Google Maps"
+**Update `src/pages/AffiliateProgram.tsx`:** "Become an Affiliate" CTA links to `/affiliate-signup` (not `/signup`). Add prominent "U.S. residents only — W-9/I-9 required for payouts." note.
 
-The whole card uses an animated `bg-gradient-to-br from-primary/20 via-primary/5 to-transparent` with a subtle radial glow and a thin primary border to match the existing dark theme.
+**Update `src/App.tsx`:** register `/affiliate-signup` route.
 
-## Lovable logo asset
+### 4. Skip business onboarding for affiliates
+**File:** `src/pages/Onboarding.tsx`
+- On mount, also check `localStorage.affiliate_signup_<user_id>`; if set, redirect to `/dashboard/affiliate`.
+- Backend fallback: if a row exists in `affiliate_profiles` for the user, treat as affiliate and redirect.
 
-To avoid embedding an external/copyrighted logo, render the wordmark as styled text: `<span className="font-bold tracking-tight">lovable<span className="text-primary">.dev</span></span>` paired with a small Sparkles/Wand icon. This keeps the section legally safe and visually on-brand with the rest of the dark UI. (If the user prefers an actual logo image, they can drop one into `src/assets/` later and we'll swap it in.)
+### 5. Affiliate dashboard — show profile + I-9 status
+**File:** `src/pages/dashboard/Affiliate.tsx`
+- Fetch `affiliate_profiles`. If missing for users who arrived via Google OAuth (skipped the form), show a banner: "Complete your affiliate profile" linking to a small inline form (same fields as Step 2) so they can upload I-9 later.
+- Show I-9 status badge: "On file" / "Missing — required before payout".
+- Block "Request Payout" button if I-9 missing; show tooltip explaining why.
 
-## Technical changes
+### 6. Admin view (small addition)
+**File:** `src/components/admin/AdminAffiliates.tsx`
+- Add a "Profile" column / drawer showing the affiliate's name, address, and a signed-URL link to download the I-9 (admin-only via storage RLS).
 
-- Edit only `src/pages/Landing.tsx`:
-  - Add `Sparkles, Flame, Wand2, ArrowRight, Check` to the existing `lucide-react` import.
-  - Insert the new `<section>` between the existing Features section (around line 150) and the Pricing section (around line 153).
-  - Use only existing semantic Tailwind tokens (`bg-card`, `border-border`, `text-foreground`, `text-primary`, etc.) so it matches the dark theme automatically.
-- No new dependencies, no new files, no backend changes — the underlying feature already exists in the lead detail modal.
+## Technical details
+
+- Storage upload uses `supabase.storage.from("affiliate-documents").upload(path, file, { upsert: true })`.
+- I-9 download for admins via `createSignedUrl(path, 60)`.
+- US states: hardcoded array of 50 states + DC in a small constant.
+- Email validation already handled by Supabase auth; `zod` schemas enforce length limits (per project's input-validation guidance).
+- No changes needed to `affiliate-process-signup` edge function — it already runs on user signup regardless of which signup form was used.
 
 ## Out of scope
 
-- Actual Lovable.dev brand logo image (using styled text wordmark instead).
-- Animated demo video — the mockup is static CSS for fast load.
-- Changes to pricing copy or the Pro plan card itself.
+- Tax form generation (W-9 vs I-9 distinction): the user asked specifically for "I-9", so we collect that file. We can revisit W-9 later if needed.
+- International affiliate support.
