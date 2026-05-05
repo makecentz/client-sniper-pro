@@ -82,23 +82,31 @@ export const AdminAffiliates = () => {
     setSavingRate(false);
   };
 
-  const updatePayout = async (id: string, status: "paid" | "rejected") => {
+  const updatePayout = async (id: string, status: "approved" | "paid" | "rejected") => {
     const updates: any = { status };
     if (status === "paid") updates.paid_at = new Date().toISOString();
     const { error } = await supabase.from("affiliate_payouts").update(updates).eq("id", id);
     if (error) { toast.error(error.message); return; }
 
-    // If paid, mark related commissions paid; if rejected, mark them rejected
     const payout = payouts.find((p) => p.id === id);
-    if (payout) {
-      const newStatus = status === "paid" ? "paid" : "pending"; // unchanged on rejection
-      if (status === "paid") {
-        await supabase.from("affiliate_commissions")
-          .update({ status: "paid" })
-          .eq("affiliate_user_id", payout.affiliate_user_id)
-          .in("status", ["pending", "approved"]);
+    if (payout && status === "paid") {
+      await supabase.from("affiliate_commissions")
+        .update({ status: "paid" })
+        .eq("affiliate_user_id", payout.affiliate_user_id)
+        .in("status", ["pending", "approved"]);
+    }
+
+    // Send notification email on approve/paid
+    if (status === "approved" || status === "paid") {
+      try {
+        await supabase.functions.invoke("affiliate-notify-payout", {
+          body: { payoutId: id, status },
+        });
+      } catch (e) {
+        console.error("Notification failed", e);
       }
     }
+
     toast.success(`Payout ${status}`);
     load();
   };
