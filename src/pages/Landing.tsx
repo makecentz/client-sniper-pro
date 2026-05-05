@@ -346,6 +346,7 @@ const Landing = () => {
               <h4 className="mb-3 text-sm font-semibold text-foreground">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/support" className="hover:text-primary">Help Center</Link></li>
+                <li><Link to="/affiliate-program" className="hover:text-primary">Affiliate Program</Link></li>
                 <li><a href={`mailto:${footerEmail}`} className="hover:text-primary">Email Us</a></li>
               </ul>
             </div>
