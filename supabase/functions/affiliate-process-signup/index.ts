@@ -49,6 +49,32 @@ Deno.serve(async (req) => {
       return json({ error: error.message }, 500);
     }
 
+    // Notify affiliate of new signup (best-effort, non-fatal)
+    if (!error) {
+      try {
+        const { data: affUser } = await admin.auth.admin.getUserById(link.user_id);
+        const affEmail = affUser?.user?.email;
+        if (affEmail) {
+          const { data: profile } = await admin
+            .from("profiles").select("display_name").eq("user_id", link.user_id).maybeSingle();
+          const origin = req.headers.get("origin") || "https://clienthunterai.com";
+          await admin.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "new-referral-signup",
+              recipientEmail: affEmail,
+              idempotencyKey: `new-referral-${user.id}`,
+              templateData: {
+                name: profile?.display_name ?? null,
+                dashboardUrl: `${origin}/dashboard/affiliate`,
+              },
+            },
+          });
+        }
+      } catch (notifyErr) {
+        console.error("Affiliate notification failed", notifyErr);
+      }
+    }
+
     return json({ ok: true });
   } catch (e) {
     return json({ error: String(e) }, 500);
