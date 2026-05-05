@@ -13,11 +13,28 @@ const Onboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // If user already saw/dismissed onboarding, never show it again — they can finish in Settings.
+  // Skip business onboarding for affiliates and dismissed users.
   useEffect(() => {
-    if (user && localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1") {
+    if (!user) return;
+    if (
+      localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1" ||
+      localStorage.getItem(`affiliate_signup_${user.id}`) === "1"
+    ) {
       navigate("/dashboard", { replace: true });
+      return;
     }
+    // Backend fallback: if affiliate profile exists, treat as affiliate.
+    supabase
+      .from("affiliate_profiles")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          localStorage.setItem(`affiliate_signup_${user.id}`, "1");
+          navigate("/dashboard/affiliate", { replace: true });
+        }
+      });
   }, [user, navigate]);
 
   const [loading, setLoading] = useState(false);
