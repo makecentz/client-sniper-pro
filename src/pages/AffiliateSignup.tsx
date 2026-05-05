@@ -113,7 +113,7 @@ const AffiliateSignup = () => {
           ...parsed.data,
           i9_file_path: path,
           i9_uploaded_at: new Date().toISOString(),
-        },
+        } as any,
         { onConflict: "user_id" }
       );
       if (pErr) throw pErr;
