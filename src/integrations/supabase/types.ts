@@ -38,6 +38,33 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_clicks: {
+        Row: {
+          affiliate_user_id: string
+          created_at: string
+          id: string
+          ip_hash: string | null
+          referral_code: string
+          user_agent: string | null
+        }
+        Insert: {
+          affiliate_user_id: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          referral_code: string
+          user_agent?: string | null
+        }
+        Update: {
+          affiliate_user_id?: string
+          created_at?: string
+          id?: string
+          ip_hash?: string | null
+          referral_code?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       affiliate_commissions: {
         Row: {
           affiliate_user_id: string
@@ -1082,7 +1109,10 @@ export type Database = {
           read_ct: number
         }[]
       }
-      record_affiliate_click: { Args: { _code: string }; Returns: undefined }
+      record_affiliate_click: {
+        Args: { _code: string; _ip_hash?: string; _user_agent?: string }
+        Returns: string
+      }
     }
     Enums: {
       app_plan: "free" | "pro"
