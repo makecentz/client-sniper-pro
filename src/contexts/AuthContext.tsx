@@ -102,6 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const mapped = await mapSupabaseUser(session.user);
             setUser(mapped);
             setIsLoading(false);
+            if (getReferralCookie()) processReferralOnSignup();
           }, 0);
         } else {
           setUser(null);
