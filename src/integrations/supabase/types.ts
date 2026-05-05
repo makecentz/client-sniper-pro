@@ -1082,6 +1082,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      record_affiliate_click: { Args: { _code: string }; Returns: undefined }
     }
     Enums: {
       app_plan: "free" | "pro"
