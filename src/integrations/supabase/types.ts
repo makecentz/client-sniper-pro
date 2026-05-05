@@ -154,6 +154,69 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_profiles: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          country: string
+          created_at: string
+          email: string
+          first_name: string
+          i9_file_path: string | null
+          i9_uploaded_at: string | null
+          id: string
+          last_name: string
+          payout_details: string
+          payout_method: string
+          phone: string | null
+          state: string
+          updated_at: string
+          user_id: string
+          zip: string
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          email: string
+          first_name: string
+          i9_file_path?: string | null
+          i9_uploaded_at?: string | null
+          id?: string
+          last_name: string
+          payout_details: string
+          payout_method: string
+          phone?: string | null
+          state: string
+          updated_at?: string
+          user_id: string
+          zip: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          i9_file_path?: string | null
+          i9_uploaded_at?: string | null
+          id?: string
+          last_name?: string
+          payout_details?: string
+          payout_method?: string
+          phone?: string | null
+          state?: string
+          updated_at?: string
+          user_id?: string
+          zip?: string
+        }
+        Relationships: []
+      }
       affiliate_referrals: {
         Row: {
           affiliate_user_id: string
