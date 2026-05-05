@@ -47,6 +47,7 @@ const App = () => (
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/support" element={<CustomerSupport />} />
             <Route path="/affiliate-program" element={<AffiliateProgram />} />
+            <Route path="/affiliate-signup" element={<AffiliateSignup />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route
               path="/dashboard"
