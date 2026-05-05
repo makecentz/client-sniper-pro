@@ -16,7 +16,14 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [searchParams] = useSearchParams();
   const { signup, user } = useAuth();
+  const refCode = searchParams.get("ref") || getReferralCookie();
+
+  useEffect(() => {
+    const r = searchParams.get("ref");
+    if (r) trackReferralClick(r);
+  }, [searchParams]);
 
   // If user is already authenticated (auto-confirm), redirect to dashboard
   if (user) {
