@@ -44,6 +44,7 @@ const App = () => (
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/support" element={<CustomerSupport />} />
+            <Route path="/affiliate-program" element={<AffiliateProgram />} />
             <Route
               path="/dashboard"
               element={
