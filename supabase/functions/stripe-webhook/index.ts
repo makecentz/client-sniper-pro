@@ -80,6 +80,41 @@ serve(async (req) => {
         });
       }
       console.log(`User ${userId} upgraded to pro`);
+
+      // === Affiliate conversion ===
+      try {
+        const { data: referral } = await supabase
+          .from("affiliate_referrals")
+          .select("id, affiliate_user_id, converted_to_pro")
+          .eq("referred_user_id", userId)
+          .maybeSingle();
+
+        if (referral && !referral.converted_to_pro) {
+          // Get commission rate and pro price
+          const { data: settings } = await supabase
+            .from("admin_settings")
+            .select("key,value")
+            .in("key", ["affiliate_commission_rate", "pro_price_monthly"]);
+          const rate = parseFloat(settings?.find((s) => s.key === "affiliate_commission_rate")?.value ?? "30");
+          const proPrice = parseFloat(settings?.find((s) => s.key === "pro_price_monthly")?.value ?? "49");
+          const amount = +(proPrice * (rate / 100)).toFixed(2);
+
+          await supabase
+            .from("affiliate_referrals")
+            .update({ converted_to_pro: true, converted_at: new Date().toISOString() })
+            .eq("id", referral.id);
+
+          await supabase.from("affiliate_commissions").insert({
+            affiliate_user_id: referral.affiliate_user_id,
+            referral_id: referral.id,
+            amount,
+            status: "pending",
+          });
+          console.log(`Affiliate commission $${amount} for user ${referral.affiliate_user_id}`);
+        }
+      } catch (affErr) {
+        console.error("Affiliate processing failed:", affErr);
+      }
     } else if (type === "lead_pack") {
       // First get current leads_remaining
       const { data: current, error: fetchError } = await supabase
