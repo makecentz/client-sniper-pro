@@ -114,6 +114,16 @@ export const AdminAffiliates = () => {
   if (loading) return <Card><CardContent className="flex justify-center p-6"><Loader2 className="h-6 w-6 animate-spin" /></CardContent></Card>;
 
   const requested = payouts.filter((p) => p.status === "requested");
+  const approved = payouts.filter((p) => p.status === "approved");
+
+  const renderRow = (p: PayoutRow, actions: React.ReactNode) => (
+    <TableRow key={p.id}>
+      <TableCell>{p.email}</TableCell>
+      <TableCell>${p.amount.toFixed(2)}</TableCell>
+      <TableCell className="text-muted-foreground">{new Date(p.requested_at).toLocaleDateString()}</TableCell>
+      <TableCell className="space-x-2">{actions}</TableCell>
+    </TableRow>
+  );
 
   return (
     <Card className="border-border/50">
@@ -135,22 +145,26 @@ export const AdminAffiliates = () => {
             <Table>
               <TableHeader><TableRow><TableHead>Affiliate</TableHead><TableHead>Amount</TableHead><TableHead>Requested</TableHead><TableHead></TableHead></TableRow></TableHeader>
               <TableBody>
-                {requested.map((p) => (
-                  <TableRow key={p.id}>
-                    <TableCell>{p.email}</TableCell>
-                    <TableCell>${p.amount.toFixed(2)}</TableCell>
-                    <TableCell className="text-muted-foreground">{new Date(p.requested_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="space-x-2">
-                      <Button size="sm" onClick={() => updatePayout(p.id, "paid")}>Approve</Button>
-                      <Button size="sm" variant="outline" onClick={() => updatePayout(p.id, "rejected")}>Reject</Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {requested.map((p) => renderRow(p, <>
+                  <Button size="sm" onClick={() => updatePayout(p.id, "approved")}>Approve</Button>
+                  <Button size="sm" variant="outline" onClick={() => updatePayout(p.id, "rejected")}>Reject</Button>
+                </>))}
               </TableBody>
             </Table>
           )}
         </div>
 
+        {approved.length > 0 && (
+          <div>
+            <h3 className="font-semibold mb-2">Approved · awaiting payment ({approved.length})</h3>
+            <Table>
+              <TableHeader><TableRow><TableHead>Affiliate</TableHead><TableHead>Amount</TableHead><TableHead>Approved</TableHead><TableHead></TableHead></TableRow></TableHeader>
+              <TableBody>
+                {approved.map((p) => renderRow(p, <Button size="sm" onClick={() => updatePayout(p.id, "paid")}>Mark as paid</Button>))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
         <div>
           <h3 className="font-semibold mb-2">All affiliates ({rows.length})</h3>
           <Table>
