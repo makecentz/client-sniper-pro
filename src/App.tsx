@@ -58,6 +58,7 @@ const App = () => (
               <Route path="leads" element={<SavedLeads />} />
               <Route path="ai-tools" element={<AITools />} />
               <Route path="heatmap" element={<Heatmap />} />
+              <Route path="affiliate" element={<Affiliate />} />
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
             <Route path="/onboarding" element={<ProtectedRoute key="onboarding"><Onboarding /></ProtectedRoute>} />
