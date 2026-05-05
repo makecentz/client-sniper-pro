@@ -24,6 +24,7 @@ import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CustomerSupport from "./pages/CustomerSupport";
 import AffiliateProgram from "./pages/AffiliateProgram";
+import AffiliateSignup from "./pages/AffiliateSignup";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 
