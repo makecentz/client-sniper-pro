@@ -411,6 +411,8 @@ const Admin = () => {
 
         <SocialProofManager />
 
+        <AdminAffiliates />
+
         <Card className="border-border/50">
           <CardHeader>
             <div className="flex items-center justify-between">
