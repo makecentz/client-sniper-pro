@@ -38,6 +38,9 @@ const AffiliateProgram = () => {
           <p className="mt-6 text-lg text-muted-foreground">
             Recurring commission on every Pro subscription. Get paid as soon as you hit just $50.
           </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            U.S. residents only — I-9 form required for payouts.
+          </p>
           <div className="mt-8 flex justify-center gap-3">
             {user ? (
               <Button size="lg" asChild>
@@ -45,7 +48,7 @@ const AffiliateProgram = () => {
               </Button>
             ) : (
               <>
-                <Button size="lg" asChild><Link to="/signup">Become an Affiliate</Link></Button>
+                <Button size="lg" asChild><Link to="/affiliate-signup">Become an Affiliate</Link></Button>
                 <Button size="lg" variant="outline" asChild><Link to="/login">Log in</Link></Button>
               </>
             )}
