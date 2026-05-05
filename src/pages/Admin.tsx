@@ -15,6 +15,7 @@ import { AdminStatsCards } from "@/components/admin/AdminStatsCards";
 import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModal";
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SocialProofManager } from "@/components/admin/SocialProofManager";
+import { AdminAffiliates } from "@/components/admin/AdminAffiliates";
 
 interface WebhookRow {
   id: string;
