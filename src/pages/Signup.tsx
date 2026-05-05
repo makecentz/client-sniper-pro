@@ -1,14 +1,15 @@
-import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Mail } from "lucide-react";
+import { Mail, Gift } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
+import { trackReferralClick, getReferralCookie } from "@/lib/affiliate";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
