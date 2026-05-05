@@ -29,10 +29,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  isLoading: false,
+  login: async () => {},
+  signup: async () => {},
+  logout: async () => {},
+  refreshSubscription: async () => {},
+  refreshLeadCount: async () => {},
+};
+
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-  return ctx;
+  return ctx ?? defaultAuthContext;
 };
 
 const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
