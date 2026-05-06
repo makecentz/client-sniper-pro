@@ -61,10 +61,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build ScreenshotOne URL — returns the image directly
-    const screenshotUrl = `https://api.screenshotone.com/take?access_key=${encodeURIComponent(SCREENSHOTONE_API_KEY)}&url=${encodeURIComponent(url)}&viewport_width=1280&viewport_height=900&format=jpg&quality=80&block_ads=true&delay=2`;
-
-    // Build ScreenshotOne URL — proxy the image so the API key is never sent to the client
+    // Proxy the image so the ScreenshotOne API key is never exposed to the client
     const screenshotUrl = `https://api.screenshotone.com/take?access_key=${encodeURIComponent(SCREENSHOTONE_API_KEY)}&url=${encodeURIComponent(url)}&viewport_width=1280&viewport_height=900&format=jpg&quality=80&block_ads=true&delay=2`;
 
     const imgResp = await fetch(screenshotUrl);
@@ -75,14 +72,14 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const arrayBuffer = await imgResp.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
     let binary = "";
     const chunkSize = 0x8000;
     for (let i = 0; i < bytes.length; i += chunkSize) {
       binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
     }
-    const base64 = btoa(binary);
-    const dataUrl = `data:image/jpeg;base64,${base64}`;
+    const dataUrl = `data:image/jpeg;base64,${btoa(binary)}`;
 
     return new Response(JSON.stringify({ screenshot_url: dataUrl }), {
       status: 200,
