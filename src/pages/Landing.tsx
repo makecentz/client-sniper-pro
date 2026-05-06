@@ -256,7 +256,7 @@ const Landing = () => {
 
               <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-primary/40 bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-lg lg:-right-6 lg:-top-4">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                Generated from Google Maps
+                Instant One Prompt Website
               </div>
             </div>
           </div>
