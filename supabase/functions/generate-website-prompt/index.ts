@@ -169,6 +169,6 @@ ${photoBlock}`;
     return json({ prompt, photos, cached: false });
   } catch (e) {
     console.error("generate-website-prompt error:", e);
-    return json({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
+    return json({ error: "An unexpected error occurred" }, 500);
   }
 });

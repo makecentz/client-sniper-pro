@@ -45,7 +45,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : String(error) }), {
+    console.error("customer-portal error:", error);
+    return new Response(JSON.stringify({ error: "Unable to open billing portal" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AdminRoute } from "@/components/AdminRoute";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -66,7 +67,7 @@ const App = () => (
               <Route path="settings" element={<DashboardSettings />} />
             </Route>
             <Route path="/onboarding" element={<ProtectedRoute key="onboarding"><Onboarding /></ProtectedRoute>} />
-            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+            <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
