@@ -218,16 +218,18 @@ Keep it concise (under 150 words) and actionable.\n\n${leadContext}`,
         content,
       });
     } else if (type === "why_this_lead") {
-      // Store as ai_insight on the lead
+      // Store as ai_insight on the lead — scoped to the requesting user only
       await adminClient
         .from("leads")
         .update({ ai_insight: content })
-        .eq("id", lead.id);
+        .eq("id", lead.id)
+        .eq("user_id", user.id);
     } else if (type === "competitor_insight") {
       await adminClient
         .from("leads")
         .update({ competitor_insight: content })
-        .eq("id", lead.id);
+        .eq("id", lead.id)
+        .eq("user_id", user.id);
     } else {
       const dbType = ["email", "dm", "sms"].includes(type) ? type : "email";
       await supabase.from("messages").insert({
@@ -243,7 +245,7 @@ Keep it concise (under 150 words) and actionable.\n\n${leadContext}`,
     });
   } catch (e) {
     console.error("generate-outreach error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
