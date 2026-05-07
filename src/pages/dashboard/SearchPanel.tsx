@@ -53,23 +53,31 @@ const SearchPanel = () => {
   const [searching, setSearching] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [screenshots, setScreenshots] = useState<Record<number, string>>({});
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
+  const [upgradeMessage, setUpgradeMessage] = useState<string | undefined>(undefined);
 
   // Manual analysis state
   const [manualUrl, setManualUrl] = useState("");
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
-  const savedLimit = user?.saved_leads_limit ?? 100;
-  const savedWarning = getSavedLeadsWarning(user?.bonus_saved_slots ?? 0);
-  const atLimit = (user?.saved_leads_count ?? 0) >= savedLimit;
   const isPro = user?.plan === "pro";
+  const savedLimit = user?.saved_leads_limit ?? (isPro ? 100 : 3);
+  const savedWarning = getSavedLeadsWarning(user?.bonus_saved_slots ?? 0, isPro ? "pro" : "free");
+  const atLimit = (user?.saved_leads_count ?? 0) >= savedLimit;
   const limitMessage = isPro
     ? `You've reached your ${savedLimit} saved leads limit. Delete inactive leads or purchase a Lead Pack for 15 additional slots.`
-    : `You've reached the ${savedLimit} saved leads limit. Delete inactive leads to save new ones.`;
+    : `Free plan is limited to ${savedLimit} saved leads. Upgrade to Pro for 100+ saved leads.`;
+
+  const openUpgrade = (msg?: string) => {
+    setUpgradeMessage(msg);
+    setUpgradeOpen(true);
+  };
 
   const handleSearch = async () => {
     if (atLimit) {
-      toast.error(limitMessage);
+      if (!isPro) openUpgrade(limitMessage);
+      else toast.error(limitMessage);
       return;
     }
     if (!city || !businessType) {
@@ -82,8 +90,22 @@ const SearchPanel = () => {
       const { data, error } = await supabase.functions.invoke("search-businesses", {
         body: { city, state, business_type: businessType, zip_code: zipCode || undefined },
       });
-      if (error) throw error;
-      if (data.error) {
+      if (error) {
+        // FunctionsHttpError surfaces non-2xx; try to parse server message
+        const ctx: any = (error as any).context;
+        let payload: any = null;
+        try { payload = ctx ? await ctx.json() : null; } catch { /* noop */ }
+        if (payload?.code === "LIMIT_REACHED" || /limit reached/i.test(payload?.error || error.message || "")) {
+          openUpgrade(payload?.error || "You've used all your free searches today. Upgrade to Pro for unlimited searches.");
+          return;
+        }
+        throw error;
+      }
+      if (data?.error) {
+        if (data.code === "LIMIT_REACHED") {
+          openUpgrade(data.error);
+          return;
+        }
         toast.error(data.error);
         return;
       }
