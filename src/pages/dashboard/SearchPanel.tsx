@@ -98,7 +98,7 @@ const SearchPanel = () => {
   const handleSaveLead = async (result: SearchResult, idx: number) => {
     if (!user) return;
     if (atLimit) {
-      toast.error(`Lead limit reached (${PRO_LEADS_LIMIT}). Delete old leads to save new ones.`);
+      toast.error(limitMessage);
       return;
     }
     setSavingId(idx);
