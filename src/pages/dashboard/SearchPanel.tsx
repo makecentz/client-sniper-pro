@@ -455,6 +455,7 @@ const SearchPanel = () => {
           ))}
         </div>
       )}
+      <UpgradeModal open={upgradeOpen} onOpenChange={setUpgradeOpen} description={upgradeMessage} />
     </div>
   );
 };
