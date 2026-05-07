@@ -292,12 +292,17 @@ const Landing = () => {
             {/* Pro */}
             <Card className="border-primary/50 bg-card ring-1 ring-primary/20">
               <CardContent className="p-6">
-                <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Popular</div>
+                <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Limited time</div>
                 <h3 className="mb-1 text-lg font-semibold text-foreground">Pro</h3>
-                <div className="mb-4 text-3xl font-bold text-foreground">$49<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <div className="mb-1 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground">$49</span>
+                  <span className="text-sm font-normal text-muted-foreground">/mo</span>
+                  <span className="text-sm font-normal text-muted-foreground line-through">$89</span>
+                </div>
+                <div className="mb-4 text-xs text-muted-foreground">Limited time only — regular price $89/mo</div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Unlimited searches</li>
-                  <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> AI website audits</li>
+                  <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> 100 saved leads</li>
                   <li className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> All AI tools</li>
                   <li className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" /> Email sending</li>
                 </ul>
@@ -310,14 +315,14 @@ const Landing = () => {
             <Card className="border-border/50 bg-card/50">
               <CardContent className="p-6">
                 <h3 className="mb-1 text-lg font-semibold text-foreground">Lead Pack</h3>
-                <div className="mb-4 text-3xl font-bold text-foreground">$10<span className="text-sm font-normal text-muted-foreground">/15 leads</span></div>
+                <div className="mb-4 text-3xl font-bold text-foreground">$10<span className="text-sm font-normal text-muted-foreground">/15 slots</span></div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> 15 scored leads</li>
-                  <li className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> AI messages included</li>
-                  <li className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> No commitment</li>
+                  <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> +15 saved-lead slots</li>
+                  <li className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> Stacks with each purchase</li>
+                  <li className="flex items-center gap-2"><Shield className="h-4 w-4 text-primary" /> Pro members only</li>
                 </ul>
                 <Link to="/signup" className="mt-6 block">
-                  <Button variant="outline" className="w-full">Buy Leads</Button>
+                  <Button variant="outline" className="w-full">Get Pro to Buy</Button>
                 </Link>
               </CardContent>
             </Card>
