@@ -55,7 +55,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
   const [{ data: usage }, { count }] = await Promise.all([
     supabase
       .from("usage_tracking")
-      .select("searches_today, leads_remaining, plan")
+      .select("searches_today, leads_remaining, plan, bonus_saved_slots")
       .eq("user_id", supabaseUser.id)
       .single(),
     supabase
@@ -64,6 +64,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
       .eq("user_id", supabaseUser.id),
   ]);
 
+  const bonus = (usage as any)?.bonus_saved_slots ?? 0;
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? "",
@@ -73,6 +74,8 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     subscribed: usage?.plan === "pro",
     subscription_end: null,
     saved_leads_count: count ?? 0,
+    bonus_saved_slots: bonus,
+    saved_leads_limit: getSavedLeadsLimit(bonus),
   };
 };
 
