@@ -1,7 +1,7 @@
 import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database, MapPin, Gift } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavLink } from "@/components/NavLink";
-import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
+import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,13 +95,13 @@ export function DashboardSidebar() {
                 <div className="flex justify-between">
                   <span className="flex items-center gap-1"><Database className="h-3 w-3" /> Saved Leads</span>
                   <span className={
-                    user.saved_leads_count >= PRO_LEADS_LIMIT
+                    user.saved_leads_count >= user.saved_leads_limit
                       ? "text-destructive font-semibold"
-                      : user.saved_leads_count >= PRO_LEADS_WARNING
+                      : user.saved_leads_count >= getSavedLeadsWarning(user.bonus_saved_slots)
                       ? "text-warning font-semibold"
                       : "text-foreground"
                   }>
-                    {user.saved_leads_count}/{PRO_LEADS_LIMIT}
+                    {user.saved_leads_count}/{user.saved_leads_limit}
                   </span>
                 </div>
               </div>

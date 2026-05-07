@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown } from "lucide-react";
 import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
+import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const US_STATES = [
@@ -58,11 +58,17 @@ const SearchPanel = () => {
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
 
-  const atLimit = (user?.saved_leads_count ?? 0) >= PRO_LEADS_LIMIT;
+  const savedLimit = user?.saved_leads_limit ?? 100;
+  const savedWarning = getSavedLeadsWarning(user?.bonus_saved_slots ?? 0);
+  const atLimit = (user?.saved_leads_count ?? 0) >= savedLimit;
+  const isPro = user?.plan === "pro";
+  const limitMessage = isPro
+    ? `You've reached your ${savedLimit} saved leads limit. Delete inactive leads or purchase a Lead Pack for 15 additional slots.`
+    : `You've reached the ${savedLimit} saved leads limit. Delete inactive leads to save new ones.`;
 
   const handleSearch = async () => {
     if (atLimit) {
-      toast.error(`You've reached the ${PRO_LEADS_LIMIT} saved leads limit. Delete some leads before searching.`);
+      toast.error(limitMessage);
       return;
     }
     if (!city || !businessType) {
@@ -92,7 +98,7 @@ const SearchPanel = () => {
   const handleSaveLead = async (result: SearchResult, idx: number) => {
     if (!user) return;
     if (atLimit) {
-      toast.error(`Lead limit reached (${PRO_LEADS_LIMIT}). Delete old leads to save new ones.`);
+      toast.error(limitMessage);
       return;
     }
     setSavingId(idx);
@@ -120,8 +126,8 @@ const SearchPanel = () => {
       });
       if (error) throw error;
       await refreshLeadCount();
-      if ((user.saved_leads_count + 1) >= PRO_LEADS_WARNING) {
-        toast.warning(`You have ${user.saved_leads_count + 1}/${PRO_LEADS_LIMIT} leads — start deleting old ones.`);
+      if ((user.saved_leads_count + 1) >= savedWarning) {
+        toast.warning(`You have ${user.saved_leads_count + 1}/${savedLimit} leads — delete inactive ones${isPro ? " or grab a Lead Pack for +15 slots" : ""}.`);
       } else {
         toast.success(`Saved "${result.business_name}" to leads`);
       }

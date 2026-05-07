@@ -1,0 +1,1 @@
+ALTER TABLE public.usage_tracking ADD COLUMN IF NOT EXISTS bonus_saved_slots integer NOT NULL DEFAULT 0;

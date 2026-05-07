@@ -116,10 +116,10 @@ serve(async (req) => {
         console.error("Affiliate processing failed:", affErr);
       }
     } else if (type === "lead_pack") {
-      // First get current leads_remaining
+      // Lead Pack adds 15 saved-lead slots (Pro users only).
       const { data: current, error: fetchError } = await supabase
         .from("usage_tracking")
-        .select("leads_remaining")
+        .select("bonus_saved_slots, plan")
         .eq("user_id", userId)
         .single();
 
@@ -131,19 +131,20 @@ serve(async (req) => {
         });
       }
 
+      const newSlots = (current.bonus_saved_slots ?? 0) + 15;
       const { error } = await supabase
         .from("usage_tracking")
-        .update({ leads_remaining: current.leads_remaining + 15 })
+        .update({ bonus_saved_slots: newSlots })
         .eq("user_id", userId);
 
       if (error) {
-        console.error("Failed to update leads_remaining:", error);
+        console.error("Failed to update bonus_saved_slots:", error);
         return new Response(JSON.stringify({ error: "DB update failed" }), {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      console.log(`User ${userId} purchased lead pack, now has ${current.leads_remaining + 15} leads`);
+      console.log(`User ${userId} purchased lead pack, bonus saved slots now ${newSlots}`);
     }
   }
 

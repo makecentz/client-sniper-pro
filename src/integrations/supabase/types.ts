@@ -1062,6 +1062,7 @@ export type Database = {
       }
       usage_tracking: {
         Row: {
+          bonus_saved_slots: number
           created_at: string
           id: string
           last_search_date: string | null
@@ -1072,6 +1073,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          bonus_saved_slots?: number
           created_at?: string
           id?: string
           last_search_date?: string | null
@@ -1082,6 +1084,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          bonus_saved_slots?: number
           created_at?: string
           id?: string
           last_search_date?: string | null

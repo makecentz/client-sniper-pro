@@ -3,8 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { processReferralOnSignup, getReferralCookie } from "@/lib/affiliate";
 
-export const PRO_LEADS_LIMIT = 200;
-export const PRO_LEADS_WARNING = 150;
+export const PRO_LEADS_BASE_LIMIT = 100;
+export const LEAD_PACK_BONUS_SLOTS = 15;
+export const getSavedLeadsLimit = (bonusSlots = 0) => PRO_LEADS_BASE_LIMIT + (bonusSlots ?? 0);
+export const getSavedLeadsWarning = (bonusSlots = 0) => Math.floor(getSavedLeadsLimit(bonusSlots) * 0.75);
+// Back-compat aliases (limit without bonus)
+export const PRO_LEADS_LIMIT = PRO_LEADS_BASE_LIMIT;
+export const PRO_LEADS_WARNING = Math.floor(PRO_LEADS_BASE_LIMIT * 0.75);
 
 interface User {
   id: string;
@@ -15,6 +20,8 @@ interface User {
   subscribed: boolean;
   subscription_end: string | null;
   saved_leads_count: number;
+  bonus_saved_slots: number;
+  saved_leads_limit: number;
 }
 
 interface AuthContextType {
@@ -48,7 +55,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
   const [{ data: usage }, { count }] = await Promise.all([
     supabase
       .from("usage_tracking")
-      .select("searches_today, leads_remaining, plan")
+      .select("searches_today, leads_remaining, plan, bonus_saved_slots")
       .eq("user_id", supabaseUser.id)
       .single(),
     supabase
@@ -57,6 +64,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
       .eq("user_id", supabaseUser.id),
   ]);
 
+  const bonus = (usage as any)?.bonus_saved_slots ?? 0;
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? "",
@@ -66,6 +74,8 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     subscribed: usage?.plan === "pro",
     subscription_end: null,
     saved_leads_count: count ?? 0,
+    bonus_saved_slots: bonus,
+    saved_leads_limit: getSavedLeadsLimit(bonus),
   };
 };
 

@@ -416,11 +416,18 @@ const DashboardSettings = () => {
             <CardTitle className="flex items-center gap-2 text-lg">
               <Zap className="h-5 w-5 text-yellow-500" /> Pro Plan
             </CardTitle>
-            <CardDescription>$49/month — unlock the full platform</CardDescription>
+            <CardDescription>
+              <span className="inline-flex items-center gap-2">
+                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Limited time</span>
+                <span className="text-foreground font-semibold">$49/mo</span>
+                <span className="text-xs text-muted-foreground line-through">$89/mo</span>
+              </span>
+              <div className="mt-1 text-xs">Regular price $89/mo — locked in while available.</div>
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {["50 searches per day", "Unlimited lead saves", "AI outreach & audits", "Priority support"].map((f) => (
+              {["50 searches per day", "100 saved leads", "AI outreach & audits", "Priority support"].map((f) => (
                 <li key={f} className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-primary" />{f}</li>
               ))}
             </ul>
@@ -444,22 +451,25 @@ const DashboardSettings = () => {
             <CardTitle className="flex items-center gap-2 text-lg">
               <CreditCard className="h-5 w-5 text-green-500" /> Lead Pack
             </CardTitle>
-            <CardDescription>$10 one-time — 15 additional leads</CardDescription>
+            <CardDescription>$10 one-time — +15 saved-lead slots (Pro only)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {["15 extra lead credits", "Never expire", "Stack with any plan", "Instant activation"].map((f) => (
+              {["+15 saved-lead slots", "Stacks with each purchase", "Slots never expire", "Instant activation"].map((f) => (
                 <li key={f} className="flex items-center gap-2"><Check className="h-3.5 w-3.5 text-green-500" />{f}</li>
               ))}
             </ul>
+            {!isPro && (
+              <p className="text-xs text-muted-foreground">Upgrade to Pro to unlock Lead Pack purchases.</p>
+            )}
             <Button
               variant="secondary"
               className="w-full"
               onClick={() => handleCheckout(STRIPE_PRICES.lead_pack.price_id, "leads")}
-              disabled={loadingCheckout === "leads"}
+              disabled={loadingCheckout === "leads" || !isPro}
             >
               <CreditCard className="mr-2 h-4 w-4" />
-              {loadingCheckout === "leads" ? "Opening checkout..." : "Buy 15 Leads — $10"}
+              {loadingCheckout === "leads" ? "Opening checkout..." : "Buy 15 Saved-Lead Slots — $10"}
             </Button>
           </CardContent>
         </Card>
