@@ -27,6 +27,29 @@ serve(async (req) => {
     const { priceId } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
 
+    // Determine mode based on priceId
+    const isSubscription = priceId === "price_1TOyHSIEsTwcnIOwGpAkXs8j";
+    const isLeadPack = priceId === "price_1TItluIEsTwcnIOwZ1FfAqiY";
+
+    // Lead Pack requires an active Pro plan.
+    if (isLeadPack) {
+      const adminClient = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      );
+      const { data: usage } = await adminClient
+        .from("usage_tracking")
+        .select("plan")
+        .eq("user_id", user.id)
+        .single();
+      if (usage?.plan !== "pro") {
+        return new Response(
+          JSON.stringify({ error: "Lead Packs are available to Pro members only. Upgrade to Pro first." }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+        );
+      }
+    }
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });
@@ -36,9 +59,6 @@ serve(async (req) => {
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
     }
-
-    // Determine mode based on priceId
-    const isSubscription = priceId === "price_1TOyHSIEsTwcnIOwGpAkXs8j";
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
