@@ -456,6 +456,12 @@ const Heatmap = () => {
         onOpenChange={(open) => { if (!open) setModalLead(null); }}
         onLeadUpdated={(updated) => setModalLead(updated)}
       />
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Heatmap is a Pro feature"
+        description="The Heatmap is available on the Pro plan. Upgrade to unlock map-based lead discovery, unlimited searches, and 100+ saved leads."
+      />
     </div>
   );
 };
