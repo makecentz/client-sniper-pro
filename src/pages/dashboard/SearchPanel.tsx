@@ -121,7 +121,8 @@ const SearchPanel = () => {
   const handleSaveLead = async (result: SearchResult, idx: number) => {
     if (!user) return;
     if (atLimit) {
-      toast.error(limitMessage);
+      if (!isPro) openUpgrade(limitMessage);
+      else toast.error(limitMessage);
       return;
     }
     setSavingId(idx);
