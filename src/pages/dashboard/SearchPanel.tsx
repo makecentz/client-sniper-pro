@@ -126,8 +126,8 @@ const SearchPanel = () => {
       });
       if (error) throw error;
       await refreshLeadCount();
-      if ((user.saved_leads_count + 1) >= PRO_LEADS_WARNING) {
-        toast.warning(`You have ${user.saved_leads_count + 1}/${PRO_LEADS_LIMIT} leads — start deleting old ones.`);
+      if ((user.saved_leads_count + 1) >= savedWarning) {
+        toast.warning(`You have ${user.saved_leads_count + 1}/${savedLimit} leads — delete inactive ones${isPro ? " or grab a Lead Pack for +15 slots" : ""}.`);
       } else {
         toast.success(`Saved "${result.business_name}" to leads`);
       }
