@@ -96,6 +96,10 @@ const Heatmap = () => {
   }, []);
 
   const handleSearch = async () => {
+    if (!isPro) {
+      setUpgradeOpen(true);
+      return;
+    }
     if (!/^\d{5}$/.test(zip)) {
       toast({ title: "Invalid ZIP", description: "Enter a 5-digit US ZIP code.", variant: "destructive" });
       return;
