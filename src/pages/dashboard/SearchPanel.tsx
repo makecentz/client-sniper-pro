@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown } from "lucide-react";
 import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth, PRO_LEADS_LIMIT, PRO_LEADS_WARNING } from "@/contexts/AuthContext";
+import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
 const US_STATES = [
