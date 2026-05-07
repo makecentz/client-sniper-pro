@@ -95,13 +95,13 @@ export function DashboardSidebar() {
                 <div className="flex justify-between">
                   <span className="flex items-center gap-1"><Database className="h-3 w-3" /> Saved Leads</span>
                   <span className={
-                    user.saved_leads_count >= PRO_LEADS_LIMIT
+                    user.saved_leads_count >= user.saved_leads_limit
                       ? "text-destructive font-semibold"
-                      : user.saved_leads_count >= PRO_LEADS_WARNING
+                      : user.saved_leads_count >= getSavedLeadsWarning(user.bonus_saved_slots)
                       ? "text-warning font-semibold"
                       : "text-foreground"
                   }>
-                    {user.saved_leads_count}/{PRO_LEADS_LIMIT}
+                    {user.saved_leads_count}/{user.saved_leads_limit}
                   </span>
                 </div>
               </div>
