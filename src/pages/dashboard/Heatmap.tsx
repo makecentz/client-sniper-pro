@@ -76,6 +76,13 @@ const Heatmap = () => {
   const [modalLead, setModalLead] = useState<Lead | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  const isPro = user?.plan === "pro";
+  const [upgradeOpen, setUpgradeOpen] = useState(!isPro);
+
+  useEffect(() => {
+    setUpgradeOpen(!isPro);
+  }, [isPro]);
+
   // Fetch Maps API key
   useEffect(() => {
     supabase.functions.invoke("get-maps-key").then(({ data, error }) => {
