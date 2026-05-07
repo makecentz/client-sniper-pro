@@ -4,9 +4,14 @@ import type { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { processReferralOnSignup, getReferralCookie } from "@/lib/affiliate";
 
 export const PRO_LEADS_BASE_LIMIT = 100;
+export const FREE_LEADS_LIMIT = 3;
+export const FREE_DAILY_SEARCHES = 2;
+export const FREE_RESULTS_PER_SEARCH = 5;
 export const LEAD_PACK_BONUS_SLOTS = 15;
-export const getSavedLeadsLimit = (bonusSlots = 0) => PRO_LEADS_BASE_LIMIT + (bonusSlots ?? 0);
-export const getSavedLeadsWarning = (bonusSlots = 0) => Math.floor(getSavedLeadsLimit(bonusSlots) * 0.75);
+export const getSavedLeadsLimit = (bonusSlots = 0, plan: "free" | "pro" = "pro") =>
+  plan === "pro" ? PRO_LEADS_BASE_LIMIT + (bonusSlots ?? 0) : FREE_LEADS_LIMIT;
+export const getSavedLeadsWarning = (bonusSlots = 0, plan: "free" | "pro" = "pro") =>
+  Math.floor(getSavedLeadsLimit(bonusSlots, plan) * 0.75);
 // Back-compat aliases (limit without bonus)
 export const PRO_LEADS_LIMIT = PRO_LEADS_BASE_LIMIT;
 export const PRO_LEADS_WARNING = Math.floor(PRO_LEADS_BASE_LIMIT * 0.75);
@@ -65,17 +70,18 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
   ]);
 
   const bonus = (usage as any)?.bonus_saved_slots ?? 0;
+  const plan = (usage?.plan as "free" | "pro") ?? "free";
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? "",
-    plan: (usage?.plan as "free" | "pro") ?? "free",
+    plan,
     searches_today: usage?.searches_today ?? 0,
     leads_remaining: usage?.leads_remaining ?? 2,
     subscribed: usage?.plan === "pro",
     subscription_end: null,
     saved_leads_count: count ?? 0,
     bonus_saved_slots: bonus,
-    saved_leads_limit: getSavedLeadsLimit(bonus),
+    saved_leads_limit: getSavedLeadsLimit(bonus, plan),
   };
 };
 

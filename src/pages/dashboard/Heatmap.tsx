@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LeadDetailModal from "@/components/LeadDetailModal";
+import UpgradeModal from "@/components/UpgradeModal";
 import type { Lead } from "@/lib/mock-data";
 
 interface HeatmapLead {
@@ -75,6 +76,13 @@ const Heatmap = () => {
   const [modalLead, setModalLead] = useState<Lead | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
+  const isPro = user?.plan === "pro";
+  const [upgradeOpen, setUpgradeOpen] = useState(!isPro);
+
+  useEffect(() => {
+    setUpgradeOpen(!isPro);
+  }, [isPro]);
+
   // Fetch Maps API key
   useEffect(() => {
     supabase.functions.invoke("get-maps-key").then(({ data, error }) => {
@@ -88,6 +96,10 @@ const Heatmap = () => {
   }, []);
 
   const handleSearch = async () => {
+    if (!isPro) {
+      setUpgradeOpen(true);
+      return;
+    }
     if (!/^\d{5}$/.test(zip)) {
       toast({ title: "Invalid ZIP", description: "Enter a 5-digit US ZIP code.", variant: "destructive" });
       return;
@@ -443,6 +455,12 @@ const Heatmap = () => {
         open={!!modalLead}
         onOpenChange={(open) => { if (!open) setModalLead(null); }}
         onLeadUpdated={(updated) => setModalLead(updated)}
+      />
+      <UpgradeModal
+        open={upgradeOpen}
+        onOpenChange={setUpgradeOpen}
+        title="Heatmap is a Pro feature"
+        description="The Heatmap is available on the Pro plan. Upgrade to unlock map-based lead discovery, unlimited searches, and 100+ saved leads."
       />
     </div>
   );

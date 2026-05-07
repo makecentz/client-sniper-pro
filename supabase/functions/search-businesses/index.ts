@@ -185,10 +185,12 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
     const searchesToday = usage.last_search_date === today ? usage.searches_today : 0;
-    const maxSearches = usage.plan === "pro" ? 50 : 3;
+    const isProPlan = usage.plan === "pro";
+    const maxSearches = isProPlan ? 50 : 2;
+    const maxResults = isProPlan ? 50 : 5;
 
     if (searchesToday >= maxSearches) {
-      return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches." }), {
+      return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches.", code: "LIMIT_REACHED" }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -311,14 +313,16 @@ Deno.serve(async (req) => {
       if (noWebsiteBucket[i]) leads.push(noWebsiteBucket[i]);
     }
 
-    console.log(`[search-businesses] returned=${leads.length} weak_website=${weakWebsiteBucket.length} no_website=${noWebsiteBucket.length}`);
+    const cappedLeads = leads.slice(0, maxResults);
+
+    console.log(`[search-businesses] returned=${cappedLeads.length} weak_website=${weakWebsiteBucket.length} no_website=${noWebsiteBucket.length}`);
 
     await supabase
       .from("usage_tracking")
       .update({ searches_today: searchesToday + 1, last_search_date: today })
       .eq("user_id", user.id);
 
-    return new Response(JSON.stringify({ leads, total_scanned: allLeads.length }), {
+    return new Response(JSON.stringify({ leads: cappedLeads, total_scanned: allLeads.length }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
