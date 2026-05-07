@@ -185,10 +185,12 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
     const searchesToday = usage.last_search_date === today ? usage.searches_today : 0;
-    const maxSearches = usage.plan === "pro" ? 50 : 3;
+    const isProPlan = usage.plan === "pro";
+    const maxSearches = isProPlan ? 50 : 2;
+    const maxResults = isProPlan ? 50 : 5;
 
     if (searchesToday >= maxSearches) {
-      return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches." }), {
+      return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches.", code: "LIMIT_REACHED" }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
