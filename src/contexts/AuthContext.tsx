@@ -70,17 +70,18 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
   ]);
 
   const bonus = (usage as any)?.bonus_saved_slots ?? 0;
+  const plan = (usage?.plan as "free" | "pro") ?? "free";
   return {
     id: supabaseUser.id,
     email: supabaseUser.email ?? "",
-    plan: (usage?.plan as "free" | "pro") ?? "free",
+    plan,
     searches_today: usage?.searches_today ?? 0,
     leads_remaining: usage?.leads_remaining ?? 2,
     subscribed: usage?.plan === "pro",
     subscription_end: null,
     saved_leads_count: count ?? 0,
     bonus_saved_slots: bonus,
-    saved_leads_limit: getSavedLeadsLimit(bonus),
+    saved_leads_limit: getSavedLeadsLimit(bonus, plan),
   };
 };
 
