@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import LeadDetailModal from "@/components/LeadDetailModal";
+import UpgradeModal from "@/components/UpgradeModal";
 import type { Lead } from "@/lib/mock-data";
 
 interface HeatmapLead {
