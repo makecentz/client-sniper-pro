@@ -10,6 +10,7 @@ import { type SearchResult } from "@/lib/mock-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import UpgradeModal from "@/components/UpgradeModal";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
