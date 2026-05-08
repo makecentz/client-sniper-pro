@@ -174,6 +174,12 @@ Deno.serve(async (req) => {
       formattedUrl = `https://${formattedUrl}`;
     }
 
+    if (!isSafeUrl(formattedUrl)) {
+      return new Response(JSON.stringify({ error: "Invalid URL" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     console.log("Analyzing website:", formattedUrl);
     const result = await checkWebsite(formattedUrl);
 
