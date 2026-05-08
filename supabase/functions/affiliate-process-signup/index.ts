@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
         if (affEmail) {
           const { data: profile } = await admin
             .from("profiles").select("display_name").eq("user_id", link.user_id).maybeSingle();
-          const origin = req.headers.get("origin") || "https://clienthunterai.com";
+          const origin = Deno.env.get("SITE_URL") || "https://clienthunterai.com";
           await admin.functions.invoke("send-transactional-email", {
             body: {
               templateName: "new-referral-signup",
