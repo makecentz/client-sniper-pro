@@ -27,9 +27,21 @@ serve(async (req) => {
     const { priceId } = await req.json();
     if (!priceId) throw new Error("Missing priceId");
 
+    // Allowlist of valid Stripe price IDs to prevent attackers from creating
+    // checkout sessions for unintended products.
+    const PRO_SUBSCRIPTION_PRICE = "price_1TOyHSIEsTwcnIOwGpAkXs8j";
+    const LEAD_PACK_PRICE = "price_1TItluIEsTwcnIOwZ1FfAqiY";
+    const ALLOWED_PRICES = new Set([PRO_SUBSCRIPTION_PRICE, LEAD_PACK_PRICE]);
+    if (!ALLOWED_PRICES.has(priceId)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid price" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      );
+    }
+
     // Determine mode based on priceId
-    const isSubscription = priceId === "price_1TOyHSIEsTwcnIOwGpAkXs8j";
-    const isLeadPack = priceId === "price_1TItluIEsTwcnIOwZ1FfAqiY";
+    const isSubscription = priceId === PRO_SUBSCRIPTION_PRICE;
+    const isLeadPack = priceId === LEAD_PACK_PRICE;
 
     // Lead Pack requires an active Pro plan.
     if (isLeadPack) {
