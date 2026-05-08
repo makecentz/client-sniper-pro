@@ -1,0 +1,2 @@
+UPDATE public.leads SET screenshot_url = NULL, screenshot_captured_at = NULL WHERE screenshot_url LIKE '%api.screenshotone.com%access_key=%';
+UPDATE public.offer_mockups SET before_image_url = NULL WHERE before_image_url LIKE '%api.screenshotone.com%access_key=%';
