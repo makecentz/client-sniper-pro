@@ -43,12 +43,16 @@ Deno.serve(async (req) => {
         .select()
         .single();
       if (!error) return json({ link: data });
-      if (!error.message.includes("duplicate")) return json({ error: error.message }, 500);
+      if (!error.message.includes("duplicate")) {
+        console.error("affiliate-create-link insert error:", error);
+        return json({ error: "An unexpected error occurred" }, 500);
+      }
       attempt++;
     }
     return json({ error: "Could not generate unique code" }, 500);
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("affiliate-create-link error:", e);
+    return json({ error: "An unexpected error occurred" }, 500);
   }
 });
 

@@ -43,9 +43,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validate URL format
+    // Validate URL format and enforce http(s) scheme only
     try {
-      new URL(url);
+      const parsed = new URL(url);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        return new Response(JSON.stringify({ error: "Invalid URL" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     } catch {
       return new Response(JSON.stringify({ error: "Invalid URL format" }), {
         status: 400,
