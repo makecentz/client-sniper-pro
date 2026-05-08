@@ -12,6 +12,25 @@ const PHONE_RE =
 
 const CONTACT_PREFIXES = ["info@", "contact@", "hello@", "support@", "sales@", "admin@"];
 
+// SSRF guard: block private/loopback/link-local hosts so a user-controlled
+// lead.website cannot make the edge function probe internal infrastructure
+// or cloud metadata endpoints.
+function isSafeUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (!["http:", "https:"].includes(u.protocol)) return false;
+    const h = u.hostname.toLowerCase();
+    if (
+      h === "localhost" || h === "0.0.0.0" || h === "::1" ||
+      h.endsWith(".localhost") || h.endsWith(".internal") || h.endsWith(".local") ||
+      /^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h) ||
+      /^169\.254\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+      /^fc[0-9a-f]{2}:/i.test(h) || /^fe80:/i.test(h)
+    ) return false;
+    return true;
+  } catch { return false; }
+}
+
 function extractEmails(html: string): string[] {
   const raw = html.match(EMAIL_RE) || [];
   const cleaned = raw
