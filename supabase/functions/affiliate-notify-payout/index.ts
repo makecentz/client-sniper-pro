@@ -63,7 +63,8 @@ Deno.serve(async (req) => {
 
     return json({ ok: true });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("affiliate-notify-payout error:", e);
+    return json({ error: "An unexpected error occurred" }, 500);
   }
 });
 

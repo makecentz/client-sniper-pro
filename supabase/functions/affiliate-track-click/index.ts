@@ -27,11 +27,15 @@ Deno.serve(async (req) => {
     const { data, error } = await admin.rpc("record_affiliate_click", {
       _code: code, _ip_hash: ipHash, _user_agent: ua.slice(0, 500),
     });
-    if (error) return json({ error: error.message }, 500);
+    if (error) {
+      console.error("affiliate-track-click rpc error:", error);
+      return json({ error: "An unexpected error occurred" }, 500);
+    }
 
     return json({ ok: true, tracked: !!data });
   } catch (e) {
-    return json({ error: String(e) }, 500);
+    console.error("affiliate-track-click error:", e);
+    return json({ error: "An unexpected error occurred" }, 500);
   }
 });
 
