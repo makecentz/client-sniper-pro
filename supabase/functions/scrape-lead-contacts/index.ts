@@ -150,7 +150,13 @@ Deno.serve(async (req) => {
     baseUrl = baseUrl.replace(/\/+$/, "");
 
     const paths = ["", "/contact", "/contact-us", "/about", "/about-us"];
-    const urls = paths.map((p) => `${baseUrl}${p}`);
+    const urls = paths.map((p) => `${baseUrl}${p}`).filter(isSafeUrl);
+    if (urls.length === 0) {
+      await supabase.from("leads").update({ contact_scrape_status: "no_data" }).eq("id", lead_id);
+      return new Response(JSON.stringify({ error: "Invalid website URL" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Fetch all pages in parallel
     const pages = await Promise.all(urls.map(fetchPage));
