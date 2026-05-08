@@ -71,13 +71,42 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return jsonResponse({ error: "AI not configured" }, 500);
 
-    // 1) BEFORE: Capture screenshot if missing and a website exists
+    // 1) BEFORE: Capture screenshot if missing and a website exists.
+    // IMPORTANT: never persist a URL containing the ScreenshotOne access_key.
+    // Fetch server-side and upload the image bytes to Storage instead.
     let beforeUrl: string | null = lead.screenshot_url;
+    if (beforeUrl && beforeUrl.includes("api.screenshotone.com")) {
+      // Legacy row that leaked the API key — drop it and re-capture.
+      beforeUrl = null;
+    }
     if (lead.website && lead.has_website && !beforeUrl) {
       const screenshotApiKey = Deno.env.get("SCREENSHOTONE_API_KEY");
       if (screenshotApiKey) {
-        beforeUrl = `https://api.screenshotone.com/take?access_key=${encodeURIComponent(screenshotApiKey)}&url=${encodeURIComponent(lead.website)}&viewport_width=1280&viewport_height=900&format=jpg&quality=80&block_ads=true&delay=2`;
-        await admin.from("leads").update({ screenshot_url: beforeUrl, screenshot_captured_at: new Date().toISOString() }).eq("id", lead_id);
+        try {
+          const shotUrl = `https://api.screenshotone.com/take?access_key=${encodeURIComponent(screenshotApiKey)}&url=${encodeURIComponent(lead.website)}&viewport_width=1280&viewport_height=900&format=jpg&image_quality=80&block_ads=true&delay=2`;
+          const shotResp = await fetch(shotUrl);
+          if (shotResp.ok) {
+            const buf = new Uint8Array(await shotResp.arrayBuffer());
+            const mime = shotResp.headers.get("content-type") || "image/jpeg";
+            const ext = mime.includes("png") ? "png" : "jpg";
+            const path = `${userId}/${lead_id}/before-${Date.now()}.${ext}`;
+            const { error: upErr } = await admin.storage.from("mockups").upload(path, buf, {
+              contentType: mime,
+              upsert: false,
+            });
+            if (!upErr) {
+              const { data: pub } = admin.storage.from("mockups").getPublicUrl(path);
+              beforeUrl = pub.publicUrl;
+              await admin.from("leads").update({ screenshot_url: beforeUrl, screenshot_captured_at: new Date().toISOString() }).eq("id", lead_id);
+            } else {
+              console.error("Before screenshot upload failed", upErr);
+            }
+          } else {
+            console.error("ScreenshotOne fetch failed", shotResp.status);
+          }
+        } catch (e) {
+          console.error("Before screenshot capture error", e);
+        }
       }
     }
 
