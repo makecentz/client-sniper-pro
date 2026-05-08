@@ -5,6 +5,24 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// SSRF guard: block private/loopback/link-local hosts so users cannot
+// make the edge function probe internal infrastructure or cloud metadata.
+function isSafeUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (!["http:", "https:"].includes(u.protocol)) return false;
+    const h = u.hostname.toLowerCase();
+    if (
+      h === "localhost" || h === "0.0.0.0" || h === "::1" ||
+      h.endsWith(".localhost") || h.endsWith(".internal") || h.endsWith(".local") ||
+      /^127\./.test(h) || /^10\./.test(h) || /^192\.168\./.test(h) ||
+      /^169\.254\./.test(h) || /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+      /^fc[0-9a-f]{2}:/i.test(h) || /^fe80:/i.test(h)
+    ) return false;
+    return true;
+  } catch { return false; }
+}
+
 function scrapeContactInfo(html: string): {
   scraped_name: string | null;
   scraped_phone: string | null;
@@ -154,6 +172,12 @@ Deno.serve(async (req) => {
     let formattedUrl = url.trim();
     if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
       formattedUrl = `https://${formattedUrl}`;
+    }
+
+    if (!isSafeUrl(formattedUrl)) {
+      return new Response(JSON.stringify({ error: "Invalid URL" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     console.log("Analyzing website:", formattedUrl);

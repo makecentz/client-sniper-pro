@@ -284,6 +284,6 @@ Sender current deal: ${company?.current_deal || "none"}`;
     return jsonResponse({ mockup: saved });
   } catch (e) {
     console.error("generate-offer-mockup error:", e);
-    return jsonResponse({ error: e instanceof Error ? e.message : "Unknown error" }, 500);
+    return jsonResponse({ error: "An unexpected error occurred" }, 500);
   }
 });
