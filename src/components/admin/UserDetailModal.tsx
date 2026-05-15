@@ -19,6 +19,8 @@ export interface AdminUserRow {
   last_search_date: string | null;
   email: string;
   leads_count: number;
+  frozen?: boolean;
+  admin_message?: string | null;
   company?: {
     business_name: string | null;
     website_url: string | null;
