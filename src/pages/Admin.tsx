@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone, UserPlus, Snowflake } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -16,6 +16,7 @@ import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModa
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SocialProofManager } from "@/components/admin/SocialProofManager";
 import { AdminAffiliates } from "@/components/admin/AdminAffiliates";
+import { AddUserDialog } from "@/components/admin/AddUserDialog";
 
 interface WebhookRow {
   id: string;
@@ -46,6 +47,54 @@ const Admin = () => {
   const [footerEmail, setFooterEmail] = useState("");
   const [footerCompanyName, setFooterCompanyName] = useState("");
   const [savingFooter, setSavingFooter] = useState(false);
+  const [addUserOpen, setAddUserOpen] = useState(false);
+
+  const refetchUsers = async () => {
+    const [usageRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
+      supabase.from("usage_tracking").select("*"),
+      supabase.from("profiles").select("user_id, display_name, created_at"),
+      supabase.from("leads").select("user_id"),
+      supabase.from("company_settings").select("*"),
+    ]);
+    const usageRows = usageRes.data || [];
+    const profileMap = new Map<string, any>();
+    (profilesRes.data || []).forEach((p) => profileMap.set(p.user_id, p));
+    const leadsCountMap = new Map<string, number>();
+    (leadsPerUserRes.data || []).forEach((l) => leadsCountMap.set(l.user_id, (leadsCountMap.get(l.user_id) || 0) + 1));
+    const companyMap = new Map<string, any>();
+    (companyRes.data || []).forEach((c) => companyMap.set(c.user_id, c));
+    const merged: AdminUserRow[] = usageRows.map((u: any) => ({
+      user_id: u.user_id, plan: u.plan, searches_today: u.searches_today, leads_remaining: u.leads_remaining,
+      created_at: u.created_at, last_search_date: u.last_search_date,
+      email: profileMap.get(u.user_id)?.display_name || u.user_id.slice(0, 8),
+      leads_count: leadsCountMap.get(u.user_id) || 0,
+      frozen: !!u.frozen,
+      admin_message: u.admin_message ?? null,
+      company: companyMap.get(u.user_id) ? {
+        business_name: companyMap.get(u.user_id).business_name, website_url: companyMap.get(u.user_id).website_url,
+        phone: companyMap.get(u.user_id).phone, email: companyMap.get(u.user_id).email,
+        website_dev_price: companyMap.get(u.user_id).website_dev_price, current_deal: companyMap.get(u.user_id).current_deal,
+      } : undefined,
+    }));
+    setUsers(merged);
+  };
+
+  const handleToggleFrozen = async (userId: string, frozen: boolean) => {
+    setUpdating(userId);
+    const { error } = await supabase.from("usage_tracking").update({ frozen }).eq("user_id", userId);
+    if (error) toast.error("Failed to update frozen state");
+    else { updateUserState(userId, (u) => ({ ...u, frozen })); toast.success(frozen ? "Account frozen" : "Account unfrozen"); }
+    setUpdating(null);
+  };
+
+  const handleSaveMessage = async (userId: string, message: string) => {
+    setUpdating(userId);
+    const value = message.trim() || null;
+    const { error } = await supabase.from("usage_tracking").update({ admin_message: value, admin_message_at: value ? new Date().toISOString() : null }).eq("user_id", userId);
+    if (error) toast.error("Failed to save message");
+    else { updateUserState(userId, (u) => ({ ...u, admin_message: value })); toast.success(value ? "Message sent" : "Message cleared"); }
+    setUpdating(null);
+  };
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
@@ -171,11 +220,13 @@ const Admin = () => {
       const companyMap = new Map<string, typeof companyRows[0]>();
       companyRows.forEach((c) => companyMap.set(c.user_id, c));
 
-      const merged: AdminUserRow[] = usageRows.map((u) => ({
+      const merged: AdminUserRow[] = usageRows.map((u: any) => ({
         user_id: u.user_id, plan: u.plan, searches_today: u.searches_today, leads_remaining: u.leads_remaining,
         created_at: u.created_at, last_search_date: u.last_search_date,
         email: profileMap.get(u.user_id)?.display_name || u.user_id.slice(0, 8),
         leads_count: leadsCountMap.get(u.user_id) || 0,
+        frozen: !!u.frozen,
+        admin_message: u.admin_message ?? null,
         company: companyMap.get(u.user_id) ? {
           business_name: companyMap.get(u.user_id)!.business_name, website_url: companyMap.get(u.user_id)!.website_url,
           phone: companyMap.get(u.user_id)!.phone, email: companyMap.get(u.user_id)!.email,
@@ -421,34 +472,38 @@ const Admin = () => {
             </div>
             <div className="flex items-center gap-2">
               <Input placeholder="Search by email..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} className="max-w-xs" />
+              <Button variant="outline" size="sm" onClick={() => setAddUserOpen(true)}><UserPlus className="mr-2 h-4 w-4" />Add User</Button>
               <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
             </div>
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead><TableHead>Plan</TableHead><TableHead>Searches Today</TableHead>
-                  <TableHead>Leads Remaining</TableHead><TableHead>Leads Saved</TableHead><TableHead>Last Active</TableHead>
-                  <TableHead>Joined</TableHead><TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((u) => (
-                  <TableRow key={u.user_id}>
-                    <TableCell className="font-medium">{u.email}</TableCell>
-                    <TableCell><Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">{u.plan}</Badge></TableCell>
-                    <TableCell>{u.searches_today}</TableCell>
-                    <TableCell>{u.leads_remaining}</TableCell>
-                    <TableCell>{u.leads_count}</TableCell>
-                    <TableCell className="text-muted-foreground">{u.last_search_date || "Never"}</TableCell>
-                    <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell><Button size="sm" variant="ghost" onClick={() => setSelectedUser(u)}><Eye className="h-4 w-4" /></Button></TableCell>
+            <div className="max-h-[26rem] overflow-y-auto rounded-md border border-border/40">
+              <Table>
+                <TableHeader className="sticky top-0 bg-card z-10">
+                  <TableRow>
+                    <TableHead>Email</TableHead><TableHead>Plan</TableHead><TableHead>Status</TableHead><TableHead>Searches Today</TableHead>
+                    <TableHead>Leads Remaining</TableHead><TableHead>Leads Saved</TableHead><TableHead>Last Active</TableHead>
+                    <TableHead>Joined</TableHead><TableHead></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((u) => (
+                    <TableRow key={u.user_id}>
+                      <TableCell className="font-medium">{u.email}</TableCell>
+                      <TableCell><Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">{u.plan}</Badge></TableCell>
+                      <TableCell>{u.frozen ? <Badge variant="destructive" className="gap-1"><Snowflake className="h-3 w-3" />Frozen</Badge> : <Badge variant="outline">Active</Badge>}</TableCell>
+                      <TableCell>{u.searches_today}</TableCell>
+                      <TableCell>{u.leads_remaining}</TableCell>
+                      <TableCell>{u.leads_count}</TableCell>
+                      <TableCell className="text-muted-foreground">{u.last_search_date || "Never"}</TableCell>
+                      <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell><Button size="sm" variant="ghost" onClick={() => setSelectedUser(u)}><Eye className="h-4 w-4" /></Button></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
@@ -456,27 +511,32 @@ const Admin = () => {
           <CardHeader><CardTitle>Recent Webhook Events</CardTitle></CardHeader>
           <CardContent>
             {webhooks.length === 0 ? <p className="text-sm text-muted-foreground">No webhook events yet.</p> : (
-              <Table>
-                <TableHeader><TableRow><TableHead>Source</TableHead><TableHead>Event</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
-                <TableBody>
-                  {webhooks.map((w) => (
-                    <TableRow key={w.id}>
-                      <TableCell><Badge variant="outline" className="capitalize">{w.source}</Badge></TableCell>
-                      <TableCell className="font-mono text-sm">{w.event_type}</TableCell>
-                      <TableCell className="text-muted-foreground">{new Date(w.created_at).toLocaleString()}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="max-h-[20rem] overflow-y-auto rounded-md border border-border/40">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-card z-10"><TableRow><TableHead>Source</TableHead><TableHead>Event</TableHead><TableHead>Time</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {webhooks.map((w) => (
+                      <TableRow key={w.id}>
+                        <TableCell><Badge variant="outline" className="capitalize">{w.source}</Badge></TableCell>
+                        <TableCell className="font-mono text-sm">{w.event_type}</TableCell>
+                        <TableCell className="text-muted-foreground">{new Date(w.created_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
       </div>
 
+      <AddUserDialog open={addUserOpen} onOpenChange={setAddUserOpen} onCreated={refetchUsers} />
+
       <UserDetailModal
         user={selectedUser} open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}
         onPlanChange={handlePlanChange} onLeadsChange={handleLeadsChange} onResetSearches={handleResetSearches}
         onSaveProfile={handleSaveProfile} onSaveCompany={handleSaveCompany} onDeleteUserData={handleDeleteUserData}
+        onToggleFrozen={handleToggleFrozen} onSaveMessage={handleSaveMessage}
         updating={updating}
       />
     </div>

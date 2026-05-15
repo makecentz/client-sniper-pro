@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Settings, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DashboardMessageBanner } from "@/components/DashboardMessageBanner";
 
 export function DashboardLayout() {
   const { user, logout } = useAuth();
@@ -66,6 +67,7 @@ export function DashboardLayout() {
               </DropdownMenu>
             </div>
           </header>
+          <DashboardMessageBanner />
           <main className="flex-1 p-6">
             <Outlet />
           </main>
