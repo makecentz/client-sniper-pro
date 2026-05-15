@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone, UserPlus, Snowflake } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -16,6 +16,7 @@ import { UserDetailModal, AdminUserRow } from "@/components/admin/UserDetailModa
 import { RevenueAnalytics } from "@/components/admin/RevenueAnalytics";
 import { SocialProofManager } from "@/components/admin/SocialProofManager";
 import { AdminAffiliates } from "@/components/admin/AdminAffiliates";
+import { AddUserDialog } from "@/components/admin/AddUserDialog";
 
 interface WebhookRow {
   id: string;
