@@ -1062,8 +1062,11 @@ export type Database = {
       }
       usage_tracking: {
         Row: {
+          admin_message: string | null
+          admin_message_at: string | null
           bonus_saved_slots: number
           created_at: string
+          frozen: boolean
           id: string
           last_search_date: string | null
           leads_remaining: number
@@ -1073,8 +1076,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_message?: string | null
+          admin_message_at?: string | null
           bonus_saved_slots?: number
           created_at?: string
+          frozen?: boolean
           id?: string
           last_search_date?: string | null
           leads_remaining?: number
@@ -1084,8 +1090,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_message?: string | null
+          admin_message_at?: string | null
           bonus_saved_slots?: number
           created_at?: string
+          frozen?: boolean
           id?: string
           last_search_date?: string | null
           leads_remaining?: number
