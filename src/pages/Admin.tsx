@@ -47,6 +47,54 @@ const Admin = () => {
   const [footerEmail, setFooterEmail] = useState("");
   const [footerCompanyName, setFooterCompanyName] = useState("");
   const [savingFooter, setSavingFooter] = useState(false);
+  const [addUserOpen, setAddUserOpen] = useState(false);
+
+  const refetchUsers = async () => {
+    const [usageRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
+      supabase.from("usage_tracking").select("*"),
+      supabase.from("profiles").select("user_id, display_name, created_at"),
+      supabase.from("leads").select("user_id"),
+      supabase.from("company_settings").select("*"),
+    ]);
+    const usageRows = usageRes.data || [];
+    const profileMap = new Map<string, any>();
+    (profilesRes.data || []).forEach((p) => profileMap.set(p.user_id, p));
+    const leadsCountMap = new Map<string, number>();
+    (leadsPerUserRes.data || []).forEach((l) => leadsCountMap.set(l.user_id, (leadsCountMap.get(l.user_id) || 0) + 1));
+    const companyMap = new Map<string, any>();
+    (companyRes.data || []).forEach((c) => companyMap.set(c.user_id, c));
+    const merged: AdminUserRow[] = usageRows.map((u: any) => ({
+      user_id: u.user_id, plan: u.plan, searches_today: u.searches_today, leads_remaining: u.leads_remaining,
+      created_at: u.created_at, last_search_date: u.last_search_date,
+      email: profileMap.get(u.user_id)?.display_name || u.user_id.slice(0, 8),
+      leads_count: leadsCountMap.get(u.user_id) || 0,
+      frozen: !!u.frozen,
+      admin_message: u.admin_message ?? null,
+      company: companyMap.get(u.user_id) ? {
+        business_name: companyMap.get(u.user_id).business_name, website_url: companyMap.get(u.user_id).website_url,
+        phone: companyMap.get(u.user_id).phone, email: companyMap.get(u.user_id).email,
+        website_dev_price: companyMap.get(u.user_id).website_dev_price, current_deal: companyMap.get(u.user_id).current_deal,
+      } : undefined,
+    }));
+    setUsers(merged);
+  };
+
+  const handleToggleFrozen = async (userId: string, frozen: boolean) => {
+    setUpdating(userId);
+    const { error } = await supabase.from("usage_tracking").update({ frozen }).eq("user_id", userId);
+    if (error) toast.error("Failed to update frozen state");
+    else { updateUserState(userId, (u) => ({ ...u, frozen })); toast.success(frozen ? "Account frozen" : "Account unfrozen"); }
+    setUpdating(null);
+  };
+
+  const handleSaveMessage = async (userId: string, message: string) => {
+    setUpdating(userId);
+    const value = message.trim() || null;
+    const { error } = await supabase.from("usage_tracking").update({ admin_message: value, admin_message_at: value ? new Date().toISOString() : null }).eq("user_id", userId);
+    if (error) toast.error("Failed to save message");
+    else { updateUserState(userId, (u) => ({ ...u, admin_message: value })); toast.success(value ? "Message sent" : "Message cleared"); }
+    setUpdating(null);
+  };
 
   const updateUserState = (userId: string, updater: (u: AdminUserRow) => AdminUserRow) => {
     setUsers((prev) => prev.map((u) => (u.user_id === userId ? updater(u) : u)));
