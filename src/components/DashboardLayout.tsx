@@ -67,6 +67,7 @@ export function DashboardLayout() {
               </DropdownMenu>
             </div>
           </header>
+          <DashboardMessageBanner />
           <main className="flex-1 p-6">
             <Outlet />
           </main>
