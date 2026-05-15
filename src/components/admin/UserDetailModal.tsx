@@ -181,7 +181,36 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
 
           <Separator />
 
-          {/* Danger Zone */}
+          {/* Account Status */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2"><Snowflake className="h-4 w-4" /> Account Status</h3>
+            <div className="flex items-center justify-between rounded-md border border-border/50 p-3">
+              <div>
+                <p className="text-sm font-medium">Freeze account</p>
+                <p className="text-xs text-muted-foreground">Frozen users cannot access the dashboard.</p>
+              </div>
+              <Switch checked={!!user.frozen} onCheckedChange={(v) => onToggleFrozen(user.user_id, v)} disabled={updating === user.user_id} />
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Dashboard Message */}
+          <section>
+            <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2"><MessageSquare className="h-4 w-4" /> Dashboard Message</h3>
+            <p className="text-xs text-muted-foreground mb-2">Shown as a banner at the top of this user's dashboard. Leave empty and save to clear.</p>
+            <Textarea rows={3} value={adminMessage} onChange={(e) => setAdminMessage(e.target.value)} placeholder="Please contact support." />
+            <div className="mt-2 flex gap-2">
+              <Button size="sm" onClick={() => onSaveMessage(user.user_id, adminMessage)} disabled={updating === user.user_id}>
+                <Save className="h-3 w-3 mr-1" /> Save Message
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => { setAdminMessage(""); onSaveMessage(user.user_id, ""); }} disabled={updating === user.user_id}>
+                Clear
+              </Button>
+            </div>
+          </section>
+
+          <Separator />
           <section>
             <h3 className="text-sm font-semibold text-destructive mb-2">Danger Zone</h3>
             <p className="text-xs text-muted-foreground mb-3">This will permanently delete all of this user's leads, company settings, usage data, and profile.</p>
