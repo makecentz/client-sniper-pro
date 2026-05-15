@@ -68,7 +68,7 @@ const Affiliate = () => {
 
   useEffect(() => { loadAll(); }, [user?.id]);
 
-  const referralUrl = link ? `${window.location.origin}/signup?ref=${link.referral_code}` : "";
+  const referralUrl = link ? `${window.location.origin}/?ref=${link.referral_code}` : "";
 
   const totalEarned = commissions.filter((c) => c.status !== "rejected").reduce((s, c) => s + Number(c.amount), 0);
   const paidOut = payouts.filter((p) => p.status === "paid").reduce((s, p) => s + Number(p.amount), 0);
