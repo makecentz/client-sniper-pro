@@ -220,11 +220,13 @@ const Admin = () => {
       const companyMap = new Map<string, typeof companyRows[0]>();
       companyRows.forEach((c) => companyMap.set(c.user_id, c));
 
-      const merged: AdminUserRow[] = usageRows.map((u) => ({
+      const merged: AdminUserRow[] = usageRows.map((u: any) => ({
         user_id: u.user_id, plan: u.plan, searches_today: u.searches_today, leads_remaining: u.leads_remaining,
         created_at: u.created_at, last_search_date: u.last_search_date,
         email: profileMap.get(u.user_id)?.display_name || u.user_id.slice(0, 8),
         leads_count: leadsCountMap.get(u.user_id) || 0,
+        frozen: !!u.frozen,
+        admin_message: u.admin_message ?? null,
         company: companyMap.get(u.user_id) ? {
           business_name: companyMap.get(u.user_id)!.business_name, website_url: companyMap.get(u.user_id)!.website_url,
           phone: companyMap.get(u.user_id)!.phone, email: companyMap.get(u.user_id)!.email,
