@@ -28,6 +28,7 @@ import AffiliateProgram from "./pages/AffiliateProgram";
 import AffiliateSignup from "./pages/AffiliateSignup";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
+import { ReferralTracker } from "@/components/ReferralTracker";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ReferralTracker />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
