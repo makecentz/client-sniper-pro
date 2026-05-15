@@ -50,11 +50,14 @@ interface UserDetailModalProps {
   onSaveProfile: (userId: string, displayName: string) => void;
   onSaveCompany: (userId: string, data: CompanyData) => void;
   onDeleteUserData: (userId: string) => void;
+  onToggleFrozen: (userId: string, frozen: boolean) => void;
+  onSaveMessage: (userId: string, message: string) => void;
   updating: string | null;
 }
 
-export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLeadsChange, onResetSearches, onSaveProfile, onSaveCompany, onDeleteUserData, updating }: UserDetailModalProps) {
+export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLeadsChange, onResetSearches, onSaveProfile, onSaveCompany, onDeleteUserData, onToggleFrozen, onSaveMessage, updating }: UserDetailModalProps) {
   const [displayName, setDisplayName] = useState("");
+  const [adminMessage, setAdminMessage] = useState("");
   const [company, setCompany] = useState<CompanyData>({
     business_name: "", website_url: "", phone: "", email: "", website_dev_price: "", current_deal: "",
   });
