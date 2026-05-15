@@ -65,6 +65,7 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
   useEffect(() => {
     if (user) {
       setDisplayName(user.email);
+      setAdminMessage(user.admin_message || "");
       setCompany({
         business_name: user.company?.business_name || "",
         website_url: user.company?.website_url || "",
@@ -85,6 +86,7 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
           <DialogTitle className="flex items-center gap-2">
             {user.email}
             <Badge variant={user.plan === "pro" ? "default" : "secondary"} className="capitalize">{user.plan}</Badge>
+            {user.frozen && <Badge variant="destructive" className="gap-1"><Snowflake className="h-3 w-3" />Frozen</Badge>}
           </DialogTitle>
         </DialogHeader>
 
