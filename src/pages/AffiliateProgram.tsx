@@ -32,6 +32,7 @@ const AffiliateProgram = () => {
         </div>
       </header>
 
+      <main>
       {/* Hero */}
       <section className="px-6 py-20 text-center">
         <div className="mx-auto max-w-3xl">
@@ -80,6 +81,7 @@ const AffiliateProgram = () => {
           ))}
         </div>
       </section>
+      </main>
     </div>
   );
 };
