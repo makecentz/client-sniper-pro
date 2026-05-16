@@ -2,10 +2,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 
 const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Terms of Service | Client Hunter AI"
+        description="Read the Client Hunter AI terms of service covering account use, subscriptions, refunds, and acceptable use of our lead generation platform."
+        path="/terms"
+      />
       <nav className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link to="/" className="flex items-center">
