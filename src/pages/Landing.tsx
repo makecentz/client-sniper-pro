@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.png";
 import pricingBg from "@/assets/pricing-bg.png";
 import { SocialProofBanner } from "@/components/SocialProofBanner";
+import { Seo } from "@/components/Seo";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
@@ -60,6 +61,11 @@ const Landing = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Client Hunter AI — Lead generation for web developers"
+        description="Find, score, and close local business leads with AI-powered outreach, heatmap search, and instant website audits — built for web developers."
+        path="/"
+      />
       {/* Nav */}
       <nav className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
@@ -85,6 +91,7 @@ const Landing = () => {
         </div>
       </nav>
 
+      <main>
       {/* Hero */}
       <section className="relative overflow-hidden px-6 py-24 text-center">
         <video
@@ -329,6 +336,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="border-t border-border/50 px-6 py-12">
