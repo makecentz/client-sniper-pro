@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Gift, Upload, AlertCircle, Loader2 } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 import { trackReferralClick, getReferralCookie } from "@/lib/affiliate";
 import { US_STATES } from "@/lib/us-states";
@@ -139,6 +140,11 @@ const AffiliateSignup = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-10">
+      <Seo
+        title="Affiliate Sign-Up | Client Hunter AI"
+        description="Join the Client Hunter AI affiliate program. Complete your W-9 / I-9 and start earning recurring commissions on referrals."
+        path="/affiliate-signup"
+      />
       <Card className="w-full max-w-2xl border-border/50">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-2 block">

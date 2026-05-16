@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Mail, Phone, MapPin, Clock } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 
 const faqs = [
   {
@@ -28,8 +29,23 @@ const faqs = [
 ];
 
 const CustomerSupport = () => {
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Customer Support | Client Hunter AI"
+        description="Contact Client Hunter AI support by email, phone, or mail. Browse FAQs on subscriptions, refunds, lead data, and plan upgrades."
+        path="/support"
+        jsonLd={faqJsonLd}
+      />
       <nav className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <Link to="/" className="flex items-center">

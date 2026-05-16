@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Mail, Gift } from "lucide-react";
 import { toast } from "sonner";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 import { trackReferralClick, getReferralCookie } from "@/lib/affiliate";
 
@@ -45,6 +46,11 @@ const Signup = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Seo
+        title="Sign up | Client Hunter AI"
+        description="Create your Client Hunter AI account and start finding high-value local business leads with AI-powered outreach."
+        path="/signup"
+      />
       <Card className="w-full max-w-md border-border/50">
         <CardHeader className="text-center">
           {submitted ? (

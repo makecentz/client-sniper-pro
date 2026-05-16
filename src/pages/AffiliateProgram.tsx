@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Gift, DollarSign, Users, Zap, ArrowRight } from "lucide-react";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 
 const AffiliateProgram = () => {
   const { user } = useAuth();
@@ -18,6 +19,11 @@ const AffiliateProgram = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title="Affiliate Program | Client Hunter AI"
+        description={`Earn ${rate}% recurring commission referring web developers to Client Hunter AI. Join the affiliate program and start earning today.`}
+        path="/affiliate-program"
+      />
       {/* Nav */}
       <header className="border-b border-border/50 px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
@@ -26,6 +32,7 @@ const AffiliateProgram = () => {
         </div>
       </header>
 
+      <main>
       {/* Hero */}
       <section className="px-6 py-20 text-center">
         <div className="mx-auto max-w-3xl">
@@ -74,6 +81,7 @@ const AffiliateProgram = () => {
           ))}
         </div>
       </section>
+      </main>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/assets/logo.png";
+import { Seo } from "@/components/Seo";
 import { toast } from "sonner";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 
@@ -34,6 +35,11 @@ const Login = () => {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Seo
+        title="Log in | Client Hunter AI"
+        description="Sign in to your Client Hunter AI account to manage leads, run searches, and send AI-powered outreach."
+        path="/login"
+      />
       <Card className="w-full max-w-md border-border/50">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-2 block">

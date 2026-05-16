@@ -1,0 +1,16 @@
+# Client Hunter AI
+
+> Lead generation platform for web developers. Find, score, and close local business leads with AI-powered outreach, heatmap search, and instant website audits.
+
+Client Hunter AI helps freelance web developers and agencies discover local businesses that need new or improved websites. It scores leads automatically (no website = hot lead, weak site = needs upgrade) and generates personalized email, DM, and SMS outreach.
+
+## Pages
+
+- [Home](/): Product overview and pricing.
+- [Sign up](/signup): Create an account.
+- [Log in](/login): Access your dashboard.
+- [Affiliate program](/affiliate-program): Earn commissions referring users.
+- [Affiliate signup](/affiliate-signup): Join the affiliate program.
+- [Support](/support): Contact information and FAQs.
+- [Terms of Service](/terms): Legal terms.
+- [Privacy Policy](/privacy): How we handle your data.
