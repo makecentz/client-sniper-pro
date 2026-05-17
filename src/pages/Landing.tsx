@@ -25,7 +25,7 @@ const Landing = () => {
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
   const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
   const [footerPhone, setFooterPhone] = useState("(445) 326-9638");
-  const [footerEmail, setFooterEmail] = useState("ecomexpertsllc@gmail.com");
+  const [footerEmail, setFooterEmail] = useState("clienthunterainow@gmail.com");
   const [footerCompanyName, setFooterCompanyName] = useState("EcomExperts LLC");
 
   useEffect(() => {
