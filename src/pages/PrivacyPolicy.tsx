@@ -98,7 +98,7 @@ const PrivacyPolicy = () => {
               EcomExperts LLC<br />
               5429 Baltimore Ave, Philadelphia, PA 19143<br />
               Email: <a href="mailto:ecomexpertsllc@gmail.com" className="text-primary hover:underline">ecomexpertsllc@gmail.com</a><br />
-              Phone: <a href="tel:+12676521512" className="text-primary hover:underline">(267) 652-1512</a>
+              Phone: <a href="tel:+14453269638" className="text-primary hover:underline">(445) 326-9638</a>
             </p>
           </section>
         </div>
