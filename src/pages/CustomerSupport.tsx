@@ -82,8 +82,8 @@ const CustomerSupport = () => {
                 <Phone className="h-5 w-5 text-primary" />
               </div>
               <h3 className="mb-1 font-semibold text-foreground">Phone</h3>
-              <a href="tel:+12676521512" className="text-sm text-primary hover:underline">
-                (267) 652-1512
+              <a href="tel:+14453269638" className="text-sm text-primary hover:underline">
+                (445) 326-9638
               </a>
             </CardContent>
           </Card>
