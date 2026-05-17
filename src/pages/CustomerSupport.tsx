@@ -70,8 +70,8 @@ const CustomerSupport = () => {
                 <Mail className="h-5 w-5 text-primary" />
               </div>
               <h3 className="mb-1 font-semibold text-foreground">Email</h3>
-              <a href="mailto:ecomexpertsllc@gmail.com" className="text-sm text-primary hover:underline">
-                ecomexpertsllc@gmail.com
+              <a href="mailto:clienthunterainow@gmail.com" className="text-sm text-primary no-underline hover:no-underline">
+                clienthunterainow@gmail.com
               </a>
             </CardContent>
           </Card>
