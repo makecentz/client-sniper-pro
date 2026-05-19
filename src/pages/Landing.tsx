@@ -302,7 +302,7 @@ const Landing = () => {
                 <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Limited time</div>
                 <h3 className="mb-1 text-lg font-semibold text-foreground">Pro</h3>
                 <div className="mb-1 flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-foreground">$49</span>
+                  <span className="text-3xl font-bold text-foreground">$69</span>
                   <span className="text-sm font-normal text-muted-foreground">/mo</span>
                   <span className="text-sm font-normal text-muted-foreground line-through">$89</span>
                 </div>

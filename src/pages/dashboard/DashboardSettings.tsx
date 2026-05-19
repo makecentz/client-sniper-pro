@@ -419,7 +419,7 @@ const DashboardSettings = () => {
             <CardDescription>
               <span className="inline-flex items-center gap-2">
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Limited time</span>
-                <span className="text-foreground font-semibold">$49/mo</span>
+                <span className="text-foreground font-semibold">$69/mo</span>
                 <span className="text-xs text-muted-foreground line-through">$89/mo</span>
               </span>
               <div className="mt-1 text-xs">Regular price $89/mo — locked in while available.</div>
@@ -440,7 +440,7 @@ const DashboardSettings = () => {
                 disabled={loadingCheckout === "pro"}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $49/mo"}
+                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $69/mo"}
               </Button>
             )}
           </CardContent>
