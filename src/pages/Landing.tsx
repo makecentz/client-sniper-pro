@@ -308,10 +308,9 @@ const Landing = () => {
                 </div>
                 <div className="mb-4 text-xs text-muted-foreground">Limited time only — regular price $89/mo</div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> Unlimited searches</li>
+                  <li className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> 50 searches per day</li>
                   <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> 100 saved leads</li>
-                  <li className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> All AI tools</li>
-                  <li className="flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" /> Email sending</li>
+                  <li className="flex items-center gap-2"><MessageSquare className="h-4 w-4 text-primary" /> AI outreach & audits</li>
                 </ul>
                 <Link to="/signup" className="mt-6 block">
                   <Button className="w-full">Upgrade to Pro</Button>
