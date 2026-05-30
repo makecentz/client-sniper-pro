@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone, UserPlus, Snowflake } from "lucide-react";
+import { Loader2, ArrowLeft, Eye, Download, Settings, Video, Phone, UserPlus, Snowflake, ChevronLeft, ChevronRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -60,6 +60,12 @@ const Admin = () => {
   const [footerCompanyName, setFooterCompanyName] = useState("");
   const [savingFooter, setSavingFooter] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
+  const [failedSignupPage, setFailedSignupPage] = useState(1);
+  const [failedSignupPageSize] = useState(10);
+  const [failedSignupIpFilter, setFailedSignupIpFilter] = useState("");
+  const [failedSignupEmailFilter, setFailedSignupEmailFilter] = useState("");
+  const [failedSignupDateFrom, setFailedSignupDateFrom] = useState("");
+  const [failedSignupDateTo, setFailedSignupDateTo] = useState("");
 
   const refetchUsers = async () => {
     const [usageRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
@@ -274,6 +280,19 @@ const Admin = () => {
   const freeUsers = users.filter((u) => u.plan === "free").length;
   const totalSearches = users.reduce((sum, u) => sum + u.searches_today, 0);
   const filteredUsers = users.filter((u) => u.email.toLowerCase().includes(searchFilter.toLowerCase()));
+
+  const filteredFailedSignups = failedSignups.filter((f) => {
+    const ipMatch = !failedSignupIpFilter || (f.ip || "").toLowerCase().includes(failedSignupIpFilter.toLowerCase());
+    const emailMatch = !failedSignupEmailFilter || (f.email || "").toLowerCase().includes(failedSignupEmailFilter.toLowerCase());
+    const fromMatch = !failedSignupDateFrom || new Date(f.created_at) >= new Date(failedSignupDateFrom);
+    const toMatch = !failedSignupDateTo || new Date(f.created_at) <= new Date(failedSignupDateTo + "T23:59:59.999Z");
+    return ipMatch && emailMatch && fromMatch && toMatch;
+  });
+  const totalFailedPages = Math.max(1, Math.ceil(filteredFailedSignups.length / failedSignupPageSize));
+  const pagedFailedSignups = filteredFailedSignups.slice(
+    (failedSignupPage - 1) * failedSignupPageSize,
+    failedSignupPage * failedSignupPageSize
+  );
 
   const handleExportCSV = () => {
     const headers = ["Email", "Plan", "Searches Today", "Leads Remaining", "Leads Saved", "Last Active", "Joined", "Business Name", "Website", "Phone", "Company Email", "Dev Price", "Current Deal"];
@@ -534,8 +553,8 @@ const Admin = () => {
 
         <Card className="border-border/50">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Blocked Signup Attempts ({failedSignups.length})</CardTitle>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>Blocked Signup Attempts ({filteredFailedSignups.length})</CardTitle>
               {failedSignups.length > 0 && (
                 <Button
                   variant="outline"
@@ -553,44 +572,91 @@ const Admin = () => {
                 </Button>
               )}
             </div>
+            <div className="grid gap-3 pt-2 sm:grid-cols-2 lg:grid-cols-4">
+              <Input
+                placeholder="Filter by IP..."
+                value={failedSignupIpFilter}
+                onChange={(e) => { setFailedSignupIpFilter(e.target.value); setFailedSignupPage(1); }}
+              />
+              <Input
+                placeholder="Filter by email..."
+                value={failedSignupEmailFilter}
+                onChange={(e) => { setFailedSignupEmailFilter(e.target.value); setFailedSignupPage(1); }}
+              />
+              <Input
+                type="date"
+                value={failedSignupDateFrom}
+                onChange={(e) => { setFailedSignupDateFrom(e.target.value); setFailedSignupPage(1); }}
+              />
+              <Input
+                type="date"
+                value={failedSignupDateTo}
+                onChange={(e) => { setFailedSignupDateTo(e.target.value); setFailedSignupPage(1); }}
+              />
+            </div>
           </CardHeader>
           <CardContent>
-            {failedSignups.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No blocked signup attempts yet.</p>
+            {filteredFailedSignups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No blocked signup attempts match your filters.</p>
             ) : (
-              <div className="max-h-[24rem] overflow-y-auto rounded-md border border-border/40">
-                <Table>
-                  <TableHeader className="sticky top-0 bg-card z-10">
-                    <TableRow>
-                      <TableHead>Time</TableHead>
-                      <TableHead>IP Address</TableHead>
-                      <TableHead>Attempted Email</TableHead>
-                      <TableHead>Reason</TableHead>
-                      <TableHead>Existing Account</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {failedSignups.map((f) => {
-                      const owner = f.existing_user_id ? users.find((u) => u.user_id === f.existing_user_id) : null;
-                      return (
-                        <TableRow key={f.id}>
-                          <TableCell className="text-muted-foreground text-sm">{new Date(f.created_at).toLocaleString()}</TableCell>
-                          <TableCell className="font-mono text-sm">{f.ip || "—"}</TableCell>
-                          <TableCell className="text-sm">{f.email || "—"}</TableCell>
-                          <TableCell><Badge variant="destructive" className="capitalize">{f.reason.replace(/_/g, " ")}</Badge></TableCell>
-                          <TableCell className="text-sm">
-                            {owner ? (
-                              <button className="text-primary hover:underline" onClick={() => setSelectedUser(owner)}>{owner.email}</button>
-                            ) : (
-                              <span className="text-muted-foreground">{f.existing_user_id?.slice(0, 8) || "—"}</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+              <>
+                <div className="max-h-[24rem] overflow-y-auto rounded-md border border-border/40">
+                  <Table>
+                    <TableHeader className="sticky top-0 bg-card z-10">
+                      <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>IP Address</TableHead>
+                        <TableHead>Attempted Email</TableHead>
+                        <TableHead>Reason</TableHead>
+                        <TableHead>Existing Account</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {pagedFailedSignups.map((f) => {
+                        const owner = f.existing_user_id ? users.find((u) => u.user_id === f.existing_user_id) : null;
+                        return (
+                          <TableRow key={f.id}>
+                            <TableCell className="text-muted-foreground text-sm">{new Date(f.created_at).toLocaleString()}</TableCell>
+                            <TableCell className="font-mono text-sm">{f.ip || "—"}</TableCell>
+                            <TableCell className="text-sm">{f.email || "—"}</TableCell>
+                            <TableCell><Badge variant="destructive" className="capitalize">{f.reason.replace(/_/g, " ")}</Badge></TableCell>
+                            <TableCell className="text-sm">
+                              {owner ? (
+                                <button className="text-primary hover:underline" onClick={() => setSelectedUser(owner)}>{owner.email}</button>
+                              ) : (
+                                <span className="text-muted-foreground">{f.existing_user_id?.slice(0, 8) || "—"}</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">
+                    Page {failedSignupPage} of {totalFailedPages} ({filteredFailedSignups.length} total)
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={failedSignupPage <= 1}
+                      onClick={() => setFailedSignupPage((p) => p - 1)}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" /> Prev
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={failedSignupPage >= totalFailedPages}
+                      onClick={() => setFailedSignupPage((p) => p + 1)}
+                    >
+                      Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
