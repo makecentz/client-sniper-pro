@@ -158,15 +158,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = useCallback(async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
+    // Record login IP (non-blocking)
+    supabase.functions.invoke("record-login-ip").catch((e) => console.warn("record-login-ip failed", e));
   }, []);
 
   const signup = useCallback(async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
+    const { data, error } = await supabase.functions.invoke("signup-with-ip-check", {
+      body: { email, password },
     });
-    if (error) throw error;
+    // Edge function returns non-2xx -> error is set; surface server message
+    if (error) {
+      const serverMsg = (data as any)?.error || (error as any)?.context?.error || error.message;
+      throw new Error(serverMsg || "Signup failed");
+    }
+    if (data?.error) throw new Error(data.error);
+    // Sign the user in immediately
+    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
+    if (signInErr) throw signInErr;
+    supabase.functions.invoke("record-login-ip").catch((e) => console.warn("record-login-ip failed", e));
   }, []);
 
   const refreshLeadCount = useCallback(async () => {
