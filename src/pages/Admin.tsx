@@ -176,7 +176,7 @@ const Admin = () => {
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("user_id, display_name, created_at"),
+        supabase.from("profiles").select("user_id, display_name, created_at, signup_ip, last_ip, last_ip_at"),
         supabase.from("leads").select("user_id"),
         supabase.from("company_settings").select("*"),
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
