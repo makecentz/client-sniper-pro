@@ -52,7 +52,7 @@ const Admin = () => {
   const refetchUsers = async () => {
     const [usageRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
       supabase.from("usage_tracking").select("*"),
-      supabase.from("profiles").select("user_id, display_name, created_at"),
+      supabase.from("profiles").select("user_id, display_name, created_at, signup_ip, last_ip, last_ip_at"),
       supabase.from("leads").select("user_id"),
       supabase.from("company_settings").select("*"),
     ]);
