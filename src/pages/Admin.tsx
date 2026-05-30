@@ -70,6 +70,9 @@ const Admin = () => {
       leads_count: leadsCountMap.get(u.user_id) || 0,
       frozen: !!u.frozen,
       admin_message: u.admin_message ?? null,
+      signup_ip: profileMap.get(u.user_id)?.signup_ip ?? null,
+      last_ip: profileMap.get(u.user_id)?.last_ip ?? null,
+      last_ip_at: profileMap.get(u.user_id)?.last_ip_at ?? null,
       company: companyMap.get(u.user_id) ? {
         business_name: companyMap.get(u.user_id).business_name, website_url: companyMap.get(u.user_id).website_url,
         phone: companyMap.get(u.user_id).phone, email: companyMap.get(u.user_id).email,
