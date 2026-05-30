@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
             code: "ip_already_registered",
           }),
           {
-            status: 409,
+            status: 200,
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
