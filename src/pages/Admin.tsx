@@ -197,6 +197,13 @@ const Admin = () => {
         supabase.from("admin_settings").select("key,value").in("key", ["footer_address", "footer_phone", "footer_email", "footer_company_name"]),
       ]);
 
+      const failedRes = await supabase
+        .from("failed_signup_attempts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(100);
+      setFailedSignups((failedRes.data || []) as FailedSignupRow[]);
+
       if (footerRes.data) {
         for (const row of footerRes.data) {
           if (row.key === "footer_address") setFooterAddress(row.value || "");
@@ -522,6 +529,69 @@ const Admin = () => {
                 </TableBody>
               </Table>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Blocked Signup Attempts ({failedSignups.length})</CardTitle>
+              {failedSignups.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from("failed_signup_attempts")
+                      .delete()
+                      .not("id", "is", null);
+                    if (error) toast.error("Failed to clear");
+                    else { setFailedSignups([]); toast.success("Cleared"); }
+                  }}
+                >
+                  Clear all
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {failedSignups.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No blocked signup attempts yet.</p>
+            ) : (
+              <div className="max-h-[24rem] overflow-y-auto rounded-md border border-border/40">
+                <Table>
+                  <TableHeader className="sticky top-0 bg-card z-10">
+                    <TableRow>
+                      <TableHead>Time</TableHead>
+                      <TableHead>IP Address</TableHead>
+                      <TableHead>Attempted Email</TableHead>
+                      <TableHead>Reason</TableHead>
+                      <TableHead>Existing Account</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {failedSignups.map((f) => {
+                      const owner = f.existing_user_id ? users.find((u) => u.user_id === f.existing_user_id) : null;
+                      return (
+                        <TableRow key={f.id}>
+                          <TableCell className="text-muted-foreground text-sm">{new Date(f.created_at).toLocaleString()}</TableCell>
+                          <TableCell className="font-mono text-sm">{f.ip || "—"}</TableCell>
+                          <TableCell className="text-sm">{f.email || "—"}</TableCell>
+                          <TableCell><Badge variant="destructive" className="capitalize">{f.reason.replace(/_/g, " ")}</Badge></TableCell>
+                          <TableCell className="text-sm">
+                            {owner ? (
+                              <button className="text-primary hover:underline" onClick={() => setSelectedUser(owner)}>{owner.email}</button>
+                            ) : (
+                              <span className="text-muted-foreground">{f.existing_user_id?.slice(0, 8) || "—"}</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
