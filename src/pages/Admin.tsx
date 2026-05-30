@@ -52,7 +52,7 @@ const Admin = () => {
   const refetchUsers = async () => {
     const [usageRes, profilesRes, leadsPerUserRes, companyRes] = await Promise.all([
       supabase.from("usage_tracking").select("*"),
-      supabase.from("profiles").select("user_id, display_name, created_at"),
+      supabase.from("profiles").select("user_id, display_name, created_at, signup_ip, last_ip, last_ip_at"),
       supabase.from("leads").select("user_id"),
       supabase.from("company_settings").select("*"),
     ]);
@@ -70,6 +70,9 @@ const Admin = () => {
       leads_count: leadsCountMap.get(u.user_id) || 0,
       frozen: !!u.frozen,
       admin_message: u.admin_message ?? null,
+      signup_ip: profileMap.get(u.user_id)?.signup_ip ?? null,
+      last_ip: profileMap.get(u.user_id)?.last_ip ?? null,
+      last_ip_at: profileMap.get(u.user_id)?.last_ip_at ?? null,
       company: companyMap.get(u.user_id) ? {
         business_name: companyMap.get(u.user_id).business_name, website_url: companyMap.get(u.user_id).website_url,
         phone: companyMap.get(u.user_id).phone, email: companyMap.get(u.user_id).email,
@@ -173,7 +176,7 @@ const Admin = () => {
         supabase.from("usage_tracking").select("*"),
         supabase.from("webhook_logs").select("*").order("created_at", { ascending: false }).limit(20),
         supabase.from("leads").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("user_id, display_name, created_at"),
+        supabase.from("profiles").select("user_id, display_name, created_at, signup_ip, last_ip, last_ip_at"),
         supabase.from("leads").select("user_id"),
         supabase.from("company_settings").select("*"),
         supabase.from("admin_settings").select("*").eq("key", "pro_price_monthly").maybeSingle(),
@@ -211,8 +214,8 @@ const Admin = () => {
       const leadsRows = leadsPerUserRes.data || [];
       const companyRows = companyRes.data || [];
 
-      const profileMap = new Map<string, { display_name: string | null }>();
-      profileRows.forEach((p) => profileMap.set(p.user_id, p));
+      const profileMap = new Map<string, { display_name: string | null; signup_ip: string | null; last_ip: string | null; last_ip_at: string | null }>();
+      profileRows.forEach((p: any) => profileMap.set(p.user_id, p));
 
       const leadsCountMap = new Map<string, number>();
       leadsRows.forEach((l) => leadsCountMap.set(l.user_id, (leadsCountMap.get(l.user_id) || 0) + 1));
@@ -227,6 +230,9 @@ const Admin = () => {
         leads_count: leadsCountMap.get(u.user_id) || 0,
         frozen: !!u.frozen,
         admin_message: u.admin_message ?? null,
+        signup_ip: profileMap.get(u.user_id)?.signup_ip ?? null,
+        last_ip: profileMap.get(u.user_id)?.last_ip ?? null,
+        last_ip_at: profileMap.get(u.user_id)?.last_ip_at ?? null,
         company: companyMap.get(u.user_id) ? {
           business_name: companyMap.get(u.user_id)!.business_name, website_url: companyMap.get(u.user_id)!.website_url,
           phone: companyMap.get(u.user_id)!.phone, email: companyMap.get(u.user_id)!.email,

@@ -21,6 +21,9 @@ export interface AdminUserRow {
   leads_count: number;
   frozen?: boolean;
   admin_message?: string | null;
+  signup_ip?: string | null;
+  last_ip?: string | null;
+  last_ip_at?: string | null;
   company?: {
     business_name: string | null;
     website_url: string | null;
@@ -108,6 +111,14 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
               <div><span className="text-muted-foreground">Joined:</span> {new Date(user.created_at).toLocaleDateString()}</div>
               <div><span className="text-muted-foreground">Last Active:</span> {user.last_search_date || "Never"}</div>
               <div><span className="text-muted-foreground">Leads Saved:</span> {user.leads_count}</div>
+              <div><span className="text-muted-foreground">Signup IP:</span> <span className="font-mono text-xs">{user.signup_ip || "—"}</span></div>
+              <div>
+                <span className="text-muted-foreground">Last IP:</span>{" "}
+                <span className="font-mono text-xs">{user.last_ip || "—"}</span>
+                {user.last_ip_at && (
+                  <span className="text-xs text-muted-foreground"> ({new Date(user.last_ip_at).toLocaleString()})</span>
+                )}
+              </div>
             </div>
           </section>
 
