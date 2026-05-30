@@ -25,6 +25,17 @@ interface WebhookRow {
   created_at: string;
 }
 
+interface FailedSignupRow {
+  id: string;
+  ip: string | null;
+  email: string | null;
+  display_name: string | null;
+  reason: string;
+  existing_user_id: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
 const Admin = () => {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [webhooks, setWebhooks] = useState<WebhookRow[]>([]);
@@ -40,6 +51,7 @@ const Admin = () => {
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [heroVideoInput, setHeroVideoInput] = useState("");
   const [savingVideo, setSavingVideo] = useState(false);
+  const [failedSignups, setFailedSignups] = useState<FailedSignupRow[]>([]);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(50);
   const [savingOpacity, setSavingOpacity] = useState(false);
   const [footerAddress, setFooterAddress] = useState("");
