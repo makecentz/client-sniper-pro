@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     if (createErr || !created.user) {
       return new Response(
         JSON.stringify({ error: createErr?.message || "Failed to create account." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
