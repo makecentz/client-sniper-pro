@@ -405,6 +405,39 @@ export type Database = {
         }
         Relationships: []
       }
+      failed_signup_attempts: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          existing_user_id: string | null
+          id: string
+          ip: string | null
+          reason: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          existing_user_id?: string | null
+          id?: string
+          ip?: string | null
+          reason: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          existing_user_id?: string | null
+          id?: string
+          ip?: string | null
+          reason?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       lead_notes: {
         Row: {
           content: string
