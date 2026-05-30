@@ -28,6 +28,7 @@ Deno.serve(async (req) => {
     }
 
     const ip = getClientIp(req);
+    const userAgent = req.headers.get("user-agent");
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -38,7 +39,7 @@ Deno.serve(async (req) => {
     if (ip) {
       const { data: existing, error: checkErr } = await supabase
         .from("profiles")
-        .select("id")
+        .select("user_id")
         .eq("signup_ip", ip)
         .limit(1)
         .maybeSingle();
@@ -48,6 +49,16 @@ Deno.serve(async (req) => {
       }
 
       if (existing) {
+        // Log the blocked attempt for admin visibility
+        await supabase.from("failed_signup_attempts").insert({
+          ip,
+          email,
+          display_name: display_name ?? null,
+          reason: "ip_already_registered",
+          existing_user_id: existing.user_id,
+          user_agent: userAgent,
+        });
+
         return new Response(
           JSON.stringify({
             error:
