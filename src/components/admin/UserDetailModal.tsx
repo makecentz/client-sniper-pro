@@ -21,6 +21,9 @@ export interface AdminUserRow {
   leads_count: number;
   frozen?: boolean;
   admin_message?: string | null;
+  signup_ip?: string | null;
+  last_ip?: string | null;
+  last_ip_at?: string | null;
   company?: {
     business_name: string | null;
     website_url: string | null;
