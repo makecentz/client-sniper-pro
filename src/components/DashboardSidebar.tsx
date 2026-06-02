@@ -81,8 +81,12 @@ export function DashboardSidebar() {
             <SidebarGroupContent>
               <div className="space-y-2 px-3 text-xs text-muted-foreground">
                 <div className="flex justify-between">
-                  <span>Searches today</span>
-                  <span className="text-foreground">{user.searches_today}/2</span>
+                  <span>{user.plan === "pro" ? "Searches today" : "Free searches used"}</span>
+                  <span className="text-foreground">
+                    {user.plan === "pro"
+                      ? `${user.searches_today}/50`
+                      : `${user.lifetime_searches_used}/2`}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Leads remaining</span>
