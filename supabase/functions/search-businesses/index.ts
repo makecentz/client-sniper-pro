@@ -171,9 +171,26 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Require onboarding (company_settings row) before any search
+    const { data: companySettings } = await supabase
+      .from("company_settings")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!companySettings) {
+      return new Response(
+        JSON.stringify({
+          error: "Please complete onboarding before running searches.",
+          code: "ONBOARDING_REQUIRED",
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const { data: usage } = await supabase
       .from("usage_tracking")
-      .select("searches_today, leads_remaining, plan, last_search_date")
+      .select("searches_today, leads_remaining, plan, last_search_date, lifetime_searches_used")
       .eq("user_id", user.id)
       .single();
 
@@ -186,13 +203,28 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
     const searchesToday = usage.last_search_date === today ? usage.searches_today : 0;
     const isProPlan = usage.plan === "pro";
-    const maxSearches = isProPlan ? 50 : 2;
+    const lifetimeUsed = (usage as any).lifetime_searches_used ?? 0;
     const maxResults = isProPlan ? 50 : 5;
 
-    if (searchesToday >= maxSearches) {
-      return new Response(JSON.stringify({ error: "Daily search limit reached. Upgrade to Pro for more searches.", code: "LIMIT_REACHED" }), {
-        status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!isProPlan) {
+      // Free plan: one-time lifetime allowance of 2 searches
+      if (lifetimeUsed >= 2) {
+        return new Response(
+          JSON.stringify({
+            error: "You've used your 2 free searches. Upgrade to Pro to keep searching.",
+            code: "FREE_LIMIT_REACHED",
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    } else {
+      // Pro plan: keep the existing daily 50 cap
+      if (searchesToday >= 50) {
+        return new Response(
+          JSON.stringify({ error: "Daily search limit reached.", code: "LIMIT_REACHED" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
     }
 
     const OUTSCRAPER_API_KEY = Deno.env.get("OUTSCRAPER_API_KEY");
