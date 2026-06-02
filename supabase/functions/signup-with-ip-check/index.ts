@@ -30,27 +30,24 @@ Deno.serve(async (req) => {
     const ip = getClientIp(req);
     const userAgent = req.headers.get("user-agent");
 
-    const supabase = createClient(
+    const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     // Check for existing account with this IP
     if (ip) {
-      const { data: existing, error: checkErr } = await supabase
+      const { data: existing, error: checkErr } = await admin
         .from("profiles")
         .select("user_id")
         .eq("signup_ip", ip)
         .limit(1)
         .maybeSingle();
 
-      if (checkErr) {
-        console.error("IP check failed:", checkErr);
-      }
+      if (checkErr) console.error("IP check failed:", checkErr);
 
       if (existing) {
-        // Log the blocked attempt for admin visibility
-        await supabase.from("failed_signup_attempts").insert({
+        await admin.from("failed_signup_attempts").insert({
           ip,
           email,
           display_name: display_name ?? null,
@@ -65,42 +62,54 @@ Deno.serve(async (req) => {
               "An account already exists for this IP address. Please consult with the existing account holder — only one account is allowed per IP.",
             code: "ip_already_registered",
           }),
-          {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
     }
 
-    // Create the user
-    const { data: created, error: createErr } = await supabase.auth.admin.createUser({
+    // Use the public anon client to call signUp — this triggers Supabase's
+    // built-in email verification flow (sends a confirmation email).
+    const anon = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+    );
+
+    const origin = req.headers.get("origin") || req.headers.get("referer") || "";
+    const emailRedirectTo = origin ? `${origin}/login` : undefined;
+
+    const { data: signupData, error: signupErr } = await anon.auth.signUp({
       email,
       password,
-      email_confirm: false,
-      user_metadata: display_name ? { display_name } : undefined,
+      options: {
+        data: display_name ? { display_name } : undefined,
+        emailRedirectTo,
+      },
     });
 
-    if (createErr || !created.user) {
+    if (signupErr || !signupData.user) {
       return new Response(
-        JSON.stringify({ error: createErr?.message || "Failed to create account." }),
+        JSON.stringify({ error: signupErr?.message || "Failed to create account." }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    // Record the IP on the auto-created profile (handle_new_user trigger created it)
+    // Record the IP on the auto-created profile
     if (ip) {
-      const { error: updErr } = await supabase
+      const { error: updErr } = await admin
         .from("profiles")
         .update({ signup_ip: ip, last_ip: ip, last_ip_at: new Date().toISOString() })
-        .eq("user_id", created.user.id);
+        .eq("user_id", signupData.user.id);
       if (updErr) console.error("Failed to record signup IP:", updErr);
     }
 
-    return new Response(JSON.stringify({ success: true, user_id: created.user.id }), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        success: true,
+        user_id: signupData.user.id,
+        requires_verification: !signupData.session,
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error("signup-with-ip-check error:", e);
     return new Response(JSON.stringify({ error: (e as Error).message }), {

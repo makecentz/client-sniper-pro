@@ -21,6 +21,7 @@ interface User {
   email: string;
   plan: "free" | "pro";
   searches_today: number;
+  lifetime_searches_used: number;
   leads_remaining: number;
   subscribed: boolean;
   subscription_end: string | null;
@@ -60,7 +61,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
   const [{ data: usage }, { count }] = await Promise.all([
     supabase
       .from("usage_tracking")
-      .select("searches_today, leads_remaining, plan, bonus_saved_slots")
+      .select("searches_today, leads_remaining, plan, bonus_saved_slots, lifetime_searches_used")
       .eq("user_id", supabaseUser.id)
       .single(),
     supabase
@@ -76,6 +77,7 @@ const mapSupabaseUser = async (supabaseUser: SupabaseUser): Promise<User> => {
     email: supabaseUser.email ?? "",
     plan,
     searches_today: usage?.searches_today ?? 0,
+    lifetime_searches_used: (usage as any)?.lifetime_searches_used ?? 0,
     leads_remaining: usage?.leads_remaining ?? 2,
     subscribed: usage?.plan === "pro",
     subscription_end: null,
@@ -166,16 +168,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase.functions.invoke("signup-with-ip-check", {
       body: { email, password },
     });
-    // Edge function returns non-2xx -> error is set; surface server message
     if (error) {
       const serverMsg = (data as any)?.error || (error as any)?.context?.error || error.message;
       throw new Error(serverMsg || "Signup failed");
     }
     if (data?.error) throw new Error(data.error);
-    // Sign the user in immediately
-    const { error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-    if (signInErr) throw signInErr;
-    supabase.functions.invoke("record-login-ip").catch((e) => console.warn("record-login-ip failed", e));
+    // Do NOT auto-login — user must verify email first.
   }, []);
 
   const refreshLeadCount = useCallback(async () => {

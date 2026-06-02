@@ -56,8 +56,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
     );
   }
 
-  const dismissed = user ? localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1" : false;
-  if (!hasSettings && !dismissed && location.pathname.startsWith("/dashboard")) {
+  if (!hasSettings && location.pathname.startsWith("/dashboard")) {
     return <Navigate to="/onboarding" replace />;
   }
 

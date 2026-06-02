@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,6 +46,7 @@ const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
 
 const SearchPanel = () => {
   const { user, refreshLeadCount } = useAuth();
+  const navigate = useNavigate();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
@@ -91,18 +93,27 @@ const SearchPanel = () => {
         body: { city, state, business_type: businessType, zip_code: zipCode || undefined },
       });
       if (error) {
-        // FunctionsHttpError surfaces non-2xx; try to parse server message
         const ctx: any = (error as any).context;
         let payload: any = null;
         try { payload = ctx ? await ctx.json() : null; } catch { /* noop */ }
-        if (payload?.code === "LIMIT_REACHED" || /limit reached/i.test(payload?.error || error.message || "")) {
-          openUpgrade(payload?.error || "You've used all your free searches today. Upgrade to Pro for unlimited searches.");
+        if (payload?.code === "ONBOARDING_REQUIRED") {
+          toast.error("Please complete onboarding first.");
+          navigate("/onboarding");
+          return;
+        }
+        if (payload?.code === "FREE_LIMIT_REACHED" || payload?.code === "LIMIT_REACHED" || /limit reached/i.test(payload?.error || error.message || "")) {
+          openUpgrade(payload?.error || "You've used your 2 free searches. Choose a plan to keep going.");
           return;
         }
         throw error;
       }
       if (data?.error) {
-        if (data.code === "LIMIT_REACHED") {
+        if (data.code === "ONBOARDING_REQUIRED") {
+          toast.error("Please complete onboarding first.");
+          navigate("/onboarding");
+          return;
+        }
+        if (data.code === "FREE_LIMIT_REACHED" || data.code === "LIMIT_REACHED") {
           openUpgrade(data.error);
           return;
         }

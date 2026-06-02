@@ -1112,6 +1112,7 @@ export type Database = {
           id: string
           last_search_date: string | null
           leads_remaining: number
+          lifetime_searches_used: number
           plan: Database["public"]["Enums"]["app_plan"]
           searches_today: number
           updated_at: string
@@ -1126,6 +1127,7 @@ export type Database = {
           id?: string
           last_search_date?: string | null
           leads_remaining?: number
+          lifetime_searches_used?: number
           plan?: Database["public"]["Enums"]["app_plan"]
           searches_today?: number
           updated_at?: string
@@ -1140,6 +1142,7 @@ export type Database = {
           id?: string
           last_search_date?: string | null
           leads_remaining?: number
+          lifetime_searches_used?: number
           plan?: Database["public"]["Enums"]["app_plan"]
           searches_today?: number
           updated_at?: string

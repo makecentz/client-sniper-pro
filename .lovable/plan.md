@@ -1,59 +1,74 @@
 ## Goal
-Prevent users from creating multiple free accounts from the same IP address. Record signup IP and most recent IP, surface them in the admin user detail view, and block duplicate signups with a clear message.
 
-## How it works
+1. Make the free tier a **one-time lifetime allowance** of 2 searches (not daily). After that, free users hit a paywall.
+2. Force **onboarding completion** before any search can run (so we always capture user data first).
+3. Require **email verification** for email/password signups (Google stays auto-verified).
 
-1. **Signup is gated through an edge function** instead of calling `supabase.auth.signUp` directly from the browser.
-   - The function reads the caller's IP from request headers (`x-forwarded-for`, falling back to `cf-connecting-ip`).
-   - It checks the `profiles` table for an existing `signup_ip` match.
-   - If a match exists: return 409 with message: *"An account already exists for this IP address. Please contact the existing account holder — only one account is allowed per IP."*
-   - If no match: create the user via the service-role admin API, store `signup_ip` and `last_ip` on the new profile.
+---
 
-2. **Login also records the latest IP** via a lightweight edge function called right after a successful `signInWithPassword`. This updates `last_ip` and `last_ip_at` on the profile. (Login itself is not blocked — only signup is restricted, matching the user's intent of "preventing multiple free accounts.")
+## 1. Lifetime free quota (2 searches, no daily reset)
 
-3. **Admin dashboard** shows both `signup_ip` and `last_ip` (with timestamp) inside `UserDetailModal`, plus a small "IP" column hint. Admins can still create accounts via the existing admin invite flow without the IP check.
+**Database** — add a counter that never resets:
+- Add `lifetime_searches_used INTEGER NOT NULL DEFAULT 0` to `usage_tracking`.
+- Backfill from current `searches_today` so existing free users don't suddenly get a fresh 2.
 
-## Database changes (migration)
+**Edge function `search-businesses`**:
+- For `plan === 'free'`: check `lifetime_searches_used >= 2` → return `LIMIT_REACHED` with code `FREE_LIMIT_REACHED`.
+- For `plan === 'pro'`: keep existing daily 50-search logic untouched.
+- On every successful search, increment `lifetime_searches_used` (in addition to existing `searches_today` bookkeeping).
 
-Add to `public.profiles`:
-- `signup_ip text` (nullable, indexed)
-- `last_ip text` (nullable)
-- `last_ip_at timestamptz` (nullable)
+**Frontend `SearchPanel.tsx`**:
+- When the API returns `FREE_LIMIT_REACHED`, open the existing `UpgradeModal` / payment screen with a message like "You've used your 2 free searches. Choose a plan to keep going."
+- Update the "searches left today" UI for free users to read **"X of 2 free searches used"** (lifetime, not daily).
 
-Index: `CREATE INDEX idx_profiles_signup_ip ON public.profiles(signup_ip);`
+**`AuthContext.tsx`**: expose `lifetime_searches_used` on the user object so the UI can render the lifetime counter.
 
-No new tables, no RLS changes needed (profiles RLS already restricts to owner + admin).
+---
 
-## Edge functions
+## 2. Onboarding gate before any search
 
-- **`signup-with-ip-check`** (new, `verify_jwt = false`)
-  - Input: `{ email, password, display_name? }`
-  - Extracts IP from headers
-  - Queries `profiles` for existing `signup_ip`; if found → 409
-  - Calls `supabase.auth.admin.createUser({ email, password, email_confirm: false })`
-  - Updates the auto-created profile row with `signup_ip` and `last_ip`
-  - Returns success; client then calls `signInWithPassword` (or asks user to verify email if confirmation is on)
+`ProtectedRoute` already redirects to `/onboarding` when `company_settings` is missing **unless the user dismissed it**. To make onboarding mandatory:
+- Remove the `onboarding_dismissed_<userId>` localStorage escape hatch.
+- Also remove the "Skip" button from `Onboarding.tsx` if present.
+- Add a server-side safety net: `search-businesses` checks `company_settings` exists for the user and returns `ONBOARDING_REQUIRED` if not — frontend redirects to `/onboarding`.
 
-- **`record-login-ip`** (new, `verify_jwt = true`)
-  - Called after successful login
-  - Updates `last_ip` / `last_ip_at` on the calling user's profile using service role
+Result: new users land on `/onboarding`, fill it out, and only then can they reach the dashboard/search.
 
-## Frontend changes
+---
 
-- `src/contexts/AuthContext.tsx` — `signup()` now invokes `signup-with-ip-check`, surfaces the 409 message verbatim to the UI. `login()` fires `record-login-ip` after success (non-blocking).
-- `src/pages/Signup.tsx` — display server error message (already shows thrown errors via toast).
-- `src/components/admin/UserDetailModal.tsx` — add a small "Network" section displaying Signup IP and Last IP (+ relative time).
-- `src/pages/Admin.tsx` — include `signup_ip`, `last_ip`, `last_ip_at` in the profile select so the modal receives them.
+## 3. Email verification for email signups
 
-## Not included
-- No bypass list / whitelist for shared IPs (offices, dorms). If you want an admin override list later, that's a follow-up.
-- Google OAuth signups are not currently enabled in the project, so only email/password signup is gated. If Google login is added later, it would need the same IP check via an auth hook.
-- IPv6 is stored as-is (no normalization).
+**Auth config**: turn OFF auto-confirm so Supabase requires email verification for password signups. Google OAuth users remain verified automatically.
 
-## Files touched
-- migration: add 3 columns + index on `profiles`
-- new: `supabase/functions/signup-with-ip-check/index.ts`
-- new: `supabase/functions/record-login-ip/index.ts`
-- edit: `src/contexts/AuthContext.tsx`
-- edit: `src/components/admin/UserDetailModal.tsx`
-- edit: `src/pages/Admin.tsx` (select extra columns)
+**`signup-with-ip-check` edge function**:
+- Change `email_confirm: false` → keep as is (already false). The user is created unconfirmed.
+- After successful creation, call `supabase.auth.admin.generateLink({ type: 'signup' })` (or rely on the default Supabase confirmation email) — Lovable's auth email pipeline will send the branded confirmation email.
+- Return `{ success: true, requires_verification: true }`.
+
+**Frontend `Signup.tsx` / `AuthContext.signup`**:
+- After calling `signup-with-ip-check`, do NOT auto-log-in. Instead show a "Check your email to verify your account" screen.
+- On `Login.tsx`, if `signInWithPassword` returns "Email not confirmed", show a clear message + a "Resend verification email" button.
+
+**Auth email template**: ensure the confirm-signup template exists (already scaffolded under `supabase/functions/_shared/email-templates/signup.tsx`) and `auth-email-hook` is deployed — no change needed if already set up.
+
+---
+
+## Files to change
+
+- `supabase/migrations/<new>.sql` — add `lifetime_searches_used` column + backfill.
+- `supabase/functions/search-businesses/index.ts` — lifetime check, onboarding check, increment counter.
+- `supabase/functions/signup-with-ip-check/index.ts` — return `requires_verification` flag.
+- `src/contexts/AuthContext.tsx` — expose lifetime counter; update `signup()` to not auto-login; surface "email not confirmed" error in `login()`.
+- `src/pages/Signup.tsx` — show "verify your email" confirmation step.
+- `src/pages/Login.tsx` — handle unverified-email state + resend link.
+- `src/pages/dashboard/SearchPanel.tsx` — new copy, new modal trigger for `FREE_LIMIT_REACHED`.
+- `src/components/ProtectedRoute.tsx` — remove the onboarding-dismiss escape hatch.
+- `src/pages/Onboarding.tsx` — remove any "Skip" option.
+- Supabase auth config — disable auto-confirm email.
+
+---
+
+## Open questions
+
+1. **Existing free users**: should users who already burned ≥2 searches today be immediately paywalled, or grandfathered with their current allowance? (Default: paywall immediately — that's the cleanest enforcement.)
+2. **Email verification for users created before this change**: leave them as-is (already confirmed)? (Default: yes.)

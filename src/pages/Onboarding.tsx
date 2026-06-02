@@ -13,14 +13,11 @@ const Onboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Skip business onboarding for affiliates and dismissed users.
+  // Skip business onboarding for affiliates only. Free users MUST complete onboarding.
   useEffect(() => {
     if (!user) return;
-    if (
-      localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1" ||
-      localStorage.getItem(`affiliate_signup_${user.id}`) === "1"
-    ) {
-      navigate("/dashboard", { replace: true });
+    if (localStorage.getItem(`affiliate_signup_${user.id}`) === "1") {
+      navigate("/dashboard/affiliate", { replace: true });
       return;
     }
     // Backend fallback: if affiliate profile exists, treat as affiliate.
@@ -64,20 +61,7 @@ const Onboarding = () => {
       toast({ title: "Error saving settings", description: error.message, variant: "destructive" });
       return;
     }
-    localStorage.setItem(`onboarding_dismissed_${user.id}`, "1");
     toast({ title: "Welcome aboard!", description: "Your company info has been saved." });
-    navigate("/dashboard", { replace: true });
-  };
-
-  const handleSkip = async () => {
-    if (!user) return;
-    // Mark as dismissed locally so it never auto-opens again. User can complete in Settings.
-    localStorage.setItem(`onboarding_dismissed_${user.id}`, "1");
-    // Best-effort: insert empty row so server-side check also passes.
-    await supabase.from("company_settings").upsert(
-      { user_id: user.id },
-      { onConflict: "user_id" }
-    );
     navigate("/dashboard", { replace: true });
   };
 
@@ -158,12 +142,9 @@ const Onboarding = () => {
                 onChange={handleChange}
               />
             </div>
-            <div className="flex gap-3 pt-2">
-              <Button type="submit" className="flex-1" disabled={loading}>
+            <div className="pt-2">
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Saving…" : "Get Started"}
-              </Button>
-              <Button type="button" variant="ghost" onClick={handleSkip}>
-                Skip for now
               </Button>
             </div>
           </form>
