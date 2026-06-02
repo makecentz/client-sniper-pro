@@ -45,8 +45,8 @@ const Admin = () => {
   const [updating, setUpdating] = useState<string | null>(null);
   const [searchFilter, setSearchFilter] = useState("");
   const [selectedUser, setSelectedUser] = useState<AdminUserRow | null>(null);
-  const [proPrice, setProPrice] = useState(69);
-  const [proPriceInput, setProPriceInput] = useState("69");
+  const [proPrice, setProPrice] = useState(25);
+  const [proPriceInput, setProPriceInput] = useState("25");
   const [savingPrice, setSavingPrice] = useState(false);
   const [heroVideoUrl, setHeroVideoUrl] = useState("");
   const [heroVideoInput, setHeroVideoInput] = useState("");

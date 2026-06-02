@@ -29,7 +29,7 @@ serve(async (req) => {
 
     // Allowlist of valid Stripe price IDs to prevent attackers from creating
     // checkout sessions for unintended products.
-    const PRO_SUBSCRIPTION_PRICE = "price_1TOyHSIEsTwcnIOwGpAkXs8j";
+    const PRO_SUBSCRIPTION_PRICE = "price_1TdpkqIEsTwcnIOwDssQsFXf";
     const LEAD_PACK_PRICE = "price_1TItluIEsTwcnIOwZ1FfAqiY";
     const ALLOWED_PRICES = new Set([PRO_SUBSCRIPTION_PRICE, LEAD_PACK_PRICE]);
     if (!ALLOWED_PRICES.has(priceId)) {
