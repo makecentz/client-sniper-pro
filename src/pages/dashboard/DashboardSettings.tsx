@@ -18,7 +18,7 @@ import { useSearchParams } from "react-router-dom";
 
 const STRIPE_PRICES = {
   pro: {
-    price_id: "price_1TOyHSIEsTwcnIOwGpAkXs8j",
+    price_id: "price_1TdpkqIEsTwcnIOwDssQsFXf",
     product_id: "prod_UHSfSAAJLpI9AT",
   },
   lead_pack: {
@@ -418,11 +418,8 @@ const DashboardSettings = () => {
             </CardTitle>
             <CardDescription>
               <span className="inline-flex items-center gap-2">
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">Limited time</span>
-                <span className="text-foreground font-semibold">$69/mo</span>
-                <span className="text-xs text-muted-foreground line-through">$89/mo</span>
+                <span className="text-foreground font-semibold">$25/mo</span>
               </span>
-              <div className="mt-1 text-xs">Regular price $89/mo — locked in while available.</div>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -440,7 +437,7 @@ const DashboardSettings = () => {
                 disabled={loadingCheckout === "pro"}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $69/mo"}
+                {loadingCheckout === "pro" ? "Opening checkout..." : "Upgrade to Pro — $25/mo"}
               </Button>
             )}
           </CardContent>

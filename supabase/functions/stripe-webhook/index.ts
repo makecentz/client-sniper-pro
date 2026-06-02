@@ -96,7 +96,7 @@ serve(async (req) => {
             .select("key,value")
             .in("key", ["affiliate_commission_rate", "pro_price_monthly"]);
           const rate = parseFloat(settings?.find((s) => s.key === "affiliate_commission_rate")?.value ?? "30");
-          const proPrice = parseFloat(settings?.find((s) => s.key === "pro_price_monthly")?.value ?? "49");
+          const proPrice = parseFloat(settings?.find((s) => s.key === "pro_price_monthly")?.value ?? "25");
           const amount = +(proPrice * (rate / 100)).toFixed(2);
 
           await supabase
