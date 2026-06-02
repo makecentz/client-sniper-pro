@@ -351,7 +351,11 @@ Deno.serve(async (req) => {
 
     await supabase
       .from("usage_tracking")
-      .update({ searches_today: searchesToday + 1, last_search_date: today })
+      .update({
+        searches_today: searchesToday + 1,
+        last_search_date: today,
+        lifetime_searches_used: lifetimeUsed + 1,
+      })
       .eq("user_id", user.id);
 
     return new Response(JSON.stringify({ leads: cappedLeads, total_scanned: allLeads.length }), {
