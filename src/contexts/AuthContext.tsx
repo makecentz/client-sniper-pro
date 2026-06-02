@@ -21,6 +21,7 @@ interface User {
   email: string;
   plan: "free" | "pro";
   searches_today: number;
+  lifetime_searches_used: number;
   leads_remaining: number;
   subscribed: boolean;
   subscription_end: string | null;
