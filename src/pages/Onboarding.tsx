@@ -13,14 +13,11 @@ const Onboarding = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Skip business onboarding for affiliates and dismissed users.
+  // Skip business onboarding for affiliates only. Free users MUST complete onboarding.
   useEffect(() => {
     if (!user) return;
-    if (
-      localStorage.getItem(`onboarding_dismissed_${user.id}`) === "1" ||
-      localStorage.getItem(`affiliate_signup_${user.id}`) === "1"
-    ) {
-      navigate("/dashboard", { replace: true });
+    if (localStorage.getItem(`affiliate_signup_${user.id}`) === "1") {
+      navigate("/dashboard/affiliate", { replace: true });
       return;
     }
     // Backend fallback: if affiliate profile exists, treat as affiliate.
