@@ -46,6 +46,7 @@ const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
 
 const SearchPanel = () => {
   const { user, refreshLeadCount } = useAuth();
+  const navigate = useNavigate();
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
