@@ -1,0 +1,2 @@
+ALTER TABLE public.usage_tracking ADD COLUMN IF NOT EXISTS lifetime_searches_used INTEGER NOT NULL DEFAULT 0;
+UPDATE public.usage_tracking SET lifetime_searches_used = GREATEST(lifetime_searches_used, searches_today) WHERE plan = 'free';
