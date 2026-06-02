@@ -299,14 +299,11 @@ const Landing = () => {
             {/* Pro */}
             <Card className="border-primary/50 bg-card ring-1 ring-primary/20">
               <CardContent className="p-6">
-                <div className="mb-2 inline-block rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">Limited time</div>
                 <h3 className="mb-1 text-lg font-semibold text-foreground">Pro</h3>
-                <div className="mb-1 flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-foreground">$69</span>
+                <div className="mb-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-bold text-foreground">$25</span>
                   <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                  <span className="text-sm font-normal text-muted-foreground line-through">$89</span>
                 </div>
-                <div className="mb-4 text-xs text-muted-foreground">Limited time only — regular price $89/mo</div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2"><Zap className="h-4 w-4 text-primary" /> 50 searches per day</li>
                   <li className="flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> 100 saved leads</li>
