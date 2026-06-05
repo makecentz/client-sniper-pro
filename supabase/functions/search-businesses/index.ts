@@ -12,6 +12,67 @@ interface WebsiteCheck {
   outdated_copyright: boolean;
   copyright_year: number | null;
   website_issues: string[];
+  ai_score: number;
+  ai_features_detected: string[];
+  has_chatbot: boolean;
+  has_ai_voice: boolean;
+}
+
+function detectAIFeatures(html: string): { ai_score: number; features: string[]; has_chatbot: boolean; has_ai_voice: boolean } {
+  const lower = html.toLowerCase();
+  const features: string[] = [];
+  let has_chatbot = false;
+  let has_ai_voice = false;
+  const CHATBOTS: Array<[string, RegExp]> = [
+    ["Intercom", /intercom(\.io|cdn|settings|messenger)/],
+    ["Drift", /js\.driftt\.com|drift\.com\/ai/],
+    ["Tidio", /tidio(chat)?\.com|code\.tidio/],
+    ["Tawk.to", /embed\.tawk\.to|tawk\.to/],
+    ["LiveChat", /cdn\.livechatinc|livechatinc\.com/],
+    ["Crisp Chat", /client\.crisp\.chat|crisp\.chat/],
+    ["HubSpot Chat", /js\.hs-scripts\.com|js\.usemessages\.com/],
+    ["Zendesk Chat", /static\.zdassets\.com|zopim/],
+    ["Ada Chatbot", /static\.ada\.support/],
+    ["LivePerson", /lpcdn\.lpsnmedia|liveperson/],
+    ["ManyChat", /manychat\.com/],
+    ["Chatbase", /chatbase\.co/],
+    ["Voiceflow Chat", /general-runtime\.voiceflow|cdn\.voiceflow/],
+    ["Custom Chatbot", /(id|class)=["'][^"']*(chatbot|ai-assistant|chat-widget|ai-chat)[^"']*["']/],
+  ];
+  const VOICE: Array<[string, RegExp]> = [
+    ["Vapi Voice AI", /vapi\.ai/],
+    ["Bland AI", /bland\.ai/],
+    ["Retell AI", /retellai\.com|retell\.ai/],
+    ["Synthflow", /synthflow\.ai/],
+    ["Air.ai", /air\.ai/],
+    ["ElevenLabs Voice", /elevenlabs\.io\/convai|convai-widget/],
+  ];
+  const GENERIC: Array<[string, RegExp]> = [
+    ["OpenAI Integration", /api\.openai\.com|openai\.com\/v1/],
+    ["Anthropic Claude", /api\.anthropic\.com/],
+    ["Google Gemini", /generativelanguage\.googleapis/],
+    ["Dialogflow", /dialogflow\.com|dialogflow\.cloud/],
+    ["AI Assistant Copy", /(powered by ai|ai assistant|ai-powered)/],
+  ];
+  for (const [name, re] of CHATBOTS) if (re.test(lower)) { features.push(name); has_chatbot = true; }
+  for (const [name, re] of VOICE) if (re.test(lower)) { features.push(name); has_ai_voice = true; }
+  for (const [name, re] of GENERIC) if (re.test(lower)) features.push(name);
+  let ai_score = 0;
+  if (has_chatbot) ai_score += 50;
+  if (has_ai_voice) ai_score += 40;
+  ai_score += Math.min(features.length * 5, 20);
+  if (ai_score > 100) ai_score = 100;
+  return { ai_score, features: Array.from(new Set(features)), has_chatbot, has_ai_voice };
+}
+
+function calculateRevenueLoss(args: { has_chatbot: boolean; has_ai_voice: boolean; review_count: number | null }): { revenue_loss: number; missed_customers: number } {
+  if (args.has_chatbot && args.has_ai_voice) return { revenue_loss: 0, missed_customers: 0 };
+  const reviews = args.review_count ?? 0;
+  const monthly_visitors = Math.max(reviews * 20, 200);
+  let missed = Math.round(monthly_visitors * 0.02 * 0.35);
+  let loss = missed * 150;
+  if (args.has_chatbot || args.has_ai_voice) { missed = Math.round(missed / 2); loss = Math.round(loss / 2); }
+  return { revenue_loss: loss, missed_customers: missed };
 }
 
 async function checkWebsite(url: string): Promise<WebsiteCheck> {
@@ -21,6 +82,7 @@ async function checkWebsite(url: string): Promise<WebsiteCheck> {
   let notMobileFriendly = false;
   let outdatedCopyright = false;
   let copyrightYear: number | null = null;
+  let ai = { ai_score: 0, features: [] as string[], has_chatbot: false, has_ai_voice: false };
 
   try {
     const controller = new AbortController();
@@ -32,7 +94,6 @@ async function checkWebsite(url: string): Promise<WebsiteCheck> {
     });
     clearTimeout(timeout);
 
-    // Only flag No SSL if the FINAL URL (after redirects) is still http://
     const finalUrl = res.url || url;
     if (finalUrl.startsWith("http://")) {
       noSsl = true;
@@ -64,13 +125,20 @@ async function checkWebsite(url: string): Promise<WebsiteCheck> {
         issues.push(`Outdated Copyright (${copyrightYear})`);
       }
     }
+
+    ai = detectAIFeatures(html);
   } catch {
     websiteError = true;
     issues.push("Website Unreachable");
   }
 
-  return { website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly, outdated_copyright: outdatedCopyright, copyright_year: copyrightYear, website_issues: issues };
+  return {
+    website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly,
+    outdated_copyright: outdatedCopyright, copyright_year: copyrightYear, website_issues: issues,
+    ai_score: ai.ai_score, ai_features_detected: ai.features, has_chatbot: ai.has_chatbot, has_ai_voice: ai.has_ai_voice,
+  };
 }
+
 
 interface ScoreInput {
   has_website: boolean;
