@@ -1369,17 +1369,6 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      get_public_chatbot: {
-        Args: { _bot_id: string }
-        Returns: {
-          brand_color: string
-          id: string
-          logo_url: string
-          name: string
-          suggested_questions: Json
-          welcome_message: string
-        }[]
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
