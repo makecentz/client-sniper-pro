@@ -158,6 +158,12 @@ const SearchPanel = () => {
         rating: result.rating,
         review_count: result.review_count ?? 0,
         quality_score: result.quality_score ?? 100,
+        ai_score: result.ai_score ?? 0,
+        ai_features_detected: result.ai_features_detected ?? [],
+        has_chatbot: result.has_chatbot ?? false,
+        has_ai_voice: result.has_ai_voice ?? false,
+        estimated_monthly_revenue_loss: result.estimated_monthly_revenue_loss ?? 0,
+        estimated_monthly_missed_customers: result.estimated_monthly_missed_customers ?? 0,
       });
       if (error) throw error;
       await refreshLeadCount();
