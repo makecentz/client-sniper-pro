@@ -76,6 +76,93 @@ function scrapeContactInfo(html: string): {
   return { scraped_name: scrapedName, scraped_phone: scrapedPhone, scraped_email: scrapedEmail, copyright_year: copyrightYear };
 }
 
+// Detect AI features (chatbots, voice assistants, etc.) on a site.
+export function detectAIFeatures(html: string): {
+  ai_score: number;
+  features: string[];
+  has_chatbot: boolean;
+  has_ai_voice: boolean;
+} {
+  const lower = html.toLowerCase();
+  const features: string[] = [];
+  let has_chatbot = false;
+  let has_ai_voice = false;
+
+  const CHATBOTS: Array<[string, RegExp]> = [
+    ["Intercom", /intercom(\.io|cdn|settings|messenger)/],
+    ["Drift", /js\.driftt\.com|drift\.com\/ai/],
+    ["Tidio", /tidio(chat)?\.com|code\.tidio/],
+    ["Tawk.to", /embed\.tawk\.to|tawk\.to/],
+    ["LiveChat", /cdn\.livechatinc|livechatinc\.com/],
+    ["Crisp Chat", /client\.crisp\.chat|crisp\.chat/],
+    ["HubSpot Chat", /js\.hs-scripts\.com|js\.usemessages\.com/],
+    ["Zendesk Chat", /static\.zdassets\.com|zopim/],
+    ["Ada Chatbot", /static\.ada\.support/],
+    ["LivePerson", /lpcdn\.lpsnmedia|liveperson/],
+    ["ManyChat", /manychat\.com/],
+    ["Chatbase", /chatbase\.co/],
+    ["Voiceflow Chat", /general-runtime\.voiceflow|cdn\.voiceflow/],
+    ["Custom Chatbot", /(id|class)=["'][^"']*(chatbot|ai-assistant|chat-widget|ai-chat)[^"']*["']/],
+  ];
+  const VOICE: Array<[string, RegExp]> = [
+    ["Vapi Voice AI", /vapi\.ai/],
+    ["Bland AI", /bland\.ai/],
+    ["Retell AI", /retellai\.com|retell\.ai/],
+    ["Synthflow", /synthflow\.ai/],
+    ["Air.ai", /air\.ai/],
+    ["ElevenLabs Voice", /elevenlabs\.io\/convai|convai-widget/],
+  ];
+  const GENERIC: Array<[string, RegExp]> = [
+    ["OpenAI Integration", /api\.openai\.com|openai\.com\/v1/],
+    ["Anthropic Claude", /api\.anthropic\.com/],
+    ["Google Gemini", /generativelanguage\.googleapis/],
+    ["Dialogflow", /dialogflow\.com|dialogflow\.cloud/],
+    ["AI Assistant Copy", /(powered by ai|ai assistant|ai-powered)/],
+  ];
+
+  for (const [name, re] of CHATBOTS) {
+    if (re.test(lower)) { features.push(name); has_chatbot = true; }
+  }
+  for (const [name, re] of VOICE) {
+    if (re.test(lower)) { features.push(name); has_ai_voice = true; }
+  }
+  for (const [name, re] of GENERIC) {
+    if (re.test(lower)) features.push(name);
+  }
+
+  let ai_score = 0;
+  if (has_chatbot) ai_score += 50;
+  if (has_ai_voice) ai_score += 40;
+  ai_score += Math.min(features.length * 5, 20);
+  if (ai_score > 100) ai_score = 100;
+
+  return { ai_score, features: Array.from(new Set(features)), has_chatbot, has_ai_voice };
+}
+
+// Estimate monthly revenue loss + missed customers from lack of AI tools.
+export function calculateRevenueLoss(args: {
+  has_chatbot: boolean;
+  has_ai_voice: boolean;
+  review_count: number | null;
+}): { revenue_loss: number; missed_customers: number } {
+  if (args.has_chatbot && args.has_ai_voice) {
+    return { revenue_loss: 0, missed_customers: 0 };
+  }
+  const reviews = args.review_count ?? 0;
+  const monthly_visitors = Math.max(reviews * 20, 200);
+  const baseline_conversion = 0.02;
+  const ai_conversion_uplift = 0.35;
+  let missed = Math.round(monthly_visitors * baseline_conversion * ai_conversion_uplift);
+  const avg_customer_value = 150;
+  let loss = missed * avg_customer_value;
+  // Halve if site already has one of the two
+  if (args.has_chatbot || args.has_ai_voice) {
+    missed = Math.round(missed / 2);
+    loss = Math.round(loss / 2);
+  }
+  return { revenue_loss: loss, missed_customers: missed };
+}
+
 async function checkWebsite(url: string): Promise<{
   website_error: boolean;
   no_ssl: boolean;
