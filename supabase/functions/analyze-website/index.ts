@@ -306,6 +306,19 @@ Deno.serve(async (req) => {
           ? "weak_site"
           : "needs_upgrade";
 
+    // Estimate revenue loss from missing AI (look up existing review_count for this lead)
+    let reviewCount: number | null = null;
+    if (lead_id) {
+      const { data: existing } = await supabase
+        .from("leads").select("review_count").eq("id", lead_id).maybeSingle();
+      reviewCount = existing?.review_count ?? null;
+    }
+    const { revenue_loss, missed_customers } = calculateRevenueLoss({
+      has_chatbot: result.has_chatbot,
+      has_ai_voice: result.has_ai_voice,
+      review_count: reviewCount,
+    });
+
     const updateData: Record<string, unknown> = {
       website: formattedUrl,
       has_website: true,
@@ -318,11 +331,18 @@ Deno.serve(async (req) => {
       priority_score: priorityScore,
       priority_label: priorityLabel,
       quality_score,
+      ai_score: result.ai_score,
+      ai_features_detected: result.ai_features_detected,
+      has_chatbot: result.has_chatbot,
+      has_ai_voice: result.has_ai_voice,
+      estimated_monthly_revenue_loss: revenue_loss,
+      estimated_monthly_missed_customers: missed_customers,
     };
 
     // Populate scraped fields if available
     if (result.scraped_phone) updateData.phone = result.scraped_phone;
     if (result.scraped_email) updateData.email = result.scraped_email;
+
 
     let returnLeadId = lead_id;
 
