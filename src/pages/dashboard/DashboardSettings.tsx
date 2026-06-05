@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save, Sun, Moon, Link2, Unlink } from "lucide-react";
+import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save, Sun, Moon, Link2, Unlink, KeyRound, Trash2 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -379,6 +379,8 @@ const DashboardSettings = () => {
         </CardContent>
       </Card>
 
+      <OpenAIKeyCard userId={user?.id} />
+
       {/* Appearance */}
       <Card className="border-border/50">
         <CardHeader>
@@ -474,5 +476,90 @@ const DashboardSettings = () => {
     </div>
   );
 };
+
+function OpenAIKeyCard({ userId }: { userId?: string }) {
+  const [hasKey, setHasKey] = useState(false);
+  const [lastValidated, setLastValidated] = useState<string | null>(null);
+  const [keyInput, setKeyInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    supabase
+      .from("user_api_keys")
+      .select("last_validated_at")
+      .eq("user_id", userId)
+      .eq("provider", "openai")
+      .maybeSingle()
+      .then(({ data }) => {
+        setHasKey(!!data);
+        setLastValidated(data?.last_validated_at || null);
+      });
+  }, [userId]);
+
+  const save = async () => {
+    if (!keyInput.trim()) return;
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("validate-openai-key", {
+        body: { api_key: keyInput.trim(), save: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success("OpenAI key saved");
+      setHasKey(true);
+      setLastValidated(new Date().toISOString());
+      setKeyInput("");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to validate key");
+    } finally { setBusy(false); }
+  };
+
+  const remove = async () => {
+    if (!confirm("Remove your OpenAI key? Existing chatbots will stop responding.")) return;
+    await supabase.from("user_api_keys").delete().eq("user_id", userId!).eq("provider", "openai");
+    setHasKey(false); setLastValidated(null);
+    toast.success("OpenAI key removed");
+  };
+
+  return (
+    <Card className="border-border/50">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <KeyRound className="h-5 w-5 text-primary" /> OpenAI API Key
+        </CardTitle>
+        <CardDescription>
+          Required to power Client Chatbots. Get a key at platform.openai.com → API keys. You're billed by OpenAI directly.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {hasKey ? (
+          <div className="flex items-center justify-between rounded-md border border-border/50 p-3">
+            <div>
+              <p className="text-sm font-medium">Key configured</p>
+              <p className="text-xs text-muted-foreground">
+                Validated {lastValidated ? new Date(lastValidated).toLocaleString() : "—"}
+              </p>
+            </div>
+            <Button variant="outline" size="sm" onClick={remove}>
+              <Trash2 className="mr-2 h-4 w-4" /> Remove
+            </Button>
+          </div>
+        ) : null}
+        <div className="flex gap-2">
+          <Input
+            type="password"
+            placeholder="sk-..."
+            value={keyInput}
+            onChange={(e) => setKeyInput(e.target.value)}
+          />
+          <Button onClick={save} disabled={busy || !keyInput.trim()}>
+            {busy ? "Validating..." : hasKey ? "Replace key" : "Save key"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default DashboardSettings;

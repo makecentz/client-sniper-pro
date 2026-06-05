@@ -1,71 +1,101 @@
-## Goal
-Add an "AI Presence Score" to each lead that detects whether a business's website uses AI features (chatbot, AI voice assistant, AI scheduler, etc.), and if not, shows an estimated monthly revenue loss and number of missed customers. Displayed in the Saved Leads → Lead Detail Modal → Overview tab.
+# Client Chatbots — Plan
 
-## What gets detected
+Let ClientHunter users build a branded chatbot for each client, powered by **their own OpenAI API key** via the OpenAI **Assistants API + File Search**, fed by uploaded documents and crawled site pages, and embeddable on the client's site as a floating chat bubble.
 
-The website analyzer will scan the page HTML for fingerprints of common AI tools:
+## What the user sees
 
-- **Chatbots**: Intercom, Drift, Tidio, Tawk.to, LiveChat, Crisp, HubSpot Chat, Zendesk, Ada, LivePerson, ChatGPT widgets, custom `chatbot`/`ai-assistant` markers
-- **AI voice assistants**: Vapi, Bland, Retell, Synthflow, Air.ai, voiceflow embeds
-- **AI schedulers/assistants**: GoHighLevel AI, Calendly AI, ServiceTitan AI
-- **Generic AI markers**: `openai`, `anthropic`, `gemini`, `dialogflow`, `rasa`, "Powered by AI", "AI Assistant" copy
+A new **"Chatbots"** section in the dashboard sidebar.
 
-Each match adds to an `ai_score` (0–100). A site with no detectable AI = 0.
+1. **Settings → AI Integrations**
+   - Field to paste their OpenAI API key.
+   - We store it encrypted (per-user secret in a new table) and validate it with a test call before saving.
+   - A "Remove key" button.
 
-## New lead fields (database migration)
+2. **Chatbots list page (`/dashboard/chatbots`)**
+   - Table of all bots they've built (client name, status, message count, created).
+   - "Create chatbot" button.
 
-Add to `leads`:
-- `ai_score` int (0–100)
-- `ai_features_detected` text[] (e.g. `["Intercom Chatbot"]`)
-- `has_chatbot` bool
-- `has_ai_voice` bool
-- `estimated_monthly_revenue_loss` numeric (USD)
-- `estimated_monthly_missed_customers` int
+3. **Create / edit chatbot wizard**
+   - **Step 1 — Client info:** name, logo (optional), brand color, welcome message, suggested questions.
+   - **Step 2 — Knowledge base:**
+     - Drag-and-drop file uploads (PDF, DOCX, TXT, MD).
+     - "Crawl website" input — paste a URL, we fetch up to N pages and add them as KB sources.
+     - List of all current KB sources with delete buttons.
+   - **Step 3 — Behavior:** system prompt template (pre-filled with a good default referencing the brand), tone selector, fallback message when the bot doesn't know.
+   - **Step 4 — Deploy:** shows the embed snippet + a live preview of the bubble.
 
-## Revenue loss formula
+4. **Chatbot detail page**
+   - Lightweight analytics card: total conversations, total messages, last-7-days chart.
+   - KB management (add/remove sources, "re-sync").
+   - Embed snippet (copy button) with floating-bubble preview.
+   - "Test chat" panel so the user can talk to the bot themselves.
 
-Industry-standard estimate based on the business's review count as a proxy for monthly traffic/leads:
+5. **Embed snippet** (what they hand to their client)
+   ```html
+   <script src="https://clienthunterai.com/widget.js"
+           data-bot-id="abc123" async></script>
+   ```
+   Drops a bottom-right chat bubble matching the bot's brand color/logo.
 
-```text
-monthly_visitors        = max(review_count * 20, 200)
-baseline_conversion     = 2%
-ai_conversion_uplift    = 35%   (chatbot capture of after-hours + abandonment)
-missed_customers        = round(monthly_visitors * baseline_conversion * ai_conversion_uplift)
-avg_customer_value      = $150  (configurable default per category later)
-revenue_loss            = missed_customers * avg_customer_value
-```
+## How it works (technical)
 
-If the site already has a chatbot AND voice AI → loss = $0, missed = 0.
-If it has one but not the other → loss is halved.
+**OpenAI Assistants API + File Search**
+- When a chatbot is created, an edge function calls the user's OpenAI key to:
+  1. Create a **Vector Store** for that bot.
+  2. Upload KB files (and crawled-page text as `.md` files) to that vector store.
+  3. Create an **Assistant** wired to the vector store, with the system prompt.
+- We store `openai_assistant_id`, `openai_vector_store_id`, `openai_thread_id` per conversation.
+- Editing the KB = add/remove files in the vector store (no re-creation needed).
 
-## Backend changes
+**Website crawl**
+- New edge function `crawl-website` that fetches the URL, follows same-domain links (depth-limited, max ~20 pages), strips HTML, stores markdown chunks as files in the bot's vector store.
 
-**`supabase/functions/analyze-website/index.ts`**
-- Add `detectAIFeatures(html)` that returns `{ ai_score, features, has_chatbot, has_ai_voice }`.
-- Add `calculateRevenueLoss({ has_chatbot, has_ai_voice, review_count })` returning `{ revenue_loss, missed_customers }`.
-- Include all six new fields in the `updateData` object so existing analyze flow persists them.
+**Widget runtime**
+- `public/widget.js` — vanilla JS that injects a shadow-DOM bubble + chat panel using `data-bot-id`.
+- It POSTs messages to a public edge function `chatbot-message` which:
+  1. Looks up the bot, loads the user's OpenAI key.
+  2. Creates a thread on first message (cookie-stored thread id for continuity).
+  3. Streams the Assistant run back as SSE.
+  4. Increments `message_count` / `conversation_count` on the bot row (no transcript stored).
+- CORS open so the widget works on any client domain.
 
-**`supabase/functions/search-businesses/index.ts`**
-- During the per-result website check, populate the same six fields so newly searched leads get an AI score immediately.
+**Security**
+- OpenAI keys stored in a new `user_api_keys` table, only readable by the owner via RLS, decrypted server-side in edge functions using `SUPABASE_SERVICE_ROLE_KEY`.
+- Widget endpoint is rate-limited per `bot_id` + IP to prevent abuse running up the user's OpenAI bill.
+- Each bot has an `is_active` toggle the user can flip to instantly disable.
 
-## Frontend changes
+## Database changes
 
-**`src/lib/mock-data.ts`**
-- Add the six new fields to the `Lead` interface (optional/nullable).
+New tables (all RLS-scoped to `auth.uid()`, with grants):
+- `user_api_keys` — user_id, provider ('openai'), encrypted_key, last_validated_at.
+- `chatbots` — user_id, name, client_name, brand_color, logo_url, welcome_message, suggested_questions, system_prompt, fallback_message, openai_assistant_id, openai_vector_store_id, is_active, message_count, conversation_count.
+- `chatbot_kb_sources` — chatbot_id, type ('file'|'url'), name, openai_file_id, size_bytes, status.
 
-**`src/components/LeadDetailModal.tsx`** (Overview tab)
-- New "AI Presence" card below the existing issue badges showing:
-  - Big score number (e.g. `AI Score 0/100`) color-coded red/yellow/green
-  - Two status pills: "Chatbot: ❌ None" / "Voice AI: ❌ None" (✅ green if detected, listing the tool name)
-  - When score is low, a "Missed Opportunity" panel:
-    - `$X,XXX/mo estimated revenue loss`
-    - `~XX customers/month going to competitors`
-    - One-line copy: "Adding an AI chatbot + voice assistant could recover this revenue."
+New storage bucket: `chatbot-kb` (private) for original uploaded files.
 
-## Out of scope
-- No changes to pricing, auth, or other lead tabs (Details/Notes/AI Content stay as-is).
-- No new admin settings — formula constants live in the edge function for now.
-- No re-analysis of already-saved leads in bulk; new field populates on next analyze/search. A small "Rescan website" button could be added later.
+## New edge functions
 
-## Open question
-The revenue formula above uses `review_count × 20` as a traffic proxy and a flat `$150` avg customer value. Want me to tune these (e.g. per-category customer values like $500 for contractors, $80 for salons), or ship with the flat default and iterate later?
+- `validate-openai-key` — quick test call to verify the key works.
+- `chatbot-create` — provisions vector store + assistant on OpenAI.
+- `chatbot-kb-upload` — pushes a file/URL crawl result into the bot's vector store.
+- `chatbot-kb-delete` — removes a file from the vector store.
+- `crawl-website` — fetches pages and pipes them into `chatbot-kb-upload`.
+- `chatbot-message` (public, CORS-open) — the widget's chat endpoint, streams the Assistant response.
+
+## Out of scope (for this first build)
+
+- Full transcript storage / inbox view (we agreed: counts only).
+- Lead capture forms inside the bot.
+- Multi-language UI for the widget.
+- Image/voice messages.
+
+These can be added later without rework — the schema leaves room.
+
+## Build order
+
+1. DB migration + `user_api_keys` UI in Settings + validate-key edge function.
+2. Chatbots list + create wizard (steps 1, 3 — no KB yet) + `chatbot-create` edge function.
+3. KB upload (files only) + storage bucket + `chatbot-kb-upload`.
+4. Website crawl + `crawl-website`.
+5. `chatbot-message` edge function + `public/widget.js` + embed-snippet UI + test chat panel.
+6. Analytics counters + bot detail page polish.

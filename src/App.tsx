@@ -17,6 +17,8 @@ import SearchPanel from "./pages/dashboard/SearchPanel";
 import SavedLeads from "./pages/dashboard/SavedLeads";
 import AITools from "./pages/dashboard/AITools";
 import DashboardSettings from "./pages/dashboard/DashboardSettings";
+import Chatbots from "./pages/dashboard/Chatbots";
+import ChatbotEdit from "./pages/dashboard/ChatbotEdit";
 
 import Affiliate from "./pages/dashboard/Affiliate";
 import Admin from "./pages/Admin";
@@ -64,6 +66,8 @@ const App = () => (
               <Route path="search" element={<SearchPanel />} />
               <Route path="leads" element={<SavedLeads />} />
               <Route path="ai-tools" element={<AITools />} />
+              <Route path="chatbots" element={<Chatbots />} />
+              <Route path="chatbots/:id" element={<ChatbotEdit />} />
               
               <Route path="affiliate" element={<Affiliate />} />
               <Route path="settings" element={<DashboardSettings />} />

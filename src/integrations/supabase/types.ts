@@ -244,6 +244,122 @@ export type Database = {
         }
         Relationships: []
       }
+      chatbot_kb_sources: {
+        Row: {
+          chatbot_id: string
+          created_at: string
+          error: string | null
+          id: string
+          name: string
+          openai_file_id: string | null
+          size_bytes: number | null
+          source_type: string
+          source_url: string | null
+          status: string
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          chatbot_id: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          name: string
+          openai_file_id?: string | null
+          size_bytes?: number | null
+          source_type: string
+          source_url?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          chatbot_id?: string
+          created_at?: string
+          error?: string | null
+          id?: string
+          name?: string
+          openai_file_id?: string | null
+          size_bytes?: number | null
+          source_type?: string
+          source_url?: string | null
+          status?: string
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_kb_sources_chatbot_id_fkey"
+            columns: ["chatbot_id"]
+            isOneToOne: false
+            referencedRelation: "chatbots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbots: {
+        Row: {
+          brand_color: string
+          client_name: string | null
+          conversation_count: number
+          created_at: string
+          fallback_message: string
+          id: string
+          is_active: boolean
+          logo_url: string | null
+          message_count: number
+          name: string
+          openai_assistant_id: string | null
+          openai_vector_store_id: string | null
+          suggested_questions: Json
+          system_prompt: string
+          updated_at: string
+          user_id: string
+          welcome_message: string
+        }
+        Insert: {
+          brand_color?: string
+          client_name?: string | null
+          conversation_count?: number
+          created_at?: string
+          fallback_message?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          message_count?: number
+          name: string
+          openai_assistant_id?: string | null
+          openai_vector_store_id?: string | null
+          suggested_questions?: Json
+          system_prompt?: string
+          updated_at?: string
+          user_id: string
+          welcome_message?: string
+        }
+        Update: {
+          brand_color?: string
+          client_name?: string | null
+          conversation_count?: number
+          created_at?: string
+          fallback_message?: string
+          id?: string
+          is_active?: boolean
+          logo_url?: string | null
+          message_count?: number
+          name?: string
+          openai_assistant_id?: string | null
+          openai_vector_store_id?: string | null
+          suggested_questions?: Json
+          system_prompt?: string
+          updated_at?: string
+          user_id?: string
+          welcome_message?: string
+        }
+        Relationships: []
+      }
       company_settings: {
         Row: {
           business_name: string | null
@@ -1163,6 +1279,36 @@ export type Database = {
           lifetime_searches_used?: number
           plan?: Database["public"]["Enums"]["app_plan"]
           searches_today?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_api_keys: {
+        Row: {
+          created_at: string
+          encrypted_key: string
+          id: string
+          last_validated_at: string | null
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          encrypted_key: string
+          id?: string
+          last_validated_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          encrypted_key?: string
+          id?: string
+          last_validated_at?: string | null
+          provider?: string
           updated_at?: string
           user_id?: string
         }

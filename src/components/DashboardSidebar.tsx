@@ -1,4 +1,4 @@
-import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database, Gift } from "lucide-react";
+import { Search, Bookmark, Bot, Settings, LogOut, Zap, Shield, LayoutDashboard, ShieldCheck, Database, Gift, MessageSquare } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { NavLink } from "@/components/NavLink";
 import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
@@ -24,6 +24,7 @@ const navItems = [
   { title: "Search", url: "/dashboard/search", icon: Search },
   { title: "Saved Leads", url: "/dashboard/leads", icon: Bookmark },
   { title: "AI Tools", url: "/dashboard/ai-tools", icon: Bot },
+  { title: "Chatbots", url: "/dashboard/chatbots", icon: MessageSquare },
   { title: "Affiliate", url: "/dashboard/affiliate", icon: Gift },
   { title: "Settings", url: "/dashboard/settings", icon: Settings },
 ];
