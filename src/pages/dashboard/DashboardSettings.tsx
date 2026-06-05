@@ -379,6 +379,8 @@ const DashboardSettings = () => {
         </CardContent>
       </Card>
 
+      <OpenAIKeyCard userId={user?.id} />
+
       {/* Appearance */}
       <Card className="border-border/50">
         <CardHeader>
