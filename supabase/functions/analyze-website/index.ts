@@ -173,6 +173,10 @@ async function checkWebsite(url: string): Promise<{
   scraped_phone: string | null;
   scraped_email: string | null;
   copyright_year: number | null;
+  ai_score: number;
+  ai_features_detected: string[];
+  has_chatbot: boolean;
+  has_ai_voice: boolean;
 }> {
   const issues: string[] = [];
   let websiteError = false;
@@ -180,6 +184,7 @@ async function checkWebsite(url: string): Promise<{
   let notMobileFriendly = false;
   let outdatedCopyright = false;
   let scrapedData = { scraped_name: null as string | null, scraped_phone: null as string | null, scraped_email: null as string | null, copyright_year: null as number | null };
+  let ai = { ai_score: 0, features: [] as string[], has_chatbot: false, has_ai_voice: false };
 
   if (url.startsWith("http://")) {
     noSsl = true;
@@ -208,8 +213,8 @@ async function checkWebsite(url: string): Promise<{
       issues.push("Not Mobile Friendly");
     }
 
-    // Scrape contact info
     scrapedData = scrapeContactInfo(html);
+    ai = detectAIFeatures(html);
 
     if (scrapedData.copyright_year && scrapedData.copyright_year < 2022) {
       outdatedCopyright = true;
@@ -220,8 +225,20 @@ async function checkWebsite(url: string): Promise<{
     issues.push("Website Unreachable");
   }
 
-  return { website_error: websiteError, no_ssl: noSsl, not_mobile_friendly: notMobileFriendly, outdated_copyright: outdatedCopyright, website_issues: issues, ...scrapedData };
+  return {
+    website_error: websiteError,
+    no_ssl: noSsl,
+    not_mobile_friendly: notMobileFriendly,
+    outdated_copyright: outdatedCopyright,
+    website_issues: issues,
+    ...scrapedData,
+    ai_score: ai.ai_score,
+    ai_features_detected: ai.features,
+    has_chatbot: ai.has_chatbot,
+    has_ai_voice: ai.has_ai_voice,
+  };
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
