@@ -130,8 +130,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(mapped);
             setIsLoading(false);
             if (getReferralCookie()) processReferralOnSignup();
+            // Capture IP on every fresh sign-in (covers email + Google OAuth)
+            if (event === "SIGNED_IN") {
+              supabase.functions.invoke("record-login-ip").catch((e) =>
+                console.warn("record-login-ip failed", e),
+              );
+            }
           }, 0);
         } else {
+
           setUser(null);
           setIsLoading(false);
         }
@@ -142,9 +149,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         const mapped = await mapSupabaseUser(session.user);
         setUser(mapped);
+        // Backfill IP for existing sessions (once per day per browser)
+        const key = `ip_recorded_${session.user.id}`;
+        const last = localStorage.getItem(key);
+        const today = new Date().toISOString().slice(0, 10);
+        if (last !== today) {
+          supabase.functions.invoke("record-login-ip")
+            .then(() => localStorage.setItem(key, today))
+            .catch((e) => console.warn("record-login-ip failed", e));
+        }
       }
       setIsLoading(false);
     });
+
 
     return () => subscription.unsubscribe();
   }, []);
