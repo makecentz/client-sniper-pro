@@ -11,7 +11,7 @@ import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
   User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2,
-  Star, MessageSquare, TrendingDown
+  Star, MessageSquare, TrendingDown, Bot, Mic, DollarSign
 } from "lucide-react";
 import { Globe2, Lock, ExternalLink } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
