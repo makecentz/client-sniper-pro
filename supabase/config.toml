@@ -13,3 +13,5 @@ project_id = "zwqtwgjpcxmgkmwhkmne"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.chatbot-message]
+    verify_jwt = false
