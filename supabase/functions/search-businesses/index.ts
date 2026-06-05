@@ -344,6 +344,10 @@ Deno.serve(async (req) => {
         outdated_copyright: false,
         copyright_year: null,
         website_issues: [],
+        ai_score: 0,
+        ai_features_detected: [],
+        has_chatbot: false,
+        has_ai_voice: false,
       };
 
       if (hasWebsite) {
@@ -360,6 +364,14 @@ Deno.serve(async (req) => {
         rating,
         review_count: reviewCount,
       });
+
+      const { revenue_loss, missed_customers } = hasWebsite
+        ? calculateRevenueLoss({
+            has_chatbot: websiteCheck.has_chatbot,
+            has_ai_voice: websiteCheck.has_ai_voice,
+            review_count: reviewCount,
+          })
+        : { revenue_loss: 0, missed_customers: 0 };
 
       const allIssues = [...websiteCheck.website_issues];
       if (!hasWebsite) allIssues.unshift("No Website");
@@ -385,8 +397,15 @@ Deno.serve(async (req) => {
         review_count: reviewCount,
         quality_score,
         quality_reasons: reasons,
+        ai_score: websiteCheck.ai_score,
+        ai_features_detected: websiteCheck.ai_features_detected,
+        has_chatbot: websiteCheck.has_chatbot,
+        has_ai_voice: websiteCheck.has_ai_voice,
+        estimated_monthly_revenue_loss: revenue_loss,
+        estimated_monthly_missed_customers: missed_customers,
       };
     });
+
 
     const allLeads = await Promise.all(leadPromises);
 
