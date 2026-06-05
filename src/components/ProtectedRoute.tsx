@@ -17,10 +17,12 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!user) { setOnboardingChecked(true); return; }
       setOnboardingChecked(false);
       const [settingsRes, usageRes] = await Promise.all([
-        supabase.from("company_settings").select("id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("company_settings").select("business_name, website_url, phone").eq("user_id", user.id).maybeSingle(),
         supabase.from("usage_tracking").select("frozen").eq("user_id", user.id).maybeSingle(),
       ]);
-      setHasSettings(!!settingsRes.data);
+      const s: any = settingsRes.data;
+      const hasCore = !!(s && s.business_name?.trim() && s.website_url?.trim() && s.phone?.trim());
+      setHasSettings(hasCore);
       setFrozen(!!(usageRes.data as any)?.frozen);
       setOnboardingChecked(true);
     };
