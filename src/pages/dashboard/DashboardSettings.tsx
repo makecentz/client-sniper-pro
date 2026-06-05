@@ -10,7 +10,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save, Sun, Moon, Link2, Unlink } from "lucide-react";
+import { Shield, CreditCard, Mail, Check, Zap, ExternalLink, Building2, Save, Sun, Moon, Link2, Unlink, KeyRound, Trash2 } from "lucide-react";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
