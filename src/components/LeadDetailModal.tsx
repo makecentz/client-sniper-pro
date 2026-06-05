@@ -11,7 +11,7 @@ import {
   Flame, AlertTriangle, MapPin, Phone, Globe, Mail, Check, ShieldOff, Smartphone,
   CalendarX, TrendingUp, Clock, Lightbulb, Users2, Copy, Trash2, Pencil, Plus,
   User, Tag, FileText, Video, PhoneCall, MessageCircle, Sparkles, Loader2, Search, Wand2,
-  Star, MessageSquare, TrendingDown
+  Star, MessageSquare, TrendingDown, Bot, Mic, DollarSign
 } from "lucide-react";
 import { Globe2, Lock, ExternalLink } from "lucide-react";
 import { type Lead } from "@/lib/mock-data";
@@ -345,6 +345,71 @@ const LeadDetailModal = ({ lead, open, onOpenChange, onLeadUpdated }: LeadDetail
                 ))}
               </div>
             )}
+
+            {/* AI Presence */}
+            {lead.has_website && (() => {
+              const aiScore = lead.ai_score ?? 0;
+              const hasChat = !!lead.has_chatbot;
+              const hasVoice = !!lead.has_ai_voice;
+              const features = lead.ai_features_detected ?? [];
+              const chatTool = features.find(f => /chat|intercom|drift|tidio|tawk|crisp|hubspot|zendesk|ada|liveperson|manychat|chatbase|voiceflow/i.test(f));
+              const voiceTool = features.find(f => /vapi|bland|retell|synthflow|air\.ai|elevenlabs/i.test(f));
+              const loss = Number(lead.estimated_monthly_revenue_loss ?? 0);
+              const missed = lead.estimated_monthly_missed_customers ?? 0;
+              const scoreColor = aiScore >= 60 ? "text-success border-success/30" : aiScore >= 30 ? "text-warning border-warning/30" : "text-hot border-hot/30";
+              return (
+                <Card className="border-border/50">
+                  <CardContent className="pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-medium">AI Presence</p>
+                      </div>
+                      <Badge variant="outline" className={`text-xs ${scoreColor}`}>
+                        AI Score {aiScore}/100
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      <Badge variant="outline" className={`text-xs ${hasChat ? "text-success border-success/30" : "text-muted-foreground border-border"}`}>
+                        <Bot className="mr-1 h-3 w-3" />
+                        {hasChat ? `Chatbot: ${chatTool ?? "Detected"}` : "Chatbot: None"}
+                      </Badge>
+                      <Badge variant="outline" className={`text-xs ${hasVoice ? "text-success border-success/30" : "text-muted-foreground border-border"}`}>
+                        <Mic className="mr-1 h-3 w-3" />
+                        {hasVoice ? `Voice AI: ${voiceTool ?? "Detected"}` : "Voice AI: None"}
+                      </Badge>
+                      {features.filter(f => f !== chatTool && f !== voiceTool).slice(0, 3).map((f, i) => (
+                        <Badge key={i} variant="outline" className="text-xs text-primary border-primary/30">
+                          <Sparkles className="mr-1 h-3 w-3" />{f}
+                        </Badge>
+                      ))}
+                    </div>
+                    {(!hasChat || !hasVoice) && loss > 0 && (
+                      <div className="rounded-md border border-hot/30 bg-hot/5 p-3 space-y-1">
+                        <p className="text-xs font-medium text-hot flex items-center gap-1.5">
+                          <TrendingDown className="h-3.5 w-3.5" /> Missed Opportunity
+                        </p>
+                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          <p className="text-lg font-bold text-hot flex items-center gap-1">
+                            <DollarSign className="h-4 w-4" />{loss.toLocaleString()}<span className="text-xs font-normal text-muted-foreground ml-1">/mo est. revenue loss</span>
+                          </p>
+                          <p className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Users2 className="h-3.5 w-3.5" />~{missed} customers/mo lost
+                          </p>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Adding an AI {!hasChat && !hasVoice ? "chatbot + voice assistant" : !hasChat ? "chatbot" : "voice assistant"} could recover this revenue.
+                        </p>
+                      </div>
+                    )}
+                    {hasChat && hasVoice && (
+                      <p className="text-xs text-success flex items-center gap-1"><Check className="h-3.5 w-3.5" /> This site already uses AI chatbot + voice — no missed opportunity.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
+
 
             {lead.screenshot_url && (
               <div className="rounded-md overflow-hidden border border-border/30 relative">

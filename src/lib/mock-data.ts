@@ -42,6 +42,13 @@ export interface Lead {
   rating: number | null;
   review_count: number | null;
   quality_score: number | null;
+  // AI presence
+  ai_score: number | null;
+  ai_features_detected: string[];
+  has_chatbot: boolean;
+  has_ai_voice: boolean;
+  estimated_monthly_revenue_loss: number | null;
+  estimated_monthly_missed_customers: number | null;
 }
 
 // Search result type (before saving to DB)
@@ -63,4 +70,10 @@ export interface SearchResult {
   rating: number | null;
   review_count: number;
   quality_score: number;
+  ai_score?: number;
+  ai_features_detected?: string[];
+  has_chatbot?: boolean;
+  has_ai_voice?: boolean;
+  estimated_monthly_revenue_loss?: number;
+  estimated_monthly_missed_customers?: number;
 }

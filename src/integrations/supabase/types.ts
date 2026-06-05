@@ -477,7 +477,9 @@ export type Database = {
         Row: {
           address: string | null
           ai_audit: string | null
+          ai_features_detected: string[] | null
           ai_insight: string | null
+          ai_score: number | null
           business_name: string
           category: string | null
           city: string | null
@@ -488,11 +490,15 @@ export type Database = {
           contacted: boolean
           created_at: string
           email: string | null
+          estimated_monthly_missed_customers: number | null
+          estimated_monthly_revenue_loss: number | null
           follow_up_date: string | null
           gmaps_hours: Json | null
           gmaps_photos: string[] | null
           gmaps_place_id: string | null
           gmaps_reviews: Json | null
+          has_ai_voice: boolean | null
+          has_chatbot: boolean | null
           has_website: boolean
           id: string
           last_contacted_at: string | null
@@ -526,7 +532,9 @@ export type Database = {
         Insert: {
           address?: string | null
           ai_audit?: string | null
+          ai_features_detected?: string[] | null
           ai_insight?: string | null
+          ai_score?: number | null
           business_name: string
           category?: string | null
           city?: string | null
@@ -537,11 +545,15 @@ export type Database = {
           contacted?: boolean
           created_at?: string
           email?: string | null
+          estimated_monthly_missed_customers?: number | null
+          estimated_monthly_revenue_loss?: number | null
           follow_up_date?: string | null
           gmaps_hours?: Json | null
           gmaps_photos?: string[] | null
           gmaps_place_id?: string | null
           gmaps_reviews?: Json | null
+          has_ai_voice?: boolean | null
+          has_chatbot?: boolean | null
           has_website?: boolean
           id?: string
           last_contacted_at?: string | null
@@ -575,7 +587,9 @@ export type Database = {
         Update: {
           address?: string | null
           ai_audit?: string | null
+          ai_features_detected?: string[] | null
           ai_insight?: string | null
+          ai_score?: number | null
           business_name?: string
           category?: string | null
           city?: string | null
@@ -586,11 +600,15 @@ export type Database = {
           contacted?: boolean
           created_at?: string
           email?: string | null
+          estimated_monthly_missed_customers?: number | null
+          estimated_monthly_revenue_loss?: number | null
           follow_up_date?: string | null
           gmaps_hours?: Json | null
           gmaps_photos?: string[] | null
           gmaps_place_id?: string | null
           gmaps_reviews?: Json | null
+          has_ai_voice?: boolean | null
+          has_chatbot?: boolean | null
           has_website?: boolean
           id?: string
           last_contacted_at?: string | null

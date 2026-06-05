@@ -1,35 +1,71 @@
 ## Goal
-Change the Pro plan price to **$25/month** everywhere — Stripe, frontend copy, checkout, and admin defaults.
+Add an "AI Presence Score" to each lead that detects whether a business's website uses AI features (chatbot, AI voice assistant, AI scheduler, etc.), and if not, shows an estimated monthly revenue loss and number of missed customers. Displayed in the Saved Leads → Lead Detail Modal → Overview tab.
 
-## Stripe changes
-The current Pro price (`price_1TOyHSIEsTwcnIOwGpAkXs8j`) is $49 in Stripe (product `prod_UHSfSAAJLpI9AT`). Stripe prices are immutable, so:
-1. Create a new recurring monthly price of **$25 USD** on the existing Pro product `prod_UHSfSAAJLpI9AT` (nickname: "Pro Monthly $25").
-2. Archive the old $49 price so it can't be used for new checkouts.
+## What gets detected
 
-The new price ID will replace every hardcoded reference to `price_1TOyHSIEsTwcnIOwGpAkXs8j`.
+The website analyzer will scan the page HTML for fingerprints of common AI tools:
 
-## Code changes
+- **Chatbots**: Intercom, Drift, Tidio, Tawk.to, LiveChat, Crisp, HubSpot Chat, Zendesk, Ada, LivePerson, ChatGPT widgets, custom `chatbot`/`ai-assistant` markers
+- **AI voice assistants**: Vapi, Bland, Retell, Synthflow, Air.ai, voiceflow embeds
+- **AI schedulers/assistants**: GoHighLevel AI, Calendly AI, ServiceTitan AI
+- **Generic AI markers**: `openai`, `anthropic`, `gemini`, `dialogflow`, `rasa`, "Powered by AI", "AI Assistant" copy
 
-**`supabase/functions/create-checkout/index.ts`**
-- Replace `PRO_SUBSCRIPTION_PRICE` constant with the new $25 price ID.
+Each match adds to an `ai_score` (0–100). A site with no detectable AI = 0.
 
-**`supabase/functions/stripe-webhook/index.ts`**
-- Update the `pro_price_monthly` fallback default from `49` to `25` (line ~99).
+## New lead fields (database migration)
 
-**`src/pages/dashboard/DashboardSettings.tsx`**
-- Update `STRIPE_PRICES.pro.price_id` to the new $25 price ID.
-- Replace displayed copy: `$69/mo` → `$25/mo`, strike-through `$89/mo` → removed (no longer a "limited time" discount since $25 is the new regular price), button label `Upgrade to Pro — $69/mo` → `Upgrade to Pro — $25/mo`, and the "Regular price $89/mo — locked in" line removed.
+Add to `leads`:
+- `ai_score` int (0–100)
+- `ai_features_detected` text[] (e.g. `["Intercom Chatbot"]`)
+- `has_chatbot` bool
+- `has_ai_voice` bool
+- `estimated_monthly_revenue_loss` numeric (USD)
+- `estimated_monthly_missed_customers` int
 
-**`src/pages/Landing.tsx`** (Pricing section, ~line 299–316)
-- Change the Pro card: `$69` → `$25`, remove the strike-through `$89` and "Limited time only — regular price $89/mo" line.
+## Revenue loss formula
 
-**`src/pages/Admin.tsx`**
-- Change initial state defaults `useState(69)` / `useState("69")` → `25` / `"25"`.
+Industry-standard estimate based on the business's review count as a proxy for monthly traffic/leads:
 
-**`admin_settings` table (data migration)**
-- Update the row where `key = 'pro_price_monthly'` to `value = '25'` so the live admin-configurable price matches.
+```text
+monthly_visitors        = max(review_count * 20, 200)
+baseline_conversion     = 2%
+ai_conversion_uplift    = 35%   (chatbot capture of after-hours + abandonment)
+missed_customers        = round(monthly_visitors * baseline_conversion * ai_conversion_uplift)
+avg_customer_value      = $150  (configurable default per category later)
+revenue_loss            = missed_customers * avg_customer_value
+```
+
+If the site already has a chatbot AND voice AI → loss = $0, missed = 0.
+If it has one but not the other → loss is halved.
+
+## Backend changes
+
+**`supabase/functions/analyze-website/index.ts`**
+- Add `detectAIFeatures(html)` that returns `{ ai_score, features, has_chatbot, has_ai_voice }`.
+- Add `calculateRevenueLoss({ has_chatbot, has_ai_voice, review_count })` returning `{ revenue_loss, missed_customers }`.
+- Include all six new fields in the `updateData` object so existing analyze flow persists them.
+
+**`supabase/functions/search-businesses/index.ts`**
+- During the per-result website check, populate the same six fields so newly searched leads get an AI score immediately.
+
+## Frontend changes
+
+**`src/lib/mock-data.ts`**
+- Add the six new fields to the `Lead` interface (optional/nullable).
+
+**`src/components/LeadDetailModal.tsx`** (Overview tab)
+- New "AI Presence" card below the existing issue badges showing:
+  - Big score number (e.g. `AI Score 0/100`) color-coded red/yellow/green
+  - Two status pills: "Chatbot: ❌ None" / "Voice AI: ❌ None" (✅ green if detected, listing the tool name)
+  - When score is low, a "Missed Opportunity" panel:
+    - `$X,XXX/mo estimated revenue loss`
+    - `~XX customers/month going to competitors`
+    - One-line copy: "Adding an AI chatbot + voice assistant could recover this revenue."
 
 ## Out of scope
-- No change to the Lead Pack ($10 one-time) price or product.
-- No change to free-tier limits, search quotas, or feature gating.
-- No layout/visual redesign of the pricing card beyond removing the strike-through discount line.
+- No changes to pricing, auth, or other lead tabs (Details/Notes/AI Content stay as-is).
+- No new admin settings — formula constants live in the edge function for now.
+- No re-analysis of already-saved leads in bulk; new field populates on next analyze/search. A small "Rescan website" button could be added later.
+
+## Open question
+The revenue formula above uses `review_count × 20` as a traffic proxy and a flat `$150` avg customer value. Want me to tune these (e.g. per-category customer values like $500 for contractors, $80 for salons), or ship with the flat default and iterate later?
