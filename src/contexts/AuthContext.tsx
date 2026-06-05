@@ -130,8 +130,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(mapped);
             setIsLoading(false);
             if (getReferralCookie()) processReferralOnSignup();
+            // Capture IP on every fresh sign-in (covers email + Google OAuth)
+            if (event === "SIGNED_IN") {
+              supabase.functions.invoke("record-login-ip").catch((e) =>
+                console.warn("record-login-ip failed", e),
+              );
+            }
           }, 0);
         } else {
+
           setUser(null);
           setIsLoading(false);
         }
