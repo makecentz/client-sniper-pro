@@ -65,6 +65,15 @@ const Onboarding = () => {
     navigate("/dashboard", { replace: true });
   };
 
+  const handleSkip = async () => {
+    if (!user) return;
+    await supabase.from("company_settings").upsert(
+      { user_id: user.id, email: user.email },
+      { onConflict: "user_id" }
+    );
+    navigate("/dashboard", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg border-border/50">
