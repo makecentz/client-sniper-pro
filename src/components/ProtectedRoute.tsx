@@ -21,7 +21,7 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
         supabase.from("usage_tracking").select("frozen").eq("user_id", user.id).maybeSingle(),
       ]);
       const s: any = settingsRes.data;
-      const hasCore = !!(s && s.business_name?.trim() && s.website_url?.trim() && s.phone?.trim());
+      const hasCore = !!s;
       setHasSettings(hasCore);
       setFrozen(!!(usageRes.data as any)?.frozen);
       setOnboardingChecked(true);
