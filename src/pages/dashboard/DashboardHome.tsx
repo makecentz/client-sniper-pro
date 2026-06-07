@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { type Lead } from "@/lib/mock-data";
 import LeadDetailModal from "@/components/LeadDetailModal";
+import OnboardingProgress from "@/components/OnboardingProgress";
 
 const DashboardHome = () => {
   const { user } = useAuth();
@@ -74,6 +75,8 @@ const DashboardHome = () => {
         <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
         <p className="text-sm text-muted-foreground">Your lead generation overview</p>
       </div>
+
+      <OnboardingProgress />
 
       {/* Stats */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-4">

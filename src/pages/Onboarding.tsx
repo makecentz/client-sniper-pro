@@ -35,6 +35,7 @@ const Onboarding = () => {
   }, [user, navigate]);
 
   const [loading, setLoading] = useState(false);
+  const [prefilling, setPrefilling] = useState(true);
   const [form, setForm] = useState({
     business_name: "",
     website_url: "",
@@ -44,9 +45,33 @@ const Onboarding = () => {
     current_deal: "",
   });
 
+  // Prefill from existing company_settings so users can resume where they left off.
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("company_settings")
+      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          setForm((prev) => ({
+            business_name: data.business_name ?? prev.business_name,
+            website_url: data.website_url ?? prev.website_url,
+            phone: data.phone ?? prev.phone,
+            email: data.email ?? prev.email,
+            website_dev_price: data.website_dev_price ?? prev.website_dev_price,
+            current_deal: data.current_deal ?? prev.current_deal,
+          }));
+        }
+        setPrefilling(false);
+      });
+  }, [user?.id]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +109,7 @@ const Onboarding = () => {
           <CardTitle className="text-2xl">Set Up Your Business</CardTitle>
           <CardDescription>
             Tell us about your company so we can personalize outreach letters and proposals for you.
+            You can save what you have and finish the rest later — your progress is kept.
           </CardDescription>
         </CardHeader>
         <CardContent>
