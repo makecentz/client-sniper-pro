@@ -65,6 +65,15 @@ const Onboarding = () => {
     navigate("/dashboard", { replace: true });
   };
 
+  const handleSkip = async () => {
+    if (!user) return;
+    await supabase.from("company_settings").upsert(
+      { user_id: user.id, email: user.email },
+      { onConflict: "user_id" }
+    );
+    navigate("/dashboard", { replace: true });
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg border-border/50">
@@ -142,9 +151,18 @@ const Onboarding = () => {
                 onChange={handleChange}
               />
             </div>
-            <div className="pt-2">
+            <div className="space-y-2 pt-2">
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Saving…" : "Get Started"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={handleSkip}
+                disabled={loading}
+              >
+                Skip for now
               </Button>
             </div>
           </form>
