@@ -151,9 +151,18 @@ const Onboarding = () => {
                 onChange={handleChange}
               />
             </div>
-            <div className="pt-2">
+            <div className="space-y-2 pt-2">
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? "Saving…" : "Get Started"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={handleSkip}
+                disabled={loading}
+              >
+                Skip for now
               </Button>
             </div>
           </form>
