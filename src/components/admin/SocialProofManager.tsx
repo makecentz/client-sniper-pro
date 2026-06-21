@@ -53,13 +53,13 @@ export const SocialProofManager = () => {
   const reload = async () => {
     setLoading(true);
     const [s, ev, nm, ct, tp] = await Promise.all([
-      supabase.from("social_proof_settings").select("*").eq("id", 1).maybeSingle(),
+      supabase.rpc("get_social_proof_settings_admin"),
       supabase.from("social_proof_events").select("*").order("created_at", { ascending: false }),
       supabase.from("social_proof_name_pool").select("*").order("first_name"),
       supabase.from("social_proof_city_pool").select("*").order("city"),
       supabase.from("social_proof_templates").select("*").order("event_type"),
     ]);
-    if (s.data) setSettings(s.data);
+    if (s.data) setSettings(s.data as Settings);
     if (ev.data) setEvents(ev.data as EventRow[]);
     if (nm.data) setNames(nm.data as NameRow[]);
     if (ct.data) setCities(ct.data as CityRow[]);
