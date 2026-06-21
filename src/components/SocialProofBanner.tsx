@@ -13,7 +13,6 @@ type Settings = {
   animation_type: string;
   show_close_button: boolean;
   auto_rotate: boolean;
-  source_mode: string;
   show_city_state: boolean;
   click_action: string | null;
   loop_notifications: boolean;
