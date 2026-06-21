@@ -1369,6 +1369,39 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_social_proof_settings_admin: {
+        Args: never
+        Returns: {
+          animation_type: string
+          auto_approve_demo_bookings: boolean
+          auto_approve_signups: boolean
+          auto_approve_trials: boolean
+          auto_expire_days: number | null
+          auto_rotate: boolean
+          click_action: string | null
+          created_at: string
+          delay_between_seconds: number
+          display_duration_seconds: number
+          enabled: boolean
+          id: number
+          loop_notifications: boolean
+          mobile_enabled: boolean
+          position: string
+          randomize_order: boolean
+          require_approval_client_wins: boolean
+          require_approval_closed_leads: boolean
+          show_city_state: boolean
+          show_close_button: boolean
+          source_mode: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "social_proof_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
