@@ -298,13 +298,6 @@ export type Database = {
             referencedRelation: "chatbots"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "chatbot_kb_sources_chatbot_id_fkey"
-            columns: ["chatbot_id"]
-            isOneToOne: false
-            referencedRelation: "chatbots_public"
-            referencedColumns: ["id"]
-          },
         ]
       }
       chatbots: {
@@ -1365,84 +1358,7 @@ export type Database = {
       }
     }
     Views: {
-      chatbots_public: {
-        Row: {
-          brand_color: string | null
-          id: string | null
-          is_active: boolean | null
-          logo_url: string | null
-          name: string | null
-          suggested_questions: Json | null
-          welcome_message: string | null
-        }
-        Insert: {
-          brand_color?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          logo_url?: string | null
-          name?: string | null
-          suggested_questions?: Json | null
-          welcome_message?: string | null
-        }
-        Update: {
-          brand_color?: string | null
-          id?: string | null
-          is_active?: boolean | null
-          logo_url?: string | null
-          name?: string | null
-          suggested_questions?: Json | null
-          welcome_message?: string | null
-        }
-        Relationships: []
-      }
-      social_proof_public_settings: {
-        Row: {
-          animation_type: string | null
-          auto_rotate: boolean | null
-          click_action: string | null
-          delay_between_seconds: number | null
-          display_duration_seconds: number | null
-          enabled: boolean | null
-          id: number | null
-          loop_notifications: boolean | null
-          mobile_enabled: boolean | null
-          position: string | null
-          randomize_order: boolean | null
-          show_city_state: boolean | null
-          show_close_button: boolean | null
-        }
-        Insert: {
-          animation_type?: string | null
-          auto_rotate?: boolean | null
-          click_action?: string | null
-          delay_between_seconds?: number | null
-          display_duration_seconds?: number | null
-          enabled?: boolean | null
-          id?: number | null
-          loop_notifications?: boolean | null
-          mobile_enabled?: boolean | null
-          position?: string | null
-          randomize_order?: boolean | null
-          show_city_state?: boolean | null
-          show_close_button?: boolean | null
-        }
-        Update: {
-          animation_type?: string | null
-          auto_rotate?: boolean | null
-          click_action?: string | null
-          delay_between_seconds?: number | null
-          display_duration_seconds?: number | null
-          enabled?: boolean | null
-          id?: number | null
-          loop_notifications?: boolean | null
-          mobile_enabled?: boolean | null
-          position?: string | null
-          randomize_order?: boolean | null
-          show_city_state?: boolean | null
-          show_close_button?: boolean | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       delete_email: {
