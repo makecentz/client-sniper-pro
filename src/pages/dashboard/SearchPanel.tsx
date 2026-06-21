@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown } from "lucide-react";
 import { type SearchResult } from "@/lib/mock-data";
+import { INDUSTRIES } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, getSavedLeadsWarning } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -254,7 +255,16 @@ const SearchPanel = () => {
             </div>
             <div className="space-y-2">
               <Label>Business Type</Label>
-              <Input placeholder="Plumber, Dentist..." value={businessType} onChange={(e) => setBusinessType(e.target.value)} />
+              <Select value={businessType} onValueChange={setBusinessType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select industry..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {INDUSTRIES.map((industry) => (
+                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex items-end">
               <Button className="w-full" onClick={handleSearch} disabled={searching || atLimit} title={atLimit ? "Lead limit reached" : undefined}>
