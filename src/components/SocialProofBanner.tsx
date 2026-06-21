@@ -77,7 +77,7 @@ export const SocialProofBanner = () => {
     let cancelled = false;
     (async () => {
       const [{ data: s }, { data: ev }, { data: tpl }] = await Promise.all([
-        supabase.from("social_proof_settings").select("*").eq("id", 1).maybeSingle(),
+        supabase.from("social_proof_settings").select("id,enabled,mobile_enabled,position,display_duration_seconds,delay_between_seconds,animation_type,show_close_button,auto_rotate,show_city_state,click_action,loop_notifications,randomize_order").eq("id", 1).maybeSingle(),
         supabase
           .from("social_proof_events")
           .select("id,event_type,first_name,last_initial,city,state,custom_message,source_type,is_real_event")
