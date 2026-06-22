@@ -37,6 +37,8 @@ const DashboardSettings = () => {
   const [companyLoading, setCompanyLoading] = useState(true);
   const [companySaving, setCompanySaving] = useState(false);
   const [company, setCompany] = useState({
+    first_name: "",
+    last_name: "",
     business_name: "",
     website_url: "",
     phone: "",
@@ -128,11 +130,13 @@ const DashboardSettings = () => {
     const load = async () => {
       const { data } = await supabase
         .from("company_settings")
-        .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+        .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price, current_deal")
         .eq("user_id", user.id)
         .maybeSingle();
       if (data) {
         setCompany({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
           business_name: data.business_name || "",
           website_url: data.website_url || "",
           phone: data.phone || "",
@@ -217,6 +221,14 @@ const DashboardSettings = () => {
           ) : (
             <>
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>First Name</Label>
+                  <Input placeholder="Jane" value={company.first_name} onChange={(e) => updateField("first_name", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name</Label>
+                  <Input placeholder="Doe" value={company.last_name} onChange={(e) => updateField("last_name", e.target.value)} />
+                </div>
                 <div className="space-y-2">
                   <Label>Business Name</Label>
                   <Input placeholder="Your Web Design Co." value={company.business_name} onChange={(e) => updateField("business_name", e.target.value)} />

@@ -53,18 +53,27 @@ serve(async (req) => {
     );
     const { data: companySettings } = await adminClient
       .from("company_settings")
-      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price, current_deal")
       .eq("user_id", user.id)
       .maybeSingle();
 
+    const senderFirstName = companySettings?.first_name?.trim() || "";
+    const senderLastName = companySettings?.last_name?.trim() || "";
+    const senderFullName = [senderFirstName, senderLastName].filter(Boolean).join(" ");
+
     const companyContext = companySettings
       ? `\n\nYour Company Info (use this to personalize the message — sign off with your details):
+Sender First Name: ${senderFirstName || "N/A"}
+Sender Last Name: ${senderLastName || "N/A"}
+Sender Full Name: ${senderFullName || "N/A"}
 Company: ${companySettings.business_name || "N/A"}
 Website: ${companySettings.website_url || "N/A"}
 Phone: ${companySettings.phone || "N/A"}
 Email: ${companySettings.email || "N/A"}
 Website Development Price: ${companySettings.website_dev_price || "N/A"}
-Current Deal/Promotion: ${companySettings.current_deal || "None"}`
+Current Deal/Promotion: ${companySettings.current_deal || "None"}
+
+SIGN-OFF RULES: When signing the message, address yourself by the Sender First Name above (e.g. "Hi, I'm ${senderFirstName || "[your first name]"} from ${companySettings.business_name || "[company]"}"). End with a signature line using the Sender Full Name on one line and the Company on the next. If first name is missing, fall back to the company name only.`
       : "";
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
