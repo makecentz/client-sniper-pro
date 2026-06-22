@@ -52,12 +52,14 @@ const Onboarding = () => {
     if (!user) return;
     supabase
       .from("company_settings")
-      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price, current_deal")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setForm((prev) => ({
+            first_name: data.first_name ?? prev.first_name,
+            last_name: data.last_name ?? prev.last_name,
             business_name: data.business_name ?? prev.business_name,
             website_url: data.website_url ?? prev.website_url,
             phone: data.phone ?? prev.phone,
