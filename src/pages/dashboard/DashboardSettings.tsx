@@ -37,6 +37,8 @@ const DashboardSettings = () => {
   const [companyLoading, setCompanyLoading] = useState(true);
   const [companySaving, setCompanySaving] = useState(false);
   const [company, setCompany] = useState({
+    first_name: "",
+    last_name: "",
     business_name: "",
     website_url: "",
     phone: "",
