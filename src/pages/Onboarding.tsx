@@ -37,6 +37,8 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [prefilling, setPrefilling] = useState(true);
   const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
     business_name: "",
     website_url: "",
     phone: "",
