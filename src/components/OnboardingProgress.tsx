@@ -8,12 +8,13 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, Circle, ArrowRight, X, Rocket } from "lucide-react";
 
 const STEPS: { key: string; label: string }[] = [
+  { key: "first_name", label: "First name" },
+  { key: "last_name", label: "Last name" },
   { key: "business_name", label: "Business name" },
   { key: "website_url", label: "Your website URL" },
   { key: "phone", label: "Phone number" },
   { key: "email", label: "Business email" },
   { key: "website_dev_price", label: "Website starting price" },
-  { key: "current_deal", label: "Current deal / promotion" },
 ];
 
 const OnboardingProgress = () => {
@@ -28,7 +29,7 @@ const OnboardingProgress = () => {
     setDismissed(localStorage.getItem(`onboarding_progress_dismissed_${user.id}`) === "1");
     supabase
       .from("company_settings")
-      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {

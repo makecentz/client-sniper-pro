@@ -57,6 +57,20 @@ const Onboarding = () => {
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
+          const required = [
+            data.first_name,
+            data.last_name,
+            data.business_name,
+            data.website_url,
+            data.phone,
+            data.email,
+            data.website_dev_price,
+          ];
+          const allFilled = required.every((v) => (v ?? "").toString().trim() !== "");
+          if (allFilled) {
+            navigate("/dashboard", { replace: true });
+            return;
+          }
           setForm((prev) => ({
             first_name: data.first_name ?? prev.first_name,
             last_name: data.last_name ?? prev.last_name,
