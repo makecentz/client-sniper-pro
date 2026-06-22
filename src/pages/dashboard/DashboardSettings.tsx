@@ -222,6 +222,14 @@ const DashboardSettings = () => {
             <>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
+                  <Label>First Name</Label>
+                  <Input placeholder="Jane" value={company.first_name} onChange={(e) => updateField("first_name", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Last Name</Label>
+                  <Input placeholder="Doe" value={company.last_name} onChange={(e) => updateField("last_name", e.target.value)} />
+                </div>
+                <div className="space-y-2">
                   <Label>Business Name</Label>
                   <Input placeholder="Your Web Design Co." value={company.business_name} onChange={(e) => updateField("business_name", e.target.value)} />
                 </div>
