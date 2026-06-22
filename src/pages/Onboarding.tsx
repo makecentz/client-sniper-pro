@@ -37,6 +37,8 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [prefilling, setPrefilling] = useState(true);
   const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
     business_name: "",
     website_url: "",
     phone: "",
@@ -50,12 +52,14 @@ const Onboarding = () => {
     if (!user) return;
     supabase
       .from("company_settings")
-      .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+      .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price, current_deal")
       .eq("user_id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (data) {
           setForm((prev) => ({
+            first_name: data.first_name ?? prev.first_name,
+            last_name: data.last_name ?? prev.last_name,
             business_name: data.business_name ?? prev.business_name,
             website_url: data.website_url ?? prev.website_url,
             phone: data.phone ?? prev.phone,
@@ -114,6 +118,28 @@ const Onboarding = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first_name">First Name</Label>
+                <Input
+                  id="first_name"
+                  name="first_name"
+                  placeholder="Jane"
+                  value={form.first_name}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name">Last Name</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  placeholder="Doe"
+                  value={form.last_name}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="business_name">Business Name</Label>
               <Input
