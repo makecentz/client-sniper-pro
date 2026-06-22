@@ -130,11 +130,13 @@ const DashboardSettings = () => {
     const load = async () => {
       const { data } = await supabase
         .from("company_settings")
-        .select("business_name, website_url, phone, email, website_dev_price, current_deal")
+        .select("first_name, last_name, business_name, website_url, phone, email, website_dev_price, current_deal")
         .eq("user_id", user.id)
         .maybeSingle();
       if (data) {
         setCompany({
+          first_name: data.first_name || "",
+          last_name: data.last_name || "",
           business_name: data.business_name || "",
           website_url: data.website_url || "",
           phone: data.phone || "",
