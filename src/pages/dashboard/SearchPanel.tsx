@@ -168,6 +168,16 @@ const SearchPanel = () => {
       });
       if (error) throw error;
       await refreshLeadCount();
+      setResults((prev) => prev.filter((_, i) => i !== idx));
+      setScreenshots((prev) => {
+        const next: Record<number, string> = {};
+        for (const [k, v] of Object.entries(prev)) {
+          const n = Number(k);
+          if (n < idx) next[n] = v;
+          else if (n > idx) next[n - 1] = v;
+        }
+        return next;
+      });
       if ((user.saved_leads_count + 1) >= savedWarning) {
         toast.warning(`You have ${user.saved_leads_count + 1}/${savedLimit} leads — delete inactive ones${isPro ? " or grab a Lead Pack for +15 slots" : ""}.`);
       } else {
