@@ -229,6 +229,7 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
           <CampaignStateSection userId={user.user_id} userEmail={user.email} plan={user.plan} />
 
           <Separator />
+          <section>
             <h3 className="text-sm font-semibold text-destructive mb-2">Danger Zone</h3>
             <p className="text-xs text-muted-foreground mb-3">This will permanently delete all of this user's leads, company settings, usage data, and profile.</p>
             <AlertDialog>
