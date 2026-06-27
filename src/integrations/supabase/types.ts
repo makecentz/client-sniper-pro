@@ -440,6 +440,105 @@ export type Database = {
           },
         ]
       }
+      email_broadcasts: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          created_by: string | null
+          cta_label: string
+          cta_url: string
+          custom_emails: string[] | null
+          failed_count: number
+          headline: string
+          hero_image_url: string | null
+          id: string
+          scheduled_for: string | null
+          sent_at: string | null
+          sent_count: number
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          cta_url?: string
+          custom_emails?: string[] | null
+          failed_count?: number
+          headline?: string
+          hero_image_url?: string | null
+          id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          cta_label?: string
+          cta_url?: string
+          custom_emails?: string[] | null
+          failed_count?: number
+          headline?: string
+          hero_image_url?: string | null
+          id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_campaign_state: {
+        Row: {
+          created_at: string
+          current_step: number
+          email: string
+          enabled: boolean
+          last_sent_at: string | null
+          next_send_at: string | null
+          stopped_reason: string | null
+          unsubscribed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_step?: number
+          email: string
+          enabled?: boolean
+          last_sent_at?: string | null
+          next_send_at?: string | null
+          stopped_reason?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_step?: number
+          email?: string
+          enabled?: boolean
+          last_sent_at?: string | null
+          next_send_at?: string | null
+          stopped_reason?: string | null
+          unsubscribed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -499,6 +598,48 @@ export type Database = {
           retry_after_until?: string | null
           send_delay_ms?: number
           transactional_email_ttl_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      email_templates: {
+        Row: {
+          body: string
+          created_at: string
+          cta_label: string
+          cta_url: string
+          enabled: boolean
+          headline: string
+          hero_image_url: string | null
+          id: string
+          slug: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          cta_label?: string
+          cta_url?: string
+          enabled?: boolean
+          headline?: string
+          hero_image_url?: string | null
+          id?: string
+          slug: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          cta_label?: string
+          cta_url?: string
+          enabled?: boolean
+          headline?: string
+          hero_image_url?: string | null
+          id?: string
+          slug?: string
+          subject?: string
           updated_at?: string
         }
         Relationships: []
@@ -760,6 +901,71 @@ export type Database = {
           website_prompt?: string | null
           website_prompt_generated_at?: string | null
           zip?: string | null
+        }
+        Relationships: []
+      }
+      marketing_email_log: {
+        Row: {
+          broadcast_id: string | null
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          recipient_email: string
+          resend_message_id: string | null
+          status: string
+          template_slug: string | null
+          user_id: string | null
+        }
+        Insert: {
+          broadcast_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind: string
+          recipient_email: string
+          resend_message_id?: string | null
+          status: string
+          template_slug?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          broadcast_id?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          recipient_email?: string
+          resend_message_id?: string | null
+          status?: string
+          template_slug?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_email_log_broadcast_id_fkey"
+            columns: ["broadcast_id"]
+            isOneToOne: false
+            referencedRelation: "email_broadcasts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_unsubscribes: {
+        Row: {
+          email: string
+          source: string
+          unsubscribed_at: string
+        }
+        Insert: {
+          email: string
+          source?: string
+          unsubscribed_at?: string
+        }
+        Update: {
+          email?: string
+          source?: string
+          unsubscribed_at?: string
         }
         Relationships: []
       }
