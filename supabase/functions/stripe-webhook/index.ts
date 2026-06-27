@@ -81,6 +81,11 @@ serve(async (req) => {
       }
       console.log(`User ${userId} upgraded to pro`);
 
+      // Stop marketing drip on pro upgrade
+      await supabase.from("email_campaign_state").update({
+        enabled: false, stopped_reason: "pro_upgrade", next_send_at: null,
+      }).eq("user_id", userId);
+
       // === Affiliate conversion ===
       try {
         const { data: referral } = await supabase

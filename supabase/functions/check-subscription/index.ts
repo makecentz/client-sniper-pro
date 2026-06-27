@@ -82,6 +82,11 @@ serve(async (req) => {
         .from("usage_tracking")
         .update({ plan: "pro", leads_remaining: 9999 })
         .eq("user_id", user.id);
+
+      // Stop marketing drip on pro upgrade (idempotent)
+      await supabaseClient.from("email_campaign_state").update({
+        enabled: false, stopped_reason: "pro_upgrade", next_send_at: null,
+      }).eq("user_id", user.id);
     } else {
       logStep("No active subscription");
     }

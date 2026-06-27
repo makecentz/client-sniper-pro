@@ -8,7 +8,9 @@ import { Separator } from "@/components/ui/separator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { RotateCcw, Save, Trash2, Snowflake, MessageSquare } from "lucide-react";
+import { RotateCcw, Save, Trash2, Snowflake, MessageSquare, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface AdminUserRow {
   user_id: string;
@@ -222,6 +224,11 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
           </section>
 
           <Separator />
+
+          {/* Marketing Drip */}
+          <CampaignStateSection userId={user.user_id} userEmail={user.email} plan={user.plan} />
+
+          <Separator />
           <section>
             <h3 className="text-sm font-semibold text-destructive mb-2">Danger Zone</h3>
             <p className="text-xs text-muted-foreground mb-3">This will permanently delete all of this user's leads, company settings, usage data, and profile.</p>
@@ -250,5 +257,82 @@ export function UserDetailModal({ user, open, onOpenChange, onPlanChange, onLead
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// === Marketing Drip section ===
+const DRIP_STEP_LABELS = ["Day 0 (Welcome)", "Day 1 (Workflow)", "Day 3 (Reminder)", "Day 7 (Final)", "Completed"];
+
+function CampaignStateSection({ userId, userEmail, plan }: { userId: string; userEmail: string; plan: string }) {
+  const [state, setState] = useState<{ enabled: boolean; current_step: number; next_send_at: string | null; last_sent_at: string | null; stopped_reason: string | null } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const { data } = await supabase.from("email_campaign_state").select("*").eq("user_id", userId).maybeSingle();
+      setState(data as any);
+      setLoading(false);
+    })();
+  }, [userId]);
+
+  const toggle = async (v: boolean) => {
+    setSaving(true);
+    const patch: any = { enabled: v };
+    if (!v) patch.stopped_reason = "admin_disabled";
+    else { patch.stopped_reason = null; if (!state?.next_send_at) patch.next_send_at = new Date().toISOString(); }
+    const { error } = await supabase.from("email_campaign_state").update(patch).eq("user_id", userId);
+    if (error) toast.error("Failed to update");
+    else {
+      setState((s) => s ? { ...s, ...patch } : s);
+      toast.success(v ? "Drip enabled" : "Drip disabled");
+    }
+    setSaving(false);
+  };
+
+  const restart = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("email_campaign_state").upsert({
+      user_id: userId, email: userEmail, enabled: true, current_step: 0,
+      next_send_at: new Date().toISOString(), stopped_reason: null,
+    }, { onConflict: "user_id" });
+    if (error) toast.error("Failed to restart");
+    else {
+      const { data } = await supabase.from("email_campaign_state").select("*").eq("user_id", userId).maybeSingle();
+      setState(data as any);
+      toast.success("Drip restarted from step 1");
+    }
+    setSaving(false);
+  };
+
+  return (
+    <section>
+      <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2"><Mail className="h-4 w-4" /> Marketing Drip</h3>
+      {loading ? (
+        <p className="text-xs text-muted-foreground">Loading…</p>
+      ) : !state ? (
+        <div className="flex items-center justify-between rounded-md border border-border/50 p-3">
+          <p className="text-sm text-muted-foreground">Not enrolled.</p>
+          <Button size="sm" variant="outline" onClick={restart} disabled={saving}>Enroll in drip</Button>
+        </div>
+      ) : (
+        <div className="rounded-md border border-border/50 p-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">4-email trial sequence</p>
+              <p className="text-xs text-muted-foreground">
+                Step: {DRIP_STEP_LABELS[Math.min(state.current_step, 4)]}
+                {state.next_send_at && state.enabled && <> · Next send: {new Date(state.next_send_at).toLocaleString()}</>}
+                {state.stopped_reason && <> · Stopped: {state.stopped_reason}</>}
+              </p>
+            </div>
+            <Switch checked={state.enabled} onCheckedChange={toggle} disabled={saving || plan === "pro"} />
+          </div>
+          {plan === "pro" && <p className="text-xs text-muted-foreground">Drip is auto-disabled for Pro users.</p>}
+          <Button size="sm" variant="outline" onClick={restart} disabled={saving}>Restart from step 1</Button>
+        </div>
+      )}
+    </section>
   );
 }
