@@ -307,7 +307,10 @@ Deno.serve(async (req) => {
       });
     }
 
-    const query = `${business_type} in ${city}${state ? `, ${state}` : ""}${zip_code ? ` ${zip_code}` : ""}`;
+    const locationParts: string[] = [];
+    if (city) locationParts.push(state ? `${city}, ${state}` : city);
+    if (zip_code) locationParts.push(zip_code);
+    const query = `${business_type} in ${locationParts.join(" ")}`.trim();
     // Pull more results so we get a healthy mix of with-website + no-website businesses
     const limit = usage.plan === "pro" ? 60 : 20;
 
