@@ -223,7 +223,7 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const { city, state, business_type, zip_code } = body;
 
-    if (!city || typeof city !== "string" || city.length > 100) {
+    if (city !== undefined && city !== null && city !== "" && (typeof city !== "string" || city.length > 100)) {
       return new Response(JSON.stringify({ error: "Invalid city" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -235,6 +235,11 @@ Deno.serve(async (req) => {
     }
     if (zip_code && (typeof zip_code !== "string" || !/^\d{1,10}$/.test(zip_code))) {
       return new Response(JSON.stringify({ error: "Invalid zip code" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!city && !zip_code) {
+      return new Response(JSON.stringify({ error: "Provide a city or ZIP code" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
