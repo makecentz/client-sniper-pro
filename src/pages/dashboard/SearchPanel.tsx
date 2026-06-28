@@ -83,15 +83,19 @@ const SearchPanel = () => {
       else toast.error(limitMessage);
       return;
     }
-    if (!city || !businessType) {
-      toast.error("Please enter a city and business type");
+    if (!businessType) {
+      toast.error("Please select a business type");
+      return;
+    }
+    if (!zipCode && !city) {
+      toast.error("Enter a city (with state) or a ZIP code");
       return;
     }
     setSearching(true);
     setResults([]);
     try {
       const { data, error } = await supabase.functions.invoke("search-businesses", {
-        body: { city, state, business_type: businessType, zip_code: zipCode || undefined },
+        body: { city: city || undefined, state: state || undefined, business_type: businessType, zip_code: zipCode || undefined },
       });
       if (error) {
         const ctx: any = (error as any).context;
