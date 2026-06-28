@@ -243,7 +243,7 @@ const SearchPanel = () => {
           <div className="grid gap-4 grid-cols-1 md:grid-cols-[1.5fr_0.7fr_0.7fr_1.5fr_auto]">
             <div className="space-y-2">
               <Label>City</Label>
-              <Input placeholder="Austin" value={city} onChange={(e) => setCity(e.target.value)} />
+              <Input placeholder="Austin (optional if ZIP)" value={city} onChange={(e) => setCity(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>State</Label>
@@ -261,7 +261,7 @@ const SearchPanel = () => {
             <div className="space-y-2">
               <Label>Zip Code</Label>
               <Input
-                placeholder="78701"
+                placeholder="78701 (optional)"
                 value={zipCode}
                 onChange={(e) => setZipCode(e.target.value.replace(/\D/g, "").slice(0, 5))}
                 maxLength={5}
