@@ -29,6 +29,7 @@ import CustomerSupport from "./pages/CustomerSupport";
 import AffiliateProgram from "./pages/AffiliateProgram";
 import AffiliateSignup from "./pages/AffiliateSignup";
 import Unsubscribe from "./pages/Unsubscribe";
+import OAuthConsent from "./pages/OAuthConsent";
 import NotFound from "./pages/NotFound";
 import { ReferralTracker } from "@/components/ReferralTracker";
 
@@ -54,6 +55,7 @@ const App = () => (
             <Route path="/affiliate-program" element={<AffiliateProgram />} />
             <Route path="/affiliate-signup" element={<AffiliateSignup />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
             <Route
               path="/dashboard"
               element={
