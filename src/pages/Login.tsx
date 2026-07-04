@@ -89,7 +89,7 @@ const Login = () => {
           <CardDescription>Sign in to your ClientHunter AI account</CardDescription>
         </CardHeader>
         <CardContent>
-          <GoogleAuthButton />
+          <GoogleAuthButton redirectPath={nextPath ?? "/dashboard"} />
           <AuthDivider />
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
