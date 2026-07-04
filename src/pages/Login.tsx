@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,13 @@ import { toast } from "sonner";
 import { GoogleAuthButton, AuthDivider } from "@/components/GoogleAuthButton";
 import { Mail } from "lucide-react";
 
+// Only allow same-origin relative paths as post-login targets.
+const safeNext = (raw: string | null): string | null => {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+};
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,10 +27,16 @@ const Login = () => {
   const [resending, setResending] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const nextPath = useMemo(() => safeNext(params.get("next")), [params]);
 
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user, navigate]);
+    if (user) {
+      if (nextPath) window.location.href = nextPath;
+      else navigate("/dashboard", { replace: true });
+    }
+  }, [user, navigate, nextPath]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
