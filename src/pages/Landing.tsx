@@ -545,6 +545,17 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Contact */}
+      <section id="contact" className="border-t border-border/50 px-6 py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-3 text-center text-3xl font-bold text-foreground">Have a question?</h2>
+          <p className="mb-10 text-center text-muted-foreground">
+            Send us a message and we'll get back to you within 1 business day.
+          </p>
+          <ContactForm />
+        </div>
+      </section>
       </main>
 
       {/* Footer */}
