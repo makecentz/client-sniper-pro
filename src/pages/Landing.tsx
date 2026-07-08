@@ -108,34 +108,147 @@ const Landing = () => {
           src={heroVideoUrl}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
-        <div className="relative z-10 mx-auto max-w-3xl">
-          <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
-            Find website clients{" "}
-            <span className="text-primary">in minutes</span>
-          </h1>
-          <p className="mb-8 text-lg text-muted-foreground">
-            Discover businesses that need a website, generate AI-powered outreach, and turn opportunities into paying clients — all in one place
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-4">
-            <Link to="/signup">
-              <Button size="lg" className="px-8 text-base">
-                Start Free
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button variant="outline" size="lg" className="px-8 text-base">
-                Log In
-              </Button>
-            </Link>
-            <Link to={user ? "/dashboard/search" : "/signup?redirect=/dashboard/search"}>
-              <Button variant="secondary" size="lg" className="px-8 text-base">
-                <Search className="mr-2 h-4 w-4" />
-                Try a Sample Search
-              </Button>
-            </Link>
+        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:text-left">
+          <div className="text-center lg:text-left">
+            <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
+              Find website clients{" "}
+              <span className="text-primary">in minutes</span>
+            </h1>
+            <p className="mb-8 text-lg text-muted-foreground">
+              Discover businesses that need a website, generate AI-powered outreach, and turn opportunities into paying clients — all in one place
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+              <Link to="/signup">
+                <Button size="lg" className="px-8 text-base">
+                  Start Free
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="outline" size="lg" className="px-8 text-base">
+                  Log In
+                </Button>
+              </Link>
+              <Link to={user ? "/dashboard/search" : "/signup?redirect=/dashboard/search"}>
+                <Button variant="secondary" size="lg" className="px-8 text-base">
+                  <Search className="mr-2 h-4 w-4" />
+                  Try a Sample Search
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Hero mockup: half source code / half rendered site */}
+          <div className="relative">
+            <div className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent blur-2xl" />
+            <div className="relative rounded-xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
+              <div className="flex items-center gap-2 border-b border-border/50 px-4 py-3">
+                <div className="flex gap-1.5">
+                  <span className="h-3 w-3 rounded-full bg-red-500/80" />
+                  <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
+                  <span className="h-3 w-3 rounded-full bg-green-500/80" />
+                </div>
+                <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-center text-[11px] text-muted-foreground">
+                  clienthunter.ai / preview
+                </div>
+                <div className="hidden items-center gap-1 rounded bg-primary/20 px-2 py-0.5 text-[10px] font-medium text-primary sm:inline-flex">
+                  <Sparkles className="h-2.5 w-2.5" /> Live
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-0 text-xs">
+                {/* Code half */}
+                <div className="relative overflow-hidden border-r border-border/40 bg-[#0b1020] p-4 font-mono leading-relaxed">
+                  <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">index.tsx</p>
+                  <div className="space-y-1">
+                    {[
+                      { d: 0, c: <><span className="text-purple-400">import</span> <span className="text-sky-300">Hero</span> <span className="text-purple-400">from</span> <span className="text-emerald-300">"./Hero"</span></> },
+                      { d: 200, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">default</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">Site</span>() {"{"}</> },
+                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> (</> },
+                      { d: 600, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;main&gt;</span></> },
+                      { d: 800, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Hero</span> <span className="text-emerald-300">title</span>=<span className="text-orange-300">"Joe's Pizza"</span><span className="text-sky-300"> /&gt;</span></> },
+                      { d: 1000, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Gallery</span> <span className="text-emerald-300">photos</span>={"{"}<span className="text-yellow-300">g</span>{"}"}<span className="text-sky-300"> /&gt;</span></> },
+                      { d: 1200, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Contact</span> <span className="text-emerald-300">phone</span>=<span className="text-orange-300">"(555) 123..."</span><span className="text-sky-300"> /&gt;</span></> },
+                      { d: 1400, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;/main&gt;</span></> },
+                      { d: 1600, c: <>&nbsp;&nbsp;);</> },
+                      { d: 1800, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
+                    ].map((line, i) => (
+                      <div
+                        key={i}
+                        className="animate-fade-in text-foreground/90 opacity-0"
+                        style={{ animationDelay: `${line.d}ms`, animationFillMode: "forwards" }}
+                      >
+                        <span className="mr-2 select-none text-muted-foreground/40">{String(i + 1).padStart(2, "0")}</span>
+                        {line.c}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Scan line */}
+                  <div
+                    className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary/20 to-transparent"
+                    style={{ animation: "heroScan 3.5s ease-in-out infinite" }}
+                  />
+                </div>
+
+                {/* Rendered site half */}
+                <div className="bg-background/20 p-3">
+                  <div className="overflow-hidden rounded-md border border-border/40 bg-background">
+                    <div className="relative h-24 bg-gradient-to-br from-orange-500/50 via-red-500/40 to-amber-400/40">
+                      <div className="absolute inset-x-3 top-2 flex items-center justify-between">
+                        <div className="h-1.5 w-10 rounded bg-white/70" />
+                        <div className="flex gap-1">
+                          <div className="h-1.5 w-5 rounded bg-white/60" />
+                          <div className="h-1.5 w-5 rounded bg-white/60" />
+                          <div className="h-1.5 w-5 rounded bg-white/60" />
+                        </div>
+                      </div>
+                      <div className="absolute inset-x-0 bottom-2 flex flex-col items-start px-3">
+                        <div className="h-2 w-24 rounded bg-white/90 animate-fade-in" style={{ animationDelay: "600ms", animationFillMode: "both" }} />
+                        <div className="mt-1 h-1.5 w-32 rounded bg-white/60 animate-fade-in" style={{ animationDelay: "900ms", animationFillMode: "both" }} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 p-2">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="h-10 rounded animate-fade-in"
+                          style={{
+                            background: `linear-gradient(135deg, hsl(${20 + i * 20} 85% 55% / 0.5), hsl(${40 + i * 15} 80% 60% / 0.35))`,
+                            animationDelay: `${1000 + i * 150}ms`,
+                            animationFillMode: "both",
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="space-y-1.5 border-t border-border/30 p-3">
+                      <div className="h-1.5 w-3/4 rounded bg-foreground/30 animate-fade-in" style={{ animationDelay: "1400ms", animationFillMode: "both" }} />
+                      <div className="h-1.5 w-1/2 rounded bg-foreground/20 animate-fade-in" style={{ animationDelay: "1550ms", animationFillMode: "both" }} />
+                      <div className="h-1.5 w-2/3 rounded bg-foreground/20 animate-fade-in" style={{ animationDelay: "1700ms", animationFillMode: "both" }} />
+                      <div className="mt-2 flex items-center gap-2 animate-fade-in" style={{ animationDelay: "1900ms", animationFillMode: "both" }}>
+                        <div className="h-4 w-14 rounded bg-primary" />
+                        <div className="h-4 w-10 rounded border border-border/60" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-primary/40 bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-lg lg:-right-6 lg:-top-4">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              Code → Live Site
+            </div>
+
+            <style>{`
+              @keyframes heroScan {
+                0% { transform: translateY(-100%); opacity: 0; }
+                50% { opacity: 1; }
+                100% { transform: translateY(600%); opacity: 0; }
+              }
+            `}</style>
           </div>
         </div>
       </section>
+
 
       {/* Features */}
       <section className="border-t border-border/50 px-6 py-20">
