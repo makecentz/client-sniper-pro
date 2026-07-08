@@ -155,22 +155,36 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-0 text-xs">
+              <div className="grid grid-cols-5 gap-0 text-xs">
                 {/* Code half */}
-                <div className="relative overflow-hidden border-r border-border/40 bg-[#0b1020] p-4 font-mono leading-relaxed">
-                  <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">index.tsx</p>
+                <div className="relative col-span-3 overflow-hidden border-r border-border/40 bg-[#0b1020] p-4 font-mono leading-relaxed">
+                  <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">FindLeads.tsx</p>
                   <div className="space-y-1">
                     {[
-                      { d: 0, c: <><span className="text-purple-400">import</span> <span className="text-sky-300">Hero</span> <span className="text-purple-400">from</span> <span className="text-emerald-300">"./Hero"</span></> },
-                      { d: 200, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">default</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">Site</span>() {"{"}</> },
-                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> (</> },
-                      { d: 600, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;main&gt;</span></> },
-                      { d: 800, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Hero</span> <span className="text-emerald-300">title</span>=<span className="text-orange-300">"Joe's Pizza"</span><span className="text-sky-300"> /&gt;</span></> },
-                      { d: 1000, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Gallery</span> <span className="text-emerald-300">photos</span>={"{"}<span className="text-yellow-300">g</span>{"}"}<span className="text-sky-300"> /&gt;</span></> },
-                      { d: 1200, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;Contact</span> <span className="text-emerald-300">phone</span>=<span className="text-orange-300">"(555) 123..."</span><span className="text-sky-300"> /&gt;</span></> },
-                      { d: 1400, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-sky-300">&lt;/main&gt;</span></> },
-                      { d: 1600, c: <>&nbsp;&nbsp;);</> },
-                      { d: 1800, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
+                      { d: 0, c: <><span className="text-purple-400">import</span> {"{ useState, useEffect }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"react"</span></> },
+                      { d: 100, c: <><span className="text-purple-400">import</span> {"{ supabase }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"@/integrations/supabase/client"</span></> },
+                      { d: 200, c: <><span className="text-purple-400">import</span> {"{ LeadCard, LeadScore }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"./leads"</span></> },
+                      { d: 300, c: <><span className="text-purple-400">interface</span> <span className="text-yellow-300">Lead</span> {"{"}</> },
+                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-sky-300">id</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 500, c: <>&nbsp;&nbsp;<span className="text-sky-300">name</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 600, c: <>&nbsp;&nbsp;<span className="text-sky-300">city</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 700, c: <>&nbsp;&nbsp;<span className="text-sky-300">score</span>: <span className="text-orange-300">"hot"</span> | <span className="text-orange-300">"warm"</span> | <span className="text-orange-300">"cold"</span>;</> },
+                      { d: 800, c: <>{"}"}</> },
+                      { d: 900, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">FindLeads</span>() {"{"}</> },
+                      { d: 1000, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [leads, setLeads] = <span className="text-yellow-300">useState</span>&lt;Lead[]&gt;([]);</> },
+                      { d: 1100, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [city, setCity] = <span className="text-yellow-300">useState</span>(<span className="text-orange-300">"Philadelphia"</span>);</> },
+                      { d: 1200, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [industry, setIndustry] = <span className="text-yellow-300">useState</span>(<span className="text-orange-300">"restaurants"</span>);</> },
+                      { d: 1300, c: <>&nbsp;&nbsp;<span className="text-purple-400">useEffect</span>(() =&gt; {"{"}</> },
+                      { d: 1400, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">searchBusinesses</span>(city, industry).<span className="text-yellow-300">then</span>(setLeads);</> },
+                      { d: 1500, c: <>&nbsp;&nbsp;{"}"}, [city, industry]);</> },
+                      { d: 1600, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> (</> },
+                      { d: 1700, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-sky-300">section</span> <span className="text-emerald-300">className</span>=<span className="text-orange-300">"space-y-4"</span>&gt;</> },
+                      { d: 1800, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"{leads.map((lead) => ("}</> },
+                      { d: 1900, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-sky-300">LeadCard</span> <span className="text-emerald-300">key</span>={"{"}<span className="text-sky-300">lead.id</span>{"}"} <span className="text-emerald-300">lead</span>={"{"}<span className="text-sky-300">lead</span>{"}"} /&gt;</> },
+                      { d: 2000, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"))}"}</> },
+                      { d: 2100, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span className="text-sky-300">section</span>&gt;</> },
+                      { d: 2200, c: <>&nbsp;&nbsp;);</> },
+                      { d: 2300, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
                     ].map((line, i) => (
                       <div
                         key={i}
@@ -190,7 +204,7 @@ const Landing = () => {
                 </div>
 
                 {/* Rendered site half */}
-                <div className="bg-background/20 p-3">
+                <div className="col-span-2 bg-background/20 p-3">
                   <div className="overflow-hidden rounded-md border border-border/40 bg-background">
                     <div className="relative h-24 bg-gradient-to-br from-orange-500/50 via-red-500/40 to-amber-400/40">
                       <div className="absolute inset-x-3 top-2 flex items-center justify-between">
