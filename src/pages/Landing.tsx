@@ -273,6 +273,94 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="border-t border-border/50 bg-secondary/30 px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-14 text-center">
+            <h2 className="mb-4 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
+              Web developers are finding clients faster
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Real outreach. Better leads. More chances to close website projects.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                quote:
+                  "ClientHunter AI helped me find businesses in my city that didn't even have a website. I reached out the same day and booked two calls by the end of the week.",
+                name: "Marcus Taylor",
+                role: "Freelance Web Developer",
+                avatar: testimonialMarcus,
+              },
+              {
+                quote:
+                  "I used to spend hours searching Google Maps for leads. Now I can quickly find businesses with weak websites, save them, and start outreach from one dashboard.",
+                name: "Jasmine Brooks",
+                role: "Website Designer",
+                avatar: testimonialJasmine,
+              },
+              {
+                quote:
+                  "The best part is how simple it is. I can search by niche, find local businesses, and get ideas for outreach messages without overthinking the process.",
+                name: "Andre Wilson",
+                role: "Agency Owner",
+                avatar: testimonialAndre,
+              },
+            ].map((t) => (
+              <Card
+                key={t.name}
+                className="border-border/60 bg-card shadow-sm transition-shadow hover:shadow-md"
+              >
+                <CardContent className="flex h-full flex-col p-7">
+                  <div className="mb-4 flex gap-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                      />
+                    ))}
+                  </div>
+                  <p className="mb-6 flex-1 text-[15px] leading-relaxed text-foreground/90">
+                    "{t.quote}"
+                  </p>
+                  <div className="flex items-center gap-3 border-t border-border/50 pt-5">
+                    <img
+                      src={t.avatar}
+                      alt={`${t.name} headshot`}
+                      loading="lazy"
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full object-cover"
+                    />
+                    <div>
+                      <div className="text-sm font-semibold text-foreground">
+                        {t.name}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{t.role}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-14 text-center">
+            <p className="mb-4 text-lg text-foreground">
+              Ready to find your next website client?
+            </p>
+            <Link to="/signup">
+              <Button size="lg" className="px-8 text-base">
+                Start Free Plan
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+
+
       {/* Pricing */}
       <section className="relative overflow-hidden border-t border-border/50 px-6 py-20">
         <div
