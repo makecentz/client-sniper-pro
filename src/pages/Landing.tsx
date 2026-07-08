@@ -140,8 +140,8 @@ const Landing = () => {
           {/* Hero mockup: half source code / half rendered site */}
           <div className="relative">
             <div className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent blur-2xl" />
-            <div className="relative rounded-xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center gap-2 border-b border-border/50 px-4 py-3">
+            <div className="relative max-h-[280px] overflow-hidden rounded-xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
+              <div className="flex items-center gap-2 border-b border-border/50 px-4 py-2">
                 <div className="flex gap-1.5">
                   <span className="h-3 w-3 rounded-full bg-red-500/80" />
                   <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
@@ -157,34 +157,23 @@ const Landing = () => {
 
               <div className="grid grid-cols-5 gap-0 text-xs">
                 {/* Code half */}
-                <div className="relative col-span-3 overflow-hidden border-r border-border/40 bg-[#0b1020] p-4 font-mono leading-relaxed">
-                  <p className="mb-2 text-[10px] uppercase tracking-wider text-muted-foreground">FindLeads.tsx</p>
-                  <div className="space-y-1">
+                <div className="relative col-span-3 overflow-hidden border-r border-border/40 bg-[#0b1020] p-3 font-mono leading-relaxed">
+                  <p className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">FindLeads.tsx</p>
+                  <div className="space-y-0.5">
                     {[
-                      { d: 0, c: <><span className="text-purple-400">import</span> {"{ useState, useEffect }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"react"</span></> },
-                      { d: 100, c: <><span className="text-purple-400">import</span> {"{ supabase }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"@/integrations/supabase/client"</span></> },
-                      { d: 200, c: <><span className="text-purple-400">import</span> {"{ LeadCard, LeadScore }"} <span className="text-purple-400">from</span> <span className="text-emerald-300">"./leads"</span></> },
-                      { d: 300, c: <><span className="text-purple-400">interface</span> <span className="text-yellow-300">Lead</span> {"{"}</> },
-                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-sky-300">id</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 500, c: <>&nbsp;&nbsp;<span className="text-sky-300">name</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 600, c: <>&nbsp;&nbsp;<span className="text-sky-300">city</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 700, c: <>&nbsp;&nbsp;<span className="text-sky-300">score</span>: <span className="text-orange-300">"hot"</span> | <span className="text-orange-300">"warm"</span> | <span className="text-orange-300">"cold"</span>;</> },
-                      { d: 800, c: <>{"}"}</> },
-                      { d: 900, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">FindLeads</span>() {"{"}</> },
-                      { d: 1000, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [leads, setLeads] = <span className="text-yellow-300">useState</span>&lt;Lead[]&gt;([]);</> },
-                      { d: 1100, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [city, setCity] = <span className="text-yellow-300">useState</span>(<span className="text-orange-300">"Philadelphia"</span>);</> },
-                      { d: 1200, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [industry, setIndustry] = <span className="text-yellow-300">useState</span>(<span className="text-orange-300">"restaurants"</span>);</> },
-                      { d: 1300, c: <>&nbsp;&nbsp;<span className="text-purple-400">useEffect</span>(() =&gt; {"{"}</> },
-                      { d: 1400, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">searchBusinesses</span>(city, industry).<span className="text-yellow-300">then</span>(setLeads);</> },
-                      { d: 1500, c: <>&nbsp;&nbsp;{"}"}, [city, industry]);</> },
-                      { d: 1600, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> (</> },
-                      { d: 1700, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-sky-300">section</span> <span className="text-emerald-300">className</span>=<span className="text-orange-300">"space-y-4"</span>&gt;</> },
-                      { d: 1800, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"{leads.map((lead) => ("}</> },
-                      { d: 1900, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-sky-300">LeadCard</span> <span className="text-emerald-300">key</span>={"{"}<span className="text-sky-300">lead.id</span>{"}"} <span className="text-emerald-300">lead</span>={"{"}<span className="text-sky-300">lead</span>{"}"} /&gt;</> },
-                      { d: 2000, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{"))}"}</> },
-                      { d: 2100, c: <>&nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span className="text-sky-300">section</span>&gt;</> },
-                      { d: 2200, c: <>&nbsp;&nbsp;);</> },
-                      { d: 2300, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
+                      { d: 0, c: <><span className="text-purple-400">interface</span> <span className="text-yellow-300">Lead</span> {"{"}</> },
+                      { d: 100, c: <>&nbsp;&nbsp;<span className="text-sky-300">id</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 200, c: <>&nbsp;&nbsp;<span className="text-sky-300">name</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 300, c: <>&nbsp;&nbsp;<span className="text-sky-300">city</span>: <span className="text-orange-300">string</span>;</> },
+                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-sky-300">score</span>: <span className="text-orange-300">"hot"</span> | <span className="text-orange-300">"warm"</span>;</> },
+                      { d: 500, c: <>{"}"}</> },
+                      { d: 600, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">FindLeads</span>() {"{"}</> },
+                      { d: 700, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [leads, setLeads] = <span className="text-yellow-300">useState</span>&lt;Lead[]&gt;([]);</> },
+                      { d: 800, c: <>&nbsp;&nbsp;<span className="text-purple-400">useEffect</span>(() =&gt; {"{"}</> },
+                      { d: 900, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">searchBusinesses</span>(city, industry).<span className="text-yellow-300">then</span>(setLeads);</> },
+                      { d: 1000, c: <>&nbsp;&nbsp;{"}"}, [city, industry]);</> },
+                      { d: 1100, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> &lt;<span className="text-sky-300">LeadGrid</span> <span className="text-emerald-300">leads</span>={"{"}<span className="text-sky-300">leads</span>{"}"} /&gt;;</> },
+                      { d: 1200, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
                     ].map((line, i) => (
                       <div
                         key={i}
@@ -198,15 +187,15 @@ const Landing = () => {
                   </div>
                   {/* Scan line */}
                   <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-primary/20 to-transparent"
+                    className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-primary/20 to-transparent"
                     style={{ animation: "heroScan 3.5s ease-in-out infinite" }}
                   />
                 </div>
 
                 {/* Rendered site half */}
-                <div className="col-span-2 bg-background/20 p-3">
+                <div className="col-span-2 bg-background/20 p-2">
                   <div className="overflow-hidden rounded-md border border-border/40 bg-background">
-                    <div className="relative h-24 bg-gradient-to-br from-orange-500/50 via-red-500/40 to-amber-400/40">
+                    <div className="relative h-16 bg-gradient-to-br from-orange-500/50 via-red-500/40 to-amber-400/40">
                       <div className="absolute inset-x-3 top-2 flex items-center justify-between">
                         <div className="h-1.5 w-10 rounded bg-white/70" />
                         <div className="flex gap-1">
@@ -224,7 +213,7 @@ const Landing = () => {
                       {[0, 1, 2].map((i) => (
                         <div
                           key={i}
-                          className="h-10 rounded animate-fade-in"
+                          className="h-8 rounded animate-fade-in"
                           style={{
                             background: `linear-gradient(135deg, hsl(${20 + i * 20} 85% 55% / 0.5), hsl(${40 + i * 15} 80% 60% / 0.35))`,
                             animationDelay: `${1000 + i * 150}ms`,
@@ -233,11 +222,10 @@ const Landing = () => {
                         />
                       ))}
                     </div>
-                    <div className="space-y-1.5 border-t border-border/30 p-3">
+                    <div className="space-y-1 border-t border-border/30 p-2">
                       <div className="h-1.5 w-3/4 rounded bg-foreground/30 animate-fade-in" style={{ animationDelay: "1400ms", animationFillMode: "both" }} />
                       <div className="h-1.5 w-1/2 rounded bg-foreground/20 animate-fade-in" style={{ animationDelay: "1550ms", animationFillMode: "both" }} />
-                      <div className="h-1.5 w-2/3 rounded bg-foreground/20 animate-fade-in" style={{ animationDelay: "1700ms", animationFillMode: "both" }} />
-                      <div className="mt-2 flex items-center gap-2 animate-fade-in" style={{ animationDelay: "1900ms", animationFillMode: "both" }}>
+                      <div className="mt-1 flex items-center gap-2 animate-fade-in" style={{ animationDelay: "1700ms", animationFillMode: "both" }}>
                         <div className="h-4 w-14 rounded bg-primary" />
                         <div className="h-4 w-10 rounded border border-border/60" />
                       </div>
@@ -262,6 +250,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
 
 
       {/* Features */}
