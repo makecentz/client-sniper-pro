@@ -12,6 +12,7 @@ import logo from "@/assets/logo.png";
 import pricingBg from "@/assets/pricing-bg.png";
 import { SocialProofBanner } from "@/components/SocialProofBanner";
 import { Seo } from "@/components/Seo";
+import { ContactForm } from "@/components/ContactForm";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
