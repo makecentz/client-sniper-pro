@@ -314,7 +314,7 @@ const Landing = () => {
                 </span>
               </div>
               <Link to={user ? "/dashboard/settings" : "/signup"}>
-                <Button size="lg" className="group bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button size="lg" className="group bg-red-600 text-white hover:bg-red-700">
                   <Wand2 className="mr-2 h-4 w-4" />
                   Unlock with Pro
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
