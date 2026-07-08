@@ -260,7 +260,7 @@ const Landing = () => {
 
 
       {/* Features */}
-      <section className="border-t border-border/50 px-6 py-20">
+      <section id="how-it-works" className="border-t border-border/50 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
             How It Works
