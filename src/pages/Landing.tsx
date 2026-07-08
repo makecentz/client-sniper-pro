@@ -12,6 +12,7 @@ import logo from "@/assets/logo.png";
 import pricingBg from "@/assets/pricing-bg.png";
 import { SocialProofBanner } from "@/components/SocialProofBanner";
 import { Seo } from "@/components/Seo";
+import { ContactForm } from "@/components/ContactForm";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
@@ -71,10 +72,16 @@ const Landing = () => {
       />
       {/* Nav */}
       <nav className="border-b border-border/50 px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link to="/" className="flex items-center">
             <img src={logo} alt="ClientHunter AI" className="h-20 w-auto" />
           </Link>
+          <div className="hidden items-center gap-8 md:flex">
+            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+            <a href="#pro" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pro</a>
+            <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
+            <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Contact</a>
+          </div>
           <div className="flex items-center gap-3">
             {user ? (
               <Link to="/dashboard">
@@ -254,7 +261,7 @@ const Landing = () => {
 
 
       {/* Features */}
-      <section className="border-t border-border/50 px-6 py-20">
+      <section id="how-it-works" className="border-t border-border/50 px-6 py-20">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
             How It Works
@@ -276,7 +283,7 @@ const Landing = () => {
       </section>
 
       {/* Hot Feature: Lovable.dev one-prompt websites */}
-      <section className="relative overflow-hidden border-t border-border/50 px-6 py-24">
+      <section id="pro" className="relative overflow-hidden border-t border-border/50 px-6 py-24">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background to-background" />
         <div className="absolute -top-40 left-1/2 h-96 w-[600px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative z-10 mx-auto max-w-6xl">
@@ -478,7 +485,7 @@ const Landing = () => {
 
 
       {/* Pricing */}
-      <section className="relative overflow-hidden border-t border-border/50 px-6 py-20">
+      <section id="pricing" className="relative overflow-hidden border-t border-border/50 px-6 py-20">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${pricingBg})` }}
@@ -537,6 +544,17 @@ const Landing = () => {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="border-t border-border/50 px-6 py-20">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-3 text-center text-3xl font-bold text-foreground">Have a question?</h2>
+          <p className="mb-10 text-center text-muted-foreground">
+            Send us a message and we'll get back to you within 1 business day.
+          </p>
+          <ContactForm />
         </div>
       </section>
       </main>

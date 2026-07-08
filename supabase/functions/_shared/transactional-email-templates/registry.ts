@@ -12,9 +12,11 @@ export interface TemplateEntry {
 import { template as payoutApproved } from './payout-approved.tsx'
 import { template as payoutPaid } from './payout-paid.tsx'
 import { template as newReferralSignup } from './new-referral-signup.tsx'
+import { template as contactNotification } from './contact-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'payout-approved': payoutApproved,
   'payout-paid': payoutPaid,
   'new-referral-signup': newReferralSignup,
+  'contact-notification': contactNotification,
 }

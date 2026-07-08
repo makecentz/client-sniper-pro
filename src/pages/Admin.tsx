@@ -18,6 +18,7 @@ import { SocialProofManager } from "@/components/admin/SocialProofManager";
 import { AdminAffiliates } from "@/components/admin/AdminAffiliates";
 import { AddUserDialog } from "@/components/admin/AddUserDialog";
 import { EmailManager } from "@/components/admin/EmailManager";
+import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
 
 interface WebhookRow {
   id: string;
@@ -507,9 +508,12 @@ const Admin = () => {
 
         <SocialProofManager />
 
+        <AdminContactSubmissions />
+
         <EmailManager />
 
         <AdminAffiliates />
+
 
         <Card className="border-border/50">
           <CardHeader>
