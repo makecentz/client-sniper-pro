@@ -24,7 +24,7 @@ export const ContactForm = () => {
     e.preventDefault();
     const parsed = schema.safeParse(form);
     if (!parsed.success) {
-      toast.error(parsed.error.errors[0]?.message ?? "Please check the form");
+      toast.error(parsed.error.issues[0]?.message ?? "Please check the form");
       return;
     }
     setSubmitting(true);
