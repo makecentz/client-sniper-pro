@@ -484,7 +484,7 @@ const Landing = () => {
 
 
       {/* Pricing */}
-      <section className="relative overflow-hidden border-t border-border/50 px-6 py-20">
+      <section id="pricing" className="relative overflow-hidden border-t border-border/50 px-6 py-20">
         <div
           className="absolute inset-0 bg-cover bg-center opacity-10"
           style={{ backgroundImage: `url(${pricingBg})` }}
