@@ -71,10 +71,16 @@ const Landing = () => {
       />
       {/* Nav */}
       <nav className="border-b border-border/50 px-6 py-4">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
           <Link to="/" className="flex items-center">
             <img src={logo} alt="ClientHunter AI" className="h-20 w-auto" />
           </Link>
+          <div className="hidden items-center gap-8 md:flex">
+            <a href="#how-it-works" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">How It Works</a>
+            <a href="#pro" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pro</a>
+            <a href="#pricing" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Pricing</a>
+            <a href="#contact" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Contact</a>
+          </div>
           <div className="flex items-center gap-3">
             {user ? (
               <Link to="/dashboard">
