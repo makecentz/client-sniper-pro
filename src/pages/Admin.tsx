@@ -508,9 +508,12 @@ const Admin = () => {
 
         <SocialProofManager />
 
+        <AdminContactSubmissions />
+
         <EmailManager />
 
         <AdminAffiliates />
+
 
         <Card className="border-border/50">
           <CardHeader>
