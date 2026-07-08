@@ -593,8 +593,36 @@ const Landing = () => {
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-border/50 pt-6 text-center text-sm text-muted-foreground">
-            © {currentYear} {footerCompanyName}. All rights reserved.
+          <div className="mt-10 border-t border-border/50 pt-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <p className="text-sm text-muted-foreground">
+              © {currentYear} {footerCompanyName}. All rights reserved.
+            </p>
+            <div className="flex items-center gap-3" aria-label="Accepted payment methods">
+              {/* Visa */}
+              <svg viewBox="0 0 48 16" className="h-5 w-auto opacity-90" aria-label="Visa">
+                <text x="0" y="12" fill="hsl(215 90% 55%)" fontFamily="sans-serif" fontSize="14" fontStyle="italic" fontWeight="800">VISA</text>
+              </svg>
+              {/* Mastercard */}
+              <svg viewBox="0 0 32 20" className="h-5 w-auto" aria-label="Mastercard">
+                <circle cx="11" cy="10" r="9" fill="#eb001b" opacity="0.9" />
+                <circle cx="21" cy="10" r="9" fill="#f79e1b" opacity="0.9" />
+              </svg>
+              {/* American Express */}
+              <svg viewBox="0 0 32 20" className="h-5 w-auto" aria-label="American Express">
+                <rect width="32" height="20" rx="3" fill="#016fd0" />
+                <text x="16" y="13.5" fill="white" fontSize="8" fontWeight="bold" textAnchor="middle">AMEX</text>
+              </svg>
+              {/* Discover */}
+              <svg viewBox="0 0 48 20" className="h-5 w-auto" aria-label="Discover">
+                <rect width="48" height="20" rx="3" fill="currentColor" opacity="0.1" />
+                <circle cx="38" cy="10" r="6" fill="#ff6000" />
+                <text x="6" y="13.5" fill="currentColor" fontSize="8" fontWeight="bold">DISCOVER</text>
+              </svg>
+              {/* Stripe */}
+              <svg viewBox="0 0 40 20" className="h-5 w-auto opacity-90" aria-label="Stripe">
+                <text x="0" y="14.5" fill="currentColor" fontFamily="sans-serif" fontSize="11" fontWeight="600">stripe</text>
+              </svg>
+            </div>
           </div>
         </div>
       </footer>
