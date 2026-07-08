@@ -282,7 +282,7 @@ const Landing = () => {
       </section>
 
       {/* Hot Feature: Lovable.dev one-prompt websites */}
-      <section className="relative overflow-hidden border-t border-border/50 px-6 py-24">
+      <section id="pro" className="relative overflow-hidden border-t border-border/50 px-6 py-24">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-background to-background" />
         <div className="absolute -top-40 left-1/2 h-96 w-[600px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
         <div className="relative z-10 mx-auto max-w-6xl">
