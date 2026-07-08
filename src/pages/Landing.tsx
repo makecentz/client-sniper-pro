@@ -107,7 +107,7 @@ const Landing = () => {
           style={{ opacity: heroVideoOpacity }}
           src={heroVideoUrl}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/80 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/30 to-background/50" />
         <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:text-left">
           <div className="text-center lg:text-left">
             <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
