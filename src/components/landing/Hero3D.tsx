@@ -52,7 +52,6 @@ export const Hero3D = () => {
         gl={{ alpha: true, antialias: true }}
         style={{ background: "transparent" }}
       >
-        <color attach="background" args={["#00000000"]} />
         <ambientLight intensity={0.4} />
         <directionalLight position={[4, 6, 5]} intensity={0.9} castShadow />
         <directionalLight position={[-4, 3, -2]} intensity={0.3} color="#3b82f6" />
