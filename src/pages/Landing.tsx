@@ -31,6 +31,7 @@ const features = [
 
 const Landing = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
   const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
