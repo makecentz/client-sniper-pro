@@ -71,7 +71,9 @@ const Landing = () => {
   const currentYear = new Date().getFullYear();
 
   return (
+    <SmoothScroll>
     <div className="min-h-screen bg-background">
+
       <Seo
         title="Client Hunter AI — Lead generation for web developers"
         description="Find, score, and close local business leads with AI-powered outreach, heatmap search, and instant website audits — built for web developers."
