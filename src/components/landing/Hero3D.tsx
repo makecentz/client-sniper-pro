@@ -49,16 +49,18 @@ export const Hero3D = () => {
         dpr={[1, 1.75]}
         camera={{ position: [0, 1, 7], fov: 40 }}
         className="!absolute inset-0"
+        gl={{ alpha: true, antialias: true }}
+        style={{ background: "transparent" }}
       >
         <color attach="background" args={["#00000000"]} />
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[4, 6, 5]} intensity={1.1} castShadow />
-        <directionalLight position={[-4, 3, -2]} intensity={0.4} color="#3b82f6" />
+        <ambientLight intensity={0.4} />
+        <directionalLight position={[4, 6, 5]} intensity={0.9} castShadow />
+        <directionalLight position={[-4, 3, -2]} intensity={0.3} color="#3b82f6" />
         <Suspense fallback={null}>
           <HeroLaptop scrollProgress={scrollProgress} />
           <HeroPhone scrollProgress={scrollProgress} />
           <LeadParticles />
-          <ContactShadows position={[0, -1.05, 0]} opacity={0.5} scale={10} blur={2.4} far={3} />
+          <ContactShadows position={[0, -1.05, 0]} opacity={0.3} scale={10} blur={2.4} far={3} />
           <Environment preset="city" />
         </Suspense>
         <Rig mouse={mouse} />
