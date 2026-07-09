@@ -637,6 +637,7 @@ const Landing = () => {
       </footer>
       <SocialProofBanner />
     </div>
+    </SmoothScroll>
   );
 };
 
