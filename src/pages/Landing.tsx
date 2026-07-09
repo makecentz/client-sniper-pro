@@ -13,6 +13,12 @@ import pricingBg from "@/assets/pricing-bg.png";
 import { SocialProofBanner } from "@/components/SocialProofBanner";
 import { Seo } from "@/components/Seo";
 import { ContactForm } from "@/components/ContactForm";
+import { SmoothScroll } from "@/components/landing/SmoothScroll";
+import { ScrollReveal } from "@/components/landing/ScrollReveal";
+import { Hero3D } from "@/components/landing/Hero3D";
+import { GlobeAccent } from "@/components/landing/GlobeAccent";
+import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
@@ -25,6 +31,7 @@ const features = [
 
 const Landing = () => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
   const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
   const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
@@ -64,7 +71,9 @@ const Landing = () => {
   const currentYear = new Date().getFullYear();
 
   return (
+    <SmoothScroll>
     <div className="min-h-screen bg-background">
+
       <Seo
         title="Client Hunter AI — Lead generation for web developers"
         description="Find, score, and close local business leads with AI-powered outreach, heatmap search, and instant website audits — built for web developers."
@@ -144,143 +153,79 @@ const Landing = () => {
             </div>
           </div>
 
-          {/* Hero mockup: half source code / half rendered site */}
-          <div className="relative">
-            <div className="absolute -inset-6 rounded-3xl bg-gradient-to-tr from-primary/30 via-primary/10 to-transparent blur-2xl" />
-            <div className="relative max-h-[280px] overflow-hidden rounded-xl border border-border/60 bg-card/80 shadow-2xl backdrop-blur lg:rotate-1 lg:hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center gap-2 border-b border-border/50 px-4 py-2">
-                <div className="flex gap-1.5">
+          {/* 3D Hero scene */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
+            className="relative"
+          >
+            {isMobile ? (
+              <div className="relative rounded-xl border border-border/60 bg-card/80 p-6 shadow-2xl backdrop-blur">
+                <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                   <span className="h-3 w-3 rounded-full bg-red-500/80" />
                   <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
                   <span className="h-3 w-3 rounded-full bg-green-500/80" />
-                </div>
-                <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-center text-[11px] text-muted-foreground">
-                  clienthunter.ai / preview
-                </div>
-                <div className="hidden items-center gap-1 rounded bg-primary/20 px-2 py-0.5 text-[10px] font-medium text-primary sm:inline-flex">
-                  <Sparkles className="h-2.5 w-2.5" /> Live
-                </div>
-              </div>
-
-              <div className="grid grid-cols-5 gap-0 text-xs">
-                {/* Code half */}
-                <div className="relative col-span-3 overflow-hidden border-r border-border/40 bg-[#0b1020] p-3 font-mono leading-relaxed">
-                  <p className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">FindLeads.tsx</p>
-                  <div className="space-y-0.5">
-                    {[
-                      { d: 0, c: <><span className="text-purple-400">interface</span> <span className="text-yellow-300">Lead</span> {"{"}</> },
-                      { d: 100, c: <>&nbsp;&nbsp;<span className="text-sky-300">id</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 200, c: <>&nbsp;&nbsp;<span className="text-sky-300">name</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 300, c: <>&nbsp;&nbsp;<span className="text-sky-300">city</span>: <span className="text-orange-300">string</span>;</> },
-                      { d: 400, c: <>&nbsp;&nbsp;<span className="text-sky-300">score</span>: <span className="text-orange-300">"hot"</span> | <span className="text-orange-300">"warm"</span>;</> },
-                      { d: 500, c: <>{"}"}</> },
-                      { d: 600, c: <><span className="text-purple-400">export</span> <span className="text-purple-400">function</span> <span className="text-yellow-300">FindLeads</span>() {"{"}</> },
-                      { d: 700, c: <>&nbsp;&nbsp;<span className="text-purple-400">const</span> [leads, setLeads] = <span className="text-yellow-300">useState</span>&lt;Lead[]&gt;([]);</> },
-                      { d: 800, c: <>&nbsp;&nbsp;<span className="text-purple-400">useEffect</span>(() =&gt; {"{"}</> },
-                      { d: 900, c: <>&nbsp;&nbsp;&nbsp;&nbsp;<span className="text-yellow-300">searchBusinesses</span>(city, industry).<span className="text-yellow-300">then</span>(setLeads);</> },
-                      { d: 1000, c: <>&nbsp;&nbsp;{"}"}, [city, industry]);</> },
-                      { d: 1100, c: <>&nbsp;&nbsp;<span className="text-purple-400">return</span> &lt;<span className="text-sky-300">LeadGrid</span> <span className="text-emerald-300">leads</span>={"{"}<span className="text-sky-300">leads</span>{"}"} /&gt;;</> },
-                      { d: 1200, c: <>{"}"}<span className="ml-0.5 inline-block h-3 w-1.5 translate-y-0.5 animate-pulse bg-primary" /></> },
-                    ].map((line, i) => (
-                      <div
-                        key={i}
-                        className="animate-fade-in text-foreground/90 opacity-0"
-                        style={{ animationDelay: `${line.d}ms`, animationFillMode: "forwards" }}
-                      >
-                        <span className="mr-2 select-none text-muted-foreground/40">{String(i + 1).padStart(2, "0")}</span>
-                        {line.c}
-                      </div>
-                    ))}
-                  </div>
-                  {/* Scan line */}
-                  <div
-                    className="pointer-events-none absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-primary/20 to-transparent"
-                    style={{ animation: "heroScan 3.5s ease-in-out infinite" }}
-                  />
-                </div>
-
-                {/* Rendered site half */}
-                <div className="col-span-2 bg-background/20 p-2">
-                  <div className="overflow-hidden rounded-md border border-border/40 bg-background">
-                    <div className="relative h-16 bg-gradient-to-br from-orange-500/50 via-red-500/40 to-amber-400/40">
-                      <div className="absolute inset-x-3 top-2 flex items-center justify-between">
-                        <div className="h-1.5 w-10 rounded bg-white/70" />
-                        <div className="flex gap-1">
-                          <div className="h-1.5 w-5 rounded bg-white/60" />
-                          <div className="h-1.5 w-5 rounded bg-white/60" />
-                          <div className="h-1.5 w-5 rounded bg-white/60" />
-                        </div>
-                      </div>
-                      <div className="absolute inset-x-0 bottom-2 flex flex-col items-start px-3">
-                        <div className="h-2 w-24 rounded bg-white/90 animate-fade-in" style={{ animationDelay: "600ms", animationFillMode: "both" }} />
-                        <div className="mt-1 h-1.5 w-32 rounded bg-white/60 animate-fade-in" style={{ animationDelay: "900ms", animationFillMode: "both" }} />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1 p-2">
-                      {[0, 1, 2].map((i) => (
-                        <div
-                          key={i}
-                          className="h-8 rounded animate-fade-in"
-                          style={{
-                            background: `linear-gradient(135deg, hsl(${20 + i * 20} 85% 55% / 0.5), hsl(${40 + i * 15} 80% 60% / 0.35))`,
-                            animationDelay: `${1000 + i * 150}ms`,
-                            animationFillMode: "both",
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <div className="space-y-1 border-t border-border/30 p-2">
-                      <div className="h-1.5 w-3/4 rounded bg-foreground/30 animate-fade-in" style={{ animationDelay: "1400ms", animationFillMode: "both" }} />
-                      <div className="h-1.5 w-1/2 rounded bg-foreground/20 animate-fade-in" style={{ animationDelay: "1550ms", animationFillMode: "both" }} />
-                      <div className="mt-1 flex items-center gap-2 animate-fade-in" style={{ animationDelay: "1700ms", animationFillMode: "both" }}>
-                        <div className="h-4 w-14 rounded bg-primary" />
-                        <div className="h-4 w-10 rounded border border-border/60" />
-                      </div>
-                    </div>
+                  <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-center text-[11px] text-muted-foreground">
+                    clienthunter.ai / preview
                   </div>
                 </div>
+                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  <div className="h-2 w-3/4 rounded bg-primary/30" />
+                  <div className="h-2 w-1/2 rounded bg-primary/20" />
+                  <div className="h-2 w-2/3 rounded bg-primary/25" />
+                </div>
               </div>
-            </div>
-
+            ) : (
+              <Hero3D />
+            )}
             <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-primary/40 bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-lg lg:-right-6 lg:-top-4">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Code → Live Site
+              Live 3D Dashboard
             </div>
-
-            <style>{`
-              @keyframes heroScan {
-                0% { transform: translateY(-100%); opacity: 0; }
-                50% { opacity: 1; }
-                100% { transform: translateY(600%); opacity: 0; }
-              }
-            `}</style>
-          </div>
+          </motion.div>
         </div>
       </section>
 
 
 
       {/* Features */}
-      <section id="how-it-works" className="border-t border-border/50 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
-            How It Works
-          </h2>
+      <section id="how-it-works" className="relative overflow-hidden border-t border-border/50 px-6 py-20">
+        {!isMobile && (
+          <div className="absolute -right-40 top-1/2 h-[500px] w-[500px] -translate-y-1/2">
+            <GlobeAccent />
+          </div>
+        )}
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <ScrollReveal>
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+              How It Works
+            </h2>
+          </ScrollReveal>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
-              <Card key={i} className="border-border/50 bg-card/50">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <f.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">{f.desc}</p>
-                </CardContent>
-              </Card>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Card className="h-full border-border/50 bg-card/50 backdrop-blur transition-transform hover:-translate-y-1 hover:shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <f.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
+                    <p className="text-sm text-muted-foreground">{f.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
+
 
       {/* Hot Feature: Lovable.dev one-prompt websites */}
       <section id="pro" className="relative overflow-hidden border-t border-border/50 px-6 py-24">
@@ -628,6 +573,7 @@ const Landing = () => {
       </footer>
       <SocialProofBanner />
     </div>
+    </SmoothScroll>
   );
 };
 
