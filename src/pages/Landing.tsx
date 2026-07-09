@@ -13,6 +13,12 @@ import pricingBg from "@/assets/pricing-bg.png";
 import { SocialProofBanner } from "@/components/SocialProofBanner";
 import { Seo } from "@/components/Seo";
 import { ContactForm } from "@/components/ContactForm";
+import { SmoothScroll } from "@/components/landing/SmoothScroll";
+import { ScrollReveal } from "@/components/landing/ScrollReveal";
+import { Hero3D } from "@/components/landing/Hero3D";
+import { GlobeAccent } from "@/components/landing/GlobeAccent";
+import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
