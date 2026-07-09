@@ -190,26 +190,42 @@ const Landing = () => {
 
 
       {/* Features */}
-      <section id="how-it-works" className="border-t border-border/50 px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
-            How It Works
-          </h2>
+      <section id="how-it-works" className="relative overflow-hidden border-t border-border/50 px-6 py-20">
+        {!isMobile && (
+          <div className="absolute -right-40 top-1/2 h-[500px] w-[500px] -translate-y-1/2">
+            <GlobeAccent />
+          </div>
+        )}
+        <div className="relative z-10 mx-auto max-w-6xl">
+          <ScrollReveal>
+            <h2 className="mb-12 text-center text-3xl font-bold text-foreground">
+              How It Works
+            </h2>
+          </ScrollReveal>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((f, i) => (
-              <Card key={i} className="border-border/50 bg-card/50">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                    <f.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground">{f.desc}</p>
-                </CardContent>
-              </Card>
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <Card className="h-full border-border/50 bg-card/50 backdrop-blur transition-transform hover:-translate-y-1 hover:shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                      <f.icon className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="mb-2 font-semibold text-foreground">{f.title}</h3>
+                    <p className="text-sm text-muted-foreground">{f.desc}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
+
 
       {/* Hot Feature: Lovable.dev one-prompt websites */}
       <section id="pro" className="relative overflow-hidden border-t border-border/50 px-6 py-24">
