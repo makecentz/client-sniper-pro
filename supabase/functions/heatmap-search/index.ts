@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,7 +218,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const OUTSCRAPER_API_KEY = Deno.env.get("OUTSCRAPER_API_KEY");
+    const OUTSCRAPER_API_KEY = await getApiKey("OUTSCRAPER_API_KEY");
     if (!OUTSCRAPER_API_KEY) {
       return new Response(JSON.stringify({ error: "Search service not configured" }), {
         status: 500,

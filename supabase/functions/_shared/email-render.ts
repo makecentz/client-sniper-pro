@@ -1,3 +1,4 @@
+import { getApiKey } from "./api-keys.ts";
 // Shared marketing email HTML renderer.
 // Converts the WYSIWYG body (HTML) and structured fields into a polished, responsive email.
 
@@ -69,7 +70,7 @@ export async function sendViaResend(opts: {
   replyTo?: string;
 }): Promise<{ id?: string; error?: string }> {
   const LOVABLE = Deno.env.get("LOVABLE_API_KEY");
-  const RESEND = Deno.env.get("RESEND_API_KEY");
+  const RESEND = await getApiKey("RESEND_API_KEY");
   if (!LOVABLE || !RESEND) return { error: "Resend not configured" };
 
   const res = await fetch("https://connector-gateway.lovable.dev/resend/emails", {

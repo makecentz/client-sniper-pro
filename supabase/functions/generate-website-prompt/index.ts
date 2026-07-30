@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,7 +74,7 @@ serve(async (req) => {
     let hours: any = lead.gmaps_hours || null;
     let reviews: any[] = (lead.gmaps_reviews as any[]) || [];
 
-    const OUTSCRAPER_API_KEY = Deno.env.get("OUTSCRAPER_API_KEY");
+    const OUTSCRAPER_API_KEY = await getApiKey("OUTSCRAPER_API_KEY");
     if (OUTSCRAPER_API_KEY && (photos.length === 0 || force)) {
       try {
         const query = encodeURIComponent(
