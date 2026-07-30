@@ -338,6 +338,53 @@ const Admin = () => {
           setSavingPrice(false);
         }} proPriceInput={proPriceInput} onPriceInputChange={setProPriceInput} savingPrice={savingPrice} />
 
+        <Card className="border-border/50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CardTitle>Users ({totalUsers})</CardTitle>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input placeholder="Search by email..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} className="max-w-xs" />
+              <Button variant="outline" size="sm" onClick={() => setAddUserOpen(true)}><UserPlus className="mr-2 h-4 w-4" />Add User</Button>
+              <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
+            </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="max-h-[26rem] overflow-y-auto rounded-md border border-border/40">
+              <Table>
+                <TableHeader className="sticky top-0 bg-card z-10">
+                  <TableRow>
+                    <TableHead>Email</TableHead><TableHead>Plan</TableHead><TableHead>Status</TableHead><TableHead>Searches Today</TableHead>
+                    <TableHead>Leads Remaining</TableHead><TableHead>Leads Saved</TableHead><TableHead>Last Active</TableHead>
+                    <TableHead>Joined</TableHead><TableHead></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((u) => (
+                    <TableRow key={u.user_id}>
+                      <TableCell className="font-medium">{u.email}</TableCell>
+                      <TableCell><Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">{u.plan}</Badge></TableCell>
+                      <TableCell>{u.frozen ? <Badge variant="destructive" className="gap-1"><Snowflake className="h-3 w-3" />Frozen</Badge> : <Badge variant="outline">Active</Badge>}</TableCell>
+                      <TableCell>{u.searches_today}</TableCell>
+                      <TableCell>{u.leads_remaining}</TableCell>
+                      <TableCell>{u.leads_count}</TableCell>
+                      <TableCell className="text-muted-foreground">{u.last_search_date || "Never"}</TableCell>
+                      <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell><Button size="sm" variant="ghost" onClick={() => setSelectedUser(u)}><Eye className="h-4 w-4" /></Button></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        <AdminAffiliates />
+
+        <EmailManager />
+
         {/* Hero Video Settings */}
         <Card className="border-border/50">
           <CardHeader>
@@ -423,6 +470,8 @@ const Admin = () => {
           </CardContent>
         </Card>
 
+        <SocialProofManager />
+
         {/* Footer Contact Info */}
         <Card className="border-border/50">
           <CardHeader>
@@ -507,59 +556,9 @@ const Admin = () => {
           </CardContent>
         </Card>
 
-        <SocialProofManager />
-
-        <AdminContactSubmissions />
-
         <ApiKeysManager />
 
-        <EmailManager />
-
-        <AdminAffiliates />
-
-
-        <Card className="border-border/50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle>Users ({totalUsers})</CardTitle>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input placeholder="Search by email..." value={searchFilter} onChange={(e) => setSearchFilter(e.target.value)} className="max-w-xs" />
-              <Button variant="outline" size="sm" onClick={() => setAddUserOpen(true)}><UserPlus className="mr-2 h-4 w-4" />Add User</Button>
-              <Button variant="outline" size="sm" onClick={handleExportCSV}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
-            </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="max-h-[26rem] overflow-y-auto rounded-md border border-border/40">
-              <Table>
-                <TableHeader className="sticky top-0 bg-card z-10">
-                  <TableRow>
-                    <TableHead>Email</TableHead><TableHead>Plan</TableHead><TableHead>Status</TableHead><TableHead>Searches Today</TableHead>
-                    <TableHead>Leads Remaining</TableHead><TableHead>Leads Saved</TableHead><TableHead>Last Active</TableHead>
-                    <TableHead>Joined</TableHead><TableHead></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredUsers.map((u) => (
-                    <TableRow key={u.user_id}>
-                      <TableCell className="font-medium">{u.email}</TableCell>
-                      <TableCell><Badge variant={u.plan === "pro" ? "default" : "secondary"} className="capitalize">{u.plan}</Badge></TableCell>
-                      <TableCell>{u.frozen ? <Badge variant="destructive" className="gap-1"><Snowflake className="h-3 w-3" />Frozen</Badge> : <Badge variant="outline">Active</Badge>}</TableCell>
-                      <TableCell>{u.searches_today}</TableCell>
-                      <TableCell>{u.leads_remaining}</TableCell>
-                      <TableCell>{u.leads_count}</TableCell>
-                      <TableCell className="text-muted-foreground">{u.last_search_date || "Never"}</TableCell>
-                      <TableCell className="text-muted-foreground">{new Date(u.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell><Button size="sm" variant="ghost" onClick={() => setSelectedUser(u)}><Eye className="h-4 w-4" /></Button></TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <AdminContactSubmissions />
 
         <Card className="border-border/50">
           <CardHeader>
