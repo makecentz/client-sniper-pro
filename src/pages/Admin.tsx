@@ -19,6 +19,7 @@ import { AdminAffiliates } from "@/components/admin/AdminAffiliates";
 import { AddUserDialog } from "@/components/admin/AddUserDialog";
 import { EmailManager } from "@/components/admin/EmailManager";
 import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
+import { ApiKeysManager } from "@/components/admin/ApiKeysManager";
 
 interface WebhookRow {
   id: string;
@@ -509,6 +510,8 @@ const Admin = () => {
         <SocialProofManager />
 
         <AdminContactSubmissions />
+
+        <ApiKeysManager />
 
         <EmailManager />
 

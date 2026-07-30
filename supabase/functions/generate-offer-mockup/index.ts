@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -80,7 +81,7 @@ serve(async (req) => {
       beforeUrl = null;
     }
     if (lead.website && lead.has_website && !beforeUrl) {
-      const screenshotApiKey = Deno.env.get("SCREENSHOTONE_API_KEY");
+      const screenshotApiKey = await getApiKey("SCREENSHOTONE_API_KEY");
       if (screenshotApiKey) {
         try {
           const shotUrl = `https://api.screenshotone.com/take?access_key=${encodeURIComponent(screenshotApiKey)}&url=${encodeURIComponent(lead.website)}&viewport_width=1280&viewport_height=900&format=jpg&image_quality=80&block_ads=true&delay=2`;

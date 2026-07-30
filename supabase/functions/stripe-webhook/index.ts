@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+  const stripe = new Stripe(await getApiKey("STRIPE_SECRET_KEY"), {
     apiVersion: "2025-08-27.basil",
   });
 
@@ -31,7 +32,7 @@ serve(async (req) => {
     event = await stripe.webhooks.constructEventAsync(
       body,
       signature,
-      Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""
+      await getApiKey("STRIPE_WEBHOOK_SECRET")
     );
   } catch (err) {
     console.error("Webhook signature verification failed:", err.message);

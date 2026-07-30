@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,7 +31,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
+    const apiKey = await getApiKey("GOOGLE_MAPS_API_KEY");
     if (!apiKey) {
       return new Response(JSON.stringify({ error: "Maps key not configured" }), {
         status: 500,

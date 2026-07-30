@@ -6,6 +6,7 @@
 //  - Reject if referrer and referred share a recent click IP (basic fraud).
 //  - One referral per referred user (DB unique constraint).
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getApiKey } from "../_shared/api-keys.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -109,7 +110,7 @@ Deno.serve(async (req) => {
         if (affEmail) {
           const { data: profile } = await admin
             .from("profiles").select("display_name").eq("user_id", link.user_id).maybeSingle();
-          const origin = Deno.env.get("SITE_URL") || "https://clienthunterai.com";
+          const origin = (await getApiKey("SITE_URL")) || "https://clienthunterai.com";
           await admin.functions.invoke("send-transactional-email", {
             body: {
               templateName: "new-referral-signup",
