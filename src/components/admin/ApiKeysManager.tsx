@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { KeyRound, Loader2, RefreshCw } from "lucide-react";
 
 type KeyRow = {
@@ -42,7 +42,7 @@ export const ApiKeysManager = () => {
       const data = await call({ action: "list" });
       setKeys((data.keys as KeyRow[]) ?? []);
     } catch (e) {
-      toast({ title: "Could not load API keys", description: String((e as Error).message), variant: "destructive" });
+      toast.error("Could not load API keys", { description: String((e as Error).message) });
     } finally {
       setLoading(false);
     }
@@ -57,10 +57,10 @@ export const ApiKeysManager = () => {
     try {
       await call({ action: "set", key_name: name, value });
       setDrafts((d) => ({ ...d, [name]: "" }));
-      toast({ title: "Saved", description: `${LABELS[name]?.label ?? name} updated.` });
+      toast.success("Saved", { description: `${LABELS[name]?.label ?? name} updated.` });
       await load();
     } catch (e) {
-      toast({ title: "Save failed", description: String((e as Error).message), variant: "destructive" });
+      toast.error("Save failed", { description: String((e as Error).message) });
     } finally { setBusy(null); }
   };
 
@@ -68,10 +68,10 @@ export const ApiKeysManager = () => {
     setBusy(name + ":clear");
     try {
       await call({ action: "clear", key_name: name });
-      toast({ title: "Reverted", description: "Now using the built-in value." });
+      toast.success("Reverted", { description: "Now using the built-in value." });
       await load();
     } catch (e) {
-      toast({ title: "Failed", description: String((e as Error).message), variant: "destructive" });
+      toast.error("Failed", { description: String((e as Error).message) });
     } finally { setBusy(null); }
   };
 
@@ -79,13 +79,10 @@ export const ApiKeysManager = () => {
     setBusy(name + ":test");
     try {
       const res = await call({ action: "test", key_name: name, value: drafts[name] || "" });
-      toast({
-        title: res.ok ? "Key works" : "Key failed",
-        description: String(res.message ?? ""),
-        variant: res.ok ? undefined : "destructive",
-      });
+      if (res.ok) toast.success("Key works", { description: String(res.message ?? "") });
+      else toast.error("Key failed", { description: String(res.message ?? "") });
     } catch (e) {
-      toast({ title: "Test failed", description: String((e as Error).message), variant: "destructive" });
+      toast.error("Test failed", { description: String((e as Error).message) });
     } finally { setBusy(null); }
   };
 
