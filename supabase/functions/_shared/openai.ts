@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getApiKey } from "./api-keys.ts";
 
 export function adminClient() {
   return createClient(
