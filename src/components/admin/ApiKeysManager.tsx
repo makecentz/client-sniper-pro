@@ -20,6 +20,7 @@ const LABELS: Record<string, { label: string; hint: string }> = {
   STRIPE_SECRET_KEY: { label: "Stripe Secret Key", hint: "Checkout, billing portal, subscriptions." },
   STRIPE_WEBHOOK_SECRET: { label: "Stripe Webhook Secret", hint: "Verifies incoming Stripe webhooks." },
   RESEND_API_KEY: { label: "Resend (Email)", hint: "Sends marketing and transactional email." },
+  OPENAI_API_KEY: { label: "OpenAI", hint: "Powers Client Chatbots for all users." },
   SITE_URL: { label: "Site URL", hint: "Base URL used in emails and checkout redirects." },
 };
 

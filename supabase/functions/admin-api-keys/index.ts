@@ -62,6 +62,14 @@ async function testKey(name: string, value: string): Promise<{ ok: boolean; mess
           ? { ok: true, message: "Resend key is valid" }
           : { ok: false, message: `Resend rejected the key (${r.status})` };
       }
+      case "OPENAI_API_KEY": {
+        const r = await fetch("https://api.openai.com/v1/models", {
+          headers: { Authorization: `Bearer ${value}` },
+        });
+        return r.ok
+          ? { ok: true, message: "OpenAI key is valid" }
+          : { ok: false, message: `OpenAI rejected the key (${r.status})` };
+      }
       case "SITE_URL": {
         try {
           const u = new URL(value);
