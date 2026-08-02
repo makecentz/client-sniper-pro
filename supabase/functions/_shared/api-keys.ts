@@ -9,6 +9,7 @@ export const MANAGED_KEYS = [
   "STRIPE_SECRET_KEY",
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
+  "OPENAI_API_KEY",
   "SITE_URL",
 ] as const;
 

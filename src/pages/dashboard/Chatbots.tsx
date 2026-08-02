@@ -23,7 +23,6 @@ export default function Chatbots() {
   const navigate = useNavigate();
   const [bots, setBots] = useState<Bot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hasKey, setHasKey] = useState<boolean | null>(null);
   const [open, setOpen] = useState(false);
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("");
@@ -31,12 +30,12 @@ export default function Chatbots() {
 
   const load = async () => {
     if (!user?.id) return;
-    const [{ data: b }, { data: k }] = await Promise.all([
-      supabase.from("chatbots").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
-      supabase.from("user_api_keys").select("id").eq("user_id", user.id).eq("provider", "openai").maybeSingle(),
-    ]);
+    const { data: b } = await supabase
+      .from("chatbots")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
     setBots((b as Bot[]) || []);
-    setHasKey(!!k);
     setLoading(false);
   };
 
@@ -76,12 +75,12 @@ export default function Chatbots() {
         <div>
           <h1 className="text-2xl font-bold">Client Chatbots</h1>
           <p className="text-sm text-muted-foreground">
-            Build branded AI chatbots for your clients using your own OpenAI key.
+            Build branded AI chatbots for your clients for local businesses.
           </p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button disabled={!hasKey}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" /> New Chatbot
             </Button>
           </DialogTrigger>
@@ -110,22 +109,6 @@ export default function Chatbots() {
           </DialogContent>
         </Dialog>
       </div>
-
-      {!hasKey && hasKey !== null && (
-        <Card className="border-warning/40">
-          <CardContent className="flex items-center justify-between p-4">
-            <div>
-              <p className="font-medium">OpenAI API key required</p>
-              <p className="text-sm text-muted-foreground">
-                Add your OpenAI key in Settings to start building chatbots.
-              </p>
-            </div>
-            <Button variant="outline" onClick={() => navigate("/dashboard/settings")}>
-              Go to Settings <ExternalLink className="ml-2 h-3.5 w-3.5" />
-            </Button>
-          </CardContent>
-        </Card>
-      )}
 
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading...</p>

@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getApiKey } from "./api-keys.ts";
 
 export function adminClient() {
   return createClient(
@@ -15,17 +16,12 @@ export function userClient(authHeader: string) {
   );
 }
 
-export async function getUserOpenAIKey(userId: string): Promise<string> {
-  const admin = adminClient();
-  const { data, error } = await admin
-    .from("user_api_keys")
-    .select("encrypted_key")
-    .eq("user_id", userId)
-    .eq("provider", "openai")
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data?.encrypted_key) throw new Error("No OpenAI key configured. Add one in Settings.");
-  return data.encrypted_key as string;
+// The OpenAI key is now managed centrally by admins (Admin dashboard → API Keys).
+// The userId argument is kept for call-site compatibility.
+export async function getUserOpenAIKey(_userId?: string): Promise<string> {
+  const key = await getApiKey("OPENAI_API_KEY");
+  if (!key) throw new Error("No OpenAI key configured. An admin must add one in the Admin dashboard.");
+  return key;
 }
 
 // OpenAI uses v2 Assistants API header.
