@@ -52,6 +52,10 @@ const SearchPanel = () => {
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [businessType, setBusinessType] = useState("");
+  const [showIndustries, setShowIndustries] = useState(false);
+  const filteredIndustries = INDUSTRIES.filter((i) =>
+    i.toLowerCase().includes(businessType.trim().toLowerCase())
+  );
   const [results, setResults] = useState<SearchResult[]>([]);
   const [searching, setSearching] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
@@ -267,20 +271,32 @@ const SearchPanel = () => {
                 maxLength={5}
               />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 relative">
               <Label htmlFor="business-type">Business Type</Label>
               <Input
                 id="business-type"
-                list="industry-options"
+                autoComplete="off"
                 placeholder="Type or pick an industry..."
                 value={businessType}
-                onChange={(e) => setBusinessType(e.target.value.slice(0, 100))}
+                onFocus={() => setShowIndustries(true)}
+                onBlur={() => setTimeout(() => setShowIndustries(false), 150)}
+                onChange={(e) => { setBusinessType(e.target.value.slice(0, 100)); setShowIndustries(true); }}
               />
-              <datalist id="industry-options">
-                {INDUSTRIES.map((industry) => (
-                  <option key={industry} value={industry} />
-                ))}
-              </datalist>
+              {showIndustries && filteredIndustries.length > 0 && (
+                <div className="absolute z-50 top-full left-0 right-0 mt-1 max-h-60 overflow-y-auto rounded-md border border-border bg-popover shadow-lg">
+                  {filteredIndustries.map((industry) => (
+                    <button
+                      key={industry}
+                      type="button"
+                      className="w-full px-3 py-2 text-left text-sm text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => { setBusinessType(industry); setShowIndustries(false); }}
+                    >
+                      {industry}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="flex items-end">
