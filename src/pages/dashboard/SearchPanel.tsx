@@ -268,18 +268,21 @@ const SearchPanel = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Business Type</Label>
-              <Select value={businessType} onValueChange={setBusinessType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select industry..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {INDUSTRIES.map((industry) => (
-                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="business-type">Business Type</Label>
+              <Input
+                id="business-type"
+                list="industry-options"
+                placeholder="Type or pick an industry..."
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value.slice(0, 100))}
+              />
+              <datalist id="industry-options">
+                {INDUSTRIES.map((industry) => (
+                  <option key={industry} value={industry} />
+                ))}
+              </datalist>
             </div>
+
             <div className="flex items-end">
               <Button className="w-full" onClick={handleSearch} disabled={searching || atLimit} title={atLimit ? "Lead limit reached" : undefined}>
                 <Search className="mr-2 h-4 w-4" />
