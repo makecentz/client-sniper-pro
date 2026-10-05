@@ -37,7 +37,15 @@ export function AddUserDialog({ open, onOpenChange, onCreated }: Props) {
     });
     setLoading(false);
     if (error || (data as any)?.error) {
-      toast.error((data as any)?.error || error?.message || "Failed to add user");
+      let msg = (data as any)?.error || error?.message || "Failed to add user";
+      const ctx = (error as any)?.context;
+      if (ctx && typeof ctx.json === "function") {
+        try {
+          const body = await ctx.json();
+          if (body?.error) msg = typeof body.error === "string" ? body.error : JSON.stringify(body.error);
+        } catch { /* ignore */ }
+      }
+      toast.error(msg);
       return;
     }
     toast.success(password ? `Account created for ${trimmed}` : `Invite sent to ${trimmed}`);
