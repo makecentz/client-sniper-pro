@@ -111,15 +111,11 @@ Deno.serve(async (req) => {
           const { data: profile } = await admin
             .from("profiles").select("display_name").eq("user_id", link.user_id).maybeSingle();
           const origin = (await getApiKey("SITE_URL")) || "https://clienthunterai.com";
-          await admin.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "new-referral-signup",
-              recipientEmail: affEmail,
-              idempotencyKey: `new-referral-${user.id}`,
-              templateData: {
-                name: profile?.display_name ?? null,
-                dashboardUrl: `${origin}/dashboard/affiliate`,
-              },
+          await sendTemplateEmailAndLog("new-referral-signup", affEmail, {
+            idempotencyKey: `new-referral-${user.id}`,
+            templateData: {
+              name: profile?.display_name ?? null,
+              dashboardUrl: `${origin}/dashboard/affiliate`,
             },
           });
         }
