@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -16,6 +16,8 @@ interface Props {
 
 export function AddUserDialog({ open, onOpenChange, onCreated }: Props) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [plan, setPlan] = useState<"free" | "pro">("free");
   const [loading, setLoading] = useState(false);
 
@@ -25,17 +27,22 @@ export function AddUserDialog({ open, onOpenChange, onCreated }: Props) {
       toast.error("Enter a valid email");
       return;
     }
+    if (password && password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke("admin-invite-user", {
-      body: { email: trimmed, plan, redirectTo: `${window.location.origin}/dashboard` },
+      body: { email: trimmed, plan, password: password || undefined, redirectTo: `${window.location.origin}/dashboard` },
     });
     setLoading(false);
     if (error || (data as any)?.error) {
-      toast.error((data as any)?.error || error?.message || "Failed to invite user");
+      toast.error((data as any)?.error || error?.message || "Failed to add user");
       return;
     }
-    toast.success(`Invite sent to ${trimmed}`);
+    toast.success(password ? `Account created for ${trimmed}` : `Invite sent to ${trimmed}`);
     setEmail("");
+    setPassword("");
     setPlan("free");
     onOpenChange(false);
     onCreated();
@@ -53,6 +60,29 @@ export function AddUserDialog({ open, onOpenChange, onCreated }: Props) {
             <Input id="invite-email" type="email" placeholder="user@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="invite-password">Password <span className="text-muted-foreground">(optional)</span></Label>
+            <div className="relative">
+              <Input
+                id="invite-password"
+                type={showPw ? "text" : "password"}
+                placeholder="At least 8 characters"
+                value={password}
+                maxLength={72}
+                autoComplete="new-password"
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw((s) => !s)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label={showPw ? "Hide password" : "Show password"}
+              >
+                {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
             <Label>Plan</Label>
             <Select value={plan} onValueChange={(v) => setPlan(v as "free" | "pro")}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -62,12 +92,16 @@ export function AddUserDialog({ open, onOpenChange, onCreated }: Props) {
               </SelectContent>
             </Select>
           </div>
-          <p className="text-xs text-muted-foreground">An invite email will be sent so the user can set their password.</p>
+          <p className="text-xs text-muted-foreground">
+            {password
+              ? "The account is created right away — the user can sign in with this email and password."
+              : "Leave the password blank to send an invite email instead."}
+          </p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>Cancel</Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send invite"}
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : password ? "Create account" : "Send invite"}
           </Button>
         </DialogFooter>
       </DialogContent>

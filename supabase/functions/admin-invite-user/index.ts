@@ -36,13 +36,28 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid email" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const redirectTo = body.redirectTo || `${new URL(req.url).origin}`;
-    const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
-    if (inviteErr || !invited?.user) {
-      return new Response(JSON.stringify({ error: inviteErr?.message ?? "Invite failed" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const password = typeof body.password === "string" ? body.password : "";
+    if (password && (password.length < 8 || password.length > 72)) {
+      return new Response(JSON.stringify({ error: "Password must be 8–72 characters" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const newId = invited.user.id;
+    let newId: string;
+    if (password) {
+      const { data: created, error: createErr } = await admin.auth.admin.createUser({
+        email, password, email_confirm: true,
+      });
+      if (createErr || !created?.user) {
+        return new Response(JSON.stringify({ error: createErr?.message ?? "Create failed" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      newId = created.user.id;
+    } else {
+      const redirectTo = body.redirectTo || `${new URL(req.url).origin}`;
+      const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(email, { redirectTo });
+      if (inviteErr || !invited?.user) {
+        return new Response(JSON.stringify({ error: inviteErr?.message ?? "Invite failed" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      newId = invited.user.id;
+    }
     const leadsRemaining = plan === "pro" ? 99999 : 2;
     // handle_new_user trigger may have created rows; upsert to set plan correctly
     await admin.from("usage_tracking").upsert(
