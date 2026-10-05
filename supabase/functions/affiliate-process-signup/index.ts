@@ -5,6 +5,7 @@
 //  - Reject self-referrals.
 //  - Reject if referrer and referred share a recent click IP (basic fraud).
 //  - One referral per referred user (DB unique constraint).
+import { sendTemplateEmailAndLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getApiKey } from "../_shared/api-keys.ts";
 
