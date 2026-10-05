@@ -5,6 +5,7 @@
 //  - Reject self-referrals.
 //  - Reject if referrer and referred share a recent click IP (basic fraud).
 //  - One referral per referred user (DB unique constraint).
+import { sendTemplateEmailAndLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getApiKey } from "../_shared/api-keys.ts";
 
@@ -111,15 +112,11 @@ Deno.serve(async (req) => {
           const { data: profile } = await admin
             .from("profiles").select("display_name").eq("user_id", link.user_id).maybeSingle();
           const origin = (await getApiKey("SITE_URL")) || "https://clienthunterai.com";
-          await admin.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "new-referral-signup",
-              recipientEmail: affEmail,
-              idempotencyKey: `new-referral-${user.id}`,
-              templateData: {
-                name: profile?.display_name ?? null,
-                dashboardUrl: `${origin}/dashboard/affiliate`,
-              },
+          await sendTemplateEmailAndLog("new-referral-signup", affEmail, {
+            idempotencyKey: `new-referral-${user.id}`,
+            templateData: {
+              name: profile?.display_name ?? null,
+              dashboardUrl: `${origin}/dashboard/affiliate`,
             },
           });
         }

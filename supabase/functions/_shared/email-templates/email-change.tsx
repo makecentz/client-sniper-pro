@@ -17,12 +17,14 @@ import {
 
 interface EmailChangeEmailProps {
   siteName: string
+  oldEmail: string
   email: string
   newEmail: string
   confirmationUrl: string
 }
 
 export const EmailChangeEmail = ({
+  oldEmail,
   siteName,
   email,
   newEmail,
@@ -42,7 +44,7 @@ export const EmailChangeEmail = ({
           <Heading style={h1}>Confirm your email change</Heading>
           <Text style={text}>
             You requested to change your email address from{' '}
-            <Link href={`mailto:${email}`} style={link}>{email}</Link>{' '}
+            <Link href={`mailto:${oldEmail}`} style={link}>{oldEmail}</Link>{' '}
             to{' '}
             <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>.
           </Text>

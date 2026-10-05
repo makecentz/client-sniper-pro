@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { z } from "npm:zod@3.23.8";
+import { sendTemplateEmailAndLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 
 const BodySchema = z.object({
   submissionId: z.string().uuid(),
@@ -62,10 +63,8 @@ Deno.serve(async (req) => {
 
     const results: unknown[] = [];
     for (const to of recipients) {
-      const { data, error } = await supabase.functions.invoke("send-transactional-email", {
-        body: {
-          templateName: "contact-notification",
-          recipientEmail: to,
+      try {
+        const data = await sendTemplateEmailAndLog("contact-notification", to, {
           idempotencyKey: `contact-notify-${submissionId}-${to}`,
           templateData: {
             name,
@@ -74,10 +73,12 @@ Deno.serve(async (req) => {
             message,
             submittedAt: new Date().toISOString(),
           },
-        },
-      });
-      if (error) console.error("send-transactional-email error", to, error);
-      results.push({ to, ok: !error, data });
+        });
+        results.push({ to, ok: data.sent, data });
+      } catch (error) {
+        console.error("contact notification send error", error);
+        results.push({ to, ok: false });
+      }
     }
 
     return new Response(JSON.stringify({ ok: true, results }), {

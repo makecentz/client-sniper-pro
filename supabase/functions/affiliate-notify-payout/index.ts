@@ -2,6 +2,7 @@
 // Admin-only: looks up the affiliate's email server-side and invokes
 // send-transactional-email with the appropriate template.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { sendTemplateEmailAndLog } from "../_shared/transactional-email-templates/send-and-log.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,14 +53,14 @@ Deno.serve(async (req) => {
       .from("profiles").select("display_name").eq("user_id", payout.affiliate_user_id).maybeSingle();
 
     const templateName = status === "approved" ? "payout-approved" : "payout-paid";
-    await admin.functions.invoke("send-transactional-email", {
-      body: {
-        templateName,
-        recipientEmail: email,
+    try {
+      await sendTemplateEmailAndLog(templateName, email, {
         idempotencyKey: `payout-${status}-${payout.id}`,
         templateData: { name: profile?.display_name ?? null, amount: Number(payout.amount) },
-      },
-    });
+      });
+    } catch (sendErr) {
+      console.error("payout email send failed", sendErr);
+    }
 
     return json({ ok: true });
   } catch (e) {
