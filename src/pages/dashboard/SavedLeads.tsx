@@ -197,9 +197,9 @@ const SavedLeads = () => {
                     )}
                     {lead.score === "hot" ? (
                       <Badge className="bg-hot/10 text-hot border-hot/20"><Flame className="mr-1 h-3 w-3" /> Hot</Badge>
-                    ) : (
-                      <Badge className="bg-warning/10 text-warning border-warning/20"><AlertTriangle className="mr-1 h-3 w-3" /> Upgrade</Badge>
-                    )}
+                    ) : lead.has_website && (lead.no_ssl || lead.not_mobile_friendly || lead.outdated_copyright) ? (
+                      <Badge className="bg-warning/10 text-warning border-warning/20"><AlertTriangle className="mr-1 h-3 w-3" /> Review opportunity</Badge>
+                    ) : null}
                     {lead.follow_up_date && (
                       <Badge variant="outline" className="text-xs text-warning border-warning/30">
                         <Clock className="mr-1 h-3 w-3" /> Follow-up: {lead.follow_up_date}
@@ -217,16 +217,16 @@ const SavedLeads = () => {
                   {/* Website status badges */}
                   <div className="flex flex-wrap gap-1.5 mt-1">
                     {!lead.has_website && (
-                      <Badge variant="destructive" className="text-xs"><Globe className="mr-1 h-3 w-3" /> No Website</Badge>
+                      <Badge variant="destructive" className="text-xs"><Globe className="mr-1 h-3 w-3" /> No website listed</Badge>
                     )}
                     {lead.has_website && !lead.no_ssl && !lead.website_error && !lead.not_mobile_friendly && !lead.outdated_copyright && (
-                      <Badge variant="outline" className="text-success border-success/30 text-xs"><Check className="mr-1 h-3 w-3" /> Website OK</Badge>
+                      <Badge variant="outline" className="text-success border-success/30 text-xs"><Check className="mr-1 h-3 w-3" /> No issues detected</Badge>
                     )}
                     {lead.no_ssl && (
                       <Badge variant="outline" className="text-destructive border-destructive/30 text-xs"><ShieldOff className="mr-1 h-3 w-3" /> No SSL</Badge>
                     )}
                     {lead.website_error && (
-                      <Badge variant="outline" className="text-destructive border-destructive/30 text-xs"><AlertTriangle className="mr-1 h-3 w-3" /> Site Error</Badge>
+                      <Badge variant="outline" className="text-destructive border-destructive/30 text-xs"><AlertTriangle className="mr-1 h-3 w-3" /> Check failed — verify manually</Badge>
                     )}
                     {lead.not_mobile_friendly && (
                       <Badge variant="outline" className="text-warning border-warning/30 text-xs"><Smartphone className="mr-1 h-3 w-3" /> Not Mobile Friendly</Badge>
