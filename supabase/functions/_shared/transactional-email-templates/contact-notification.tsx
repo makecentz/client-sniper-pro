@@ -11,6 +11,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 interface Props {
   name?: string
@@ -26,6 +27,7 @@ const Email = ({ name, email, subject, message, submittedAt }: Props) => (
     <Preview>New contact form submission from {name}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>New Contact Submission</Heading>
         <Text style={muted}>A visitor sent a message from the ClientHunter AI website.</Text>
 
@@ -46,6 +48,7 @@ const Email = ({ name, email, subject, message, submittedAt }: Props) => (
         </Section>
 
         <Text style={muted}>Reply directly to {email} to respond.</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

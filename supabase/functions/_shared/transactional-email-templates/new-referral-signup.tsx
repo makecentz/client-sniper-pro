@@ -3,6 +3,7 @@ import {
   Body, Button, Container, Head, Heading, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'ClientHunter AI'
 
@@ -17,6 +18,7 @@ const NewReferralSignupEmail = ({ name, dashboardUrl }: Props) => (
     <Preview>Someone just signed up using your referral link</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>New referral signup 🚀</Heading>
         <Text style={text}>{name ? `Hi ${name},` : 'Hi,'}</Text>
         <Text style={text}>
@@ -32,6 +34,7 @@ const NewReferralSignupEmail = ({ name, dashboardUrl }: Props) => (
           </Section>
         ) : null}
         <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>

@@ -3,6 +3,7 @@ import {
   Body, Container, Head, Heading, Html, Preview, Section, Text,
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
+import { BrandHeader, BrandFooter } from './brand.tsx'
 
 const SITE_NAME = 'ClientHunter AI'
 
@@ -17,6 +18,7 @@ const PayoutApprovedEmail = ({ name, amount }: Props) => (
     <Preview>Your affiliate payout has been approved</Preview>
     <Body style={main}>
       <Container style={container}>
+        <BrandHeader />
         <Heading style={h1}>Payout approved 🎉</Heading>
         <Text style={text}>
           {name ? `Hi ${name},` : 'Hi,'}
@@ -30,6 +32,7 @@ const PayoutApprovedEmail = ({ name, amount }: Props) => (
         </Section>
         <Text style={text}>We'll send a follow-up email as soon as the payment is sent out.</Text>
         <Text style={footer}>— The {SITE_NAME} Team</Text>
+        <BrandFooter />
       </Container>
     </Body>
   </Html>
