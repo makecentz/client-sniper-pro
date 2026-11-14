@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown, Trash2, Send } from "lucide-react";
 import { dismissSearchResult } from "@/lib/search-results";
 import { toLeadTrackerPayload } from "@/lib/lead-tracker";
+import { readHeroSearch } from "@/lib/hero-search";
 import { type SearchResult } from "@/lib/mock-data";
 import { INDUSTRIES } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,10 +52,11 @@ const StatusBadge = ({ ok, label }: { ok: boolean; label: string }) => (
 const SearchPanel = () => {
   const { user, refreshLeadCount } = useAuth();
   const navigate = useNavigate();
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const [heroSearch] = useState(readHeroSearch);
+  const [city, setCity] = useState(heroSearch.city);
+  const [state, setState] = useState(heroSearch.state);
   const [zipCode, setZipCode] = useState("");
-  const [businessType, setBusinessType] = useState("");
+  const [businessType, setBusinessType] = useState(heroSearch.industry);
   const [showIndustries, setShowIndustries] = useState(false);
   const filteredIndustries = INDUSTRIES.filter((i) =>
     i.toLowerCase().includes(businessType.trim().toLowerCase())

@@ -15,12 +15,10 @@ import { Seo } from "@/components/Seo";
 import { ContactForm } from "@/components/ContactForm";
 import { SmoothScroll } from "@/components/landing/SmoothScroll";
 import { ScrollReveal } from "@/components/landing/ScrollReveal";
-import { Hero3D } from "@/components/landing/Hero3D";
+import { ClientHunterHero } from "@/components/landing/ClientHunterHero";
 import { GlobeAccent } from "@/components/landing/GlobeAccent";
 import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-const DEFAULT_HERO_VIDEO = "/videos/hero-bg.mp4";
 
 const features = [
   { icon: Search, title: "Find Businesses", desc: "Search local businesses by city, state, and industry." },
@@ -32,8 +30,6 @@ const features = [
 const Landing = () => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
-  const [heroVideoUrl, setHeroVideoUrl] = useState(DEFAULT_HERO_VIDEO);
-  const [heroVideoOpacity, setHeroVideoOpacity] = useState(0.5);
   const [footerAddress, setFooterAddress] = useState("5429 Baltimore Ave\nPhiladelphia, PA 19143");
   const [footerPhone, setFooterPhone] = useState("(445) 326-9638");
   const [footerEmail, setFooterEmail] = useState("clienthunterainow@gmail.com");
@@ -44,8 +40,6 @@ const Landing = () => {
       .from("admin_settings")
       .select("key,value")
       .in("key", [
-        "hero_video_url",
-        "hero_video_opacity",
         "footer_address",
         "footer_phone",
         "footer_email",
@@ -54,11 +48,6 @@ const Landing = () => {
       .then(({ data }) => {
         if (!data) return;
         for (const row of data) {
-          if (row.key === "hero_video_url" && row.value) setHeroVideoUrl(row.value);
-          if (row.key === "hero_video_opacity" && row.value) {
-            const o = parseInt(row.value, 10);
-            if (!isNaN(o)) setHeroVideoOpacity(Math.max(0, Math.min(100, o)) / 100);
-          }
           if (row.key === "footer_address" && row.value) setFooterAddress(row.value);
           if (row.key === "footer_phone" && row.value) setFooterPhone(row.value);
           if (row.key === "footer_email" && row.value) setFooterEmail(row.value);
@@ -111,83 +100,7 @@ const Landing = () => {
       </nav>
 
       <main>
-      {/* Hero */}
-      <section className="relative overflow-hidden px-6 py-24 text-center">
-        <video
-          key={heroVideoUrl}
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ opacity: heroVideoOpacity }}
-          src={heroVideoUrl}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/30 to-background/50" />
-        <div className="relative z-10 mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:text-left">
-          <div className="text-center lg:text-left">
-            <h1 className="mb-6 text-5xl font-bold leading-tight tracking-tight text-foreground md:text-6xl">
-              Find website clients{" "}
-              <span className="text-primary">in minutes</span>
-            </h1>
-            <p className="mb-8 text-lg text-muted-foreground">
-              Discover businesses that need a website, generate AI-powered outreach, and turn opportunities into paying clients — all in one place
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 lg:justify-start">
-              <Link to="/signup">
-                <Button size="lg" className="px-8 text-base">
-                  Start Free
-                </Button>
-              </Link>
-              <Link to="/login">
-                <Button variant="outline" size="lg" className="px-8 text-base">
-                  Log In
-                </Button>
-              </Link>
-              <Link to={user ? "/dashboard/search" : "/signup?redirect=/dashboard/search"}>
-                <Button variant="secondary" size="lg" className="px-8 text-base">
-                  <Search className="mr-2 h-4 w-4" />
-                  Try a Sample Search
-                </Button>
-              </Link>
-            </div>
-          </div>
-
-          {/* 3D Hero scene */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }}
-            className="relative"
-          >
-            {isMobile ? (
-              <div className="relative rounded-xl border border-border/60 bg-card/80 p-6 shadow-2xl backdrop-blur">
-                <div className="flex items-center gap-2 border-b border-border/50 pb-3">
-                  <span className="h-3 w-3 rounded-full bg-red-500/80" />
-                  <span className="h-3 w-3 rounded-full bg-yellow-500/80" />
-                  <span className="h-3 w-3 rounded-full bg-green-500/80" />
-                  <div className="ml-3 flex-1 rounded-md bg-background/60 px-3 py-1 text-center text-[11px] text-muted-foreground">
-                    clienthunter.ai / preview
-                  </div>
-                </div>
-                <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-3/4 rounded bg-primary/30" />
-                  <div className="h-2 w-1/2 rounded bg-primary/20" />
-                  <div className="h-2 w-2/3 rounded bg-primary/25" />
-                </div>
-              </div>
-            ) : (
-              <Hero3D />
-            )}
-            <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-primary/40 bg-background px-3 py-1.5 text-xs font-medium text-foreground shadow-lg lg:-right-6 lg:-top-4">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Live 3D Dashboard
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-
+      <ClientHunterHero />
 
       {/* Features */}
       <section id="how-it-works" className="relative overflow-hidden border-t border-border/50 px-6 py-20">
