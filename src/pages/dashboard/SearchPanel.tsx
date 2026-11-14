@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown, Trash2, Send } from "lucide-react";
 import { dismissSearchResult } from "@/lib/search-results";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { toLeadTrackerPayload } from "@/lib/lead-tracker";
 import { type SearchResult } from "@/lib/mock-data";
 import { INDUSTRIES } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,6 +68,7 @@ const SearchPanel = () => {
   const [searching, setSearching] = useState(false);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
+  const [sendingResult, setSendingResult] = useState<SearchResult | null>(null);
   const [screenshots, setScreenshots] = useState<Record<number, string>>({});
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeMessage, setUpgradeMessage] = useState<string | undefined>(undefined);
@@ -202,6 +203,28 @@ const SearchPanel = () => {
       toast.error(err.message || "Failed to save lead");
     } finally {
       setSavingId(null);
+    }
+  };
+
+  const handleSendToTracker = async (result: SearchResult) => {
+    if (!user || sendingResult) return;
+    setSendingResult(result);
+    try {
+      const { data, error } = await supabase.functions.invoke("send-to-lead-tracker", {
+        body: toLeadTrackerPayload(result, { city, state, zip: zipCode, industry: businessType }),
+      });
+      if (error) {
+        let message = "Failed to send lead";
+        const context = (error as { context?: Response }).context;
+        try { message = (await context?.json())?.error || message; } catch { /* no response body */ }
+        throw new Error(message);
+      }
+      if (!data?.ok || !data?.lead_id) throw new Error(data?.error || "Failed to send lead");
+      toast.success(`"${result.business_name}" is in Lead Tracker`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to send lead");
+    } finally {
+      setSendingResult(null);
     }
   };
 
@@ -522,16 +545,10 @@ const SearchPanel = () => {
                     <Button size="sm" variant="outline" className="text-destructive" onClick={() => removeResult(idx)} disabled={savingId !== null} aria-label={`Remove ${result.business_name}`}>
                       <Trash2 className="mr-1 h-4 w-4" /> Remove
                     </Button>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span tabIndex={0}>
-                          <Button size="sm" variant="outline" className="w-full" disabled>
-                            <Send className="mr-1 h-4 w-4" /> Send to Lead Tracker
-                          </Button>
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-64">Ecomcommandcenter1 must enable incoming leads before this connection can send them.</TooltipContent>
-                    </Tooltip>
+                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleSendToTracker(result)} disabled={sendingResult !== null}>
+                      {sendingResult === result ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Send className="mr-1 h-4 w-4" />}
+                      {sendingResult === result ? "Sending..." : "Send to Lead Tracker"}
+                    </Button>
                     </div>
                   </div>
                 </div>

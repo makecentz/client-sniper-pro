@@ -1,3 +1,4 @@
 # Search-result actions
 - [x] Add Remove below Save; shared list/map dismissal and screenshot/selection rules pass 3 tests. Browser verification incomplete: search navigation returned to Dashboard.
-- [ ] Connect Send to Lead Tracker to https://ecomcommandcenter1.lovable.app/api/public/receive-lead — blocked: live endpoint returns HTTP 503, "Lead ingestion is not configured"; set LEAD_INGEST_API_KEY in Ecomcommandcenter1, then securely configure the same shared key here before wiring and testing delivery.
+- [x] Wire Send to Lead Tracker through an authenticated server-side proxy; LEAD_INGEST_API_KEY is saved here.
+- [x] Verify delivery — signed-in search returned 23 Miami jewelers; clicking Send to Lead Tracker for LTV – Jewelry / Appraisals showed success after the live receiver returned a lead ID. One search credit used. A labeled connection-verification record was also created. Receiving project's private UI was not inspected.
