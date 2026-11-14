@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown } from "lucide-react";
+import { Search, Globe, Phone, MapPin, Mail, Flame, AlertTriangle, Camera, Save, ShieldOff, Smartphone, CalendarX, CheckCircle2, Loader2, Star, MessageSquare, TrendingDown, Trash2, Send } from "lucide-react";
+import { dismissSearchResult } from "@/lib/search-results";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { type SearchResult } from "@/lib/mock-data";
 import { INDUSTRIES } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
@@ -145,6 +147,13 @@ const SearchPanel = () => {
     }
   };
 
+  const removeResult = (idx: number) => {
+    const remaining = dismissSearchResult(results, screenshots, activeIdx, idx);
+    setResults(remaining.results);
+    setScreenshots(remaining.screenshots);
+    setActiveIdx(remaining.activeIndex);
+  };
+
   const handleSaveLead = async (result: SearchResult, idx: number) => {
     if (!user) return;
     if (atLimit) {
@@ -183,16 +192,7 @@ const SearchPanel = () => {
       });
       if (error) throw error;
       await refreshLeadCount();
-      setResults((prev) => prev.filter((_, i) => i !== idx));
-      setScreenshots((prev) => {
-        const next: Record<number, string> = {};
-        for (const [k, v] of Object.entries(prev)) {
-          const n = Number(k);
-          if (n < idx) next[n] = v;
-          else if (n > idx) next[n - 1] = v;
-        }
-        return next;
-      });
+      removeResult(idx);
       if ((user.saved_leads_count + 1) >= savedWarning) {
         toast.warning(`You have ${user.saved_leads_count + 1}/${savedLimit} leads — delete inactive ones${isPro ? " or grab a Lead Pack for +15 slots" : ""}.`);
       } else {
@@ -511,13 +511,28 @@ const SearchPanel = () => {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     {result.website && (
-                      <Button size="sm" variant="ghost" onClick={() => captureScreenshot(result.website!, idx)}>
+                      <Button size="sm" variant="ghost" title="Capture website screenshot" aria-label={`Capture screenshot for ${result.business_name}`} onClick={() => { if (result.website) captureScreenshot(result.website, idx); }}>
                         <Camera className="h-4 w-4" />
                       </Button>
                     )}
+                    <div className="flex flex-col gap-2">
                     <Button size="sm" variant="secondary" onClick={() => handleSaveLead(result, idx)} disabled={savingId === idx}>
                       <Save className="mr-1 h-4 w-4" /> {savingId === idx ? "Saving..." : "Save"}
                     </Button>
+                    <Button size="sm" variant="outline" className="text-destructive" onClick={() => removeResult(idx)} disabled={savingId !== null} aria-label={`Remove ${result.business_name}`}>
+                      <Trash2 className="mr-1 h-4 w-4" /> Remove
+                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Button size="sm" variant="outline" className="w-full" disabled>
+                            <Send className="mr-1 h-4 w-4" /> Send to Lead Tracker
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-64">Ecomcommandcenter1 must enable incoming leads before this connection can send them.</TooltipContent>
+                    </Tooltip>
+                    </div>
                   </div>
                 </div>
                 {screenshots[idx] && (
