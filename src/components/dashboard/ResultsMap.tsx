@@ -16,16 +16,16 @@ const FitBounds = ({ points }: { points: [number, number][] }) => {
   return null;
 };
 
-const ResultsMap = ({ results }: { results: SearchResult[] }) => {
+const ResultsMap = ({ results, onSelect }: { results: SearchResult[]; onSelect?: (index: number) => void }) => {
   const pts = useMemo(
-    () => results.filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number"),
+    () => results.map((r, i) => ({ ...r, _i: i })).filter((r) => typeof r.latitude === "number" && typeof r.longitude === "number"),
     [results],
   );
   const coords = useMemo(() => pts.map((r) => [r.latitude!, r.longitude!] as [number, number]), [pts]);
   if (!pts.length) return null;
 
   return (
-    <div className="relative rounded-lg overflow-hidden border border-border/50 h-[380px] z-0">
+    <div className="relative rounded-lg overflow-hidden border border-border/50 h-[600px] z-0">
       <MapContainer center={coords[0]} zoom={12} className="h-full w-full" scrollWheelZoom>
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -37,10 +37,12 @@ const ResultsMap = ({ results }: { results: SearchResult[] }) => {
           const c = needColor(p);
           return (
             <CircleMarker key={i} center={[r.latitude!, r.longitude!]} radius={9}
+              eventHandlers={{ click: () => onSelect?.(r._i) }}
               pathOptions={{ color: "hsl(0 0% 100%)", weight: 2, fillColor: c, fillOpacity: 0.95 }}>
               <Tooltip direction="top" offset={[0, -6]}>
                 <div className="font-semibold">{r.business_name}</div>
                 <div>Opportunity score: {p}/100</div>
+                <div className="opacity-70">Click to view lead</div>
               </Tooltip>
             </CircleMarker>
           );

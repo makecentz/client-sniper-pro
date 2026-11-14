@@ -64,6 +64,7 @@ const SearchPanel = () => {
     try { sessionStorage.setItem("ch_search_results", JSON.stringify(results)); } catch { /* noop */ }
   }, [results]);
   const [searching, setSearching] = useState(false);
+  const [activeIdx, setActiveIdx] = useState<number | null>(null);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [screenshots, setScreenshots] = useState<Record<number, string>>({});
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -242,7 +243,7 @@ const SearchPanel = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 max-w-full overflow-x-hidden">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Search Businesses</h1>
         <p className="text-sm text-muted-foreground">Find local businesses and identify high-value leads</p>
@@ -314,6 +315,14 @@ const SearchPanel = () => {
           </div>
         </CardContent>
       </Card>
+
+
+      {results.length > 0 && (
+        <ResultsMap results={results} onSelect={(i) => {
+          setActiveIdx(i);
+          document.getElementById(`lead-${i}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }} />
+      )}
 
       {/* Manual Website Analysis */}
       <Card className="border-border/50">
@@ -414,14 +423,13 @@ const SearchPanel = () => {
       </Card>
 
       {results.length > 0 && (
-        <div className="space-y-3">
-          <ResultsMap results={results} />
+        <div className="space-y-3 min-w-0">
           <h2 className="text-lg font-semibold text-foreground">Results ({results.length})</h2>
           {results.map((result, idx) => (
-            <Card key={idx} className="border-border/50">
+            <Card key={idx} id={`lead-${idx}`} className={`border-border/50 min-w-0 transition-shadow ${activeIdx === idx ? "ring-2 ring-primary" : ""}`}>
               <CardContent className="p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                  <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-semibold text-foreground">{result.business_name}</span>
                       {result.score === "hot" && (
@@ -461,11 +469,11 @@ const SearchPanel = () => {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" /> {result.address}</span>
+                      <span className="flex items-center gap-1 min-w-0 break-words"><MapPin className="h-3.5 w-3.5 shrink-0" /> {result.address}</span>
                       {result.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> {result.phone}</span>}
                       {result.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" /> {result.email}</span>}
                       {result.website ? (
-                        <a href={result.website.startsWith("http") ? result.website : `https://${result.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline"><Globe className="h-3.5 w-3.5" /> {result.website}</a>
+                        <a href={result.website.startsWith("http") ? result.website : `https://${result.website}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-primary hover:underline min-w-0 break-all"><Globe className="h-3.5 w-3.5 shrink-0" /> {result.website}</a>
                       ) : (
                         <span className="flex items-center gap-1 text-hot"><Globe className="h-3.5 w-3.5" /> No website</span>
                       )}
@@ -501,7 +509,7 @@ const SearchPanel = () => {
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0">
                     {result.website && (
                       <Button size="sm" variant="ghost" onClick={() => captureScreenshot(result.website!, idx)}>
                         <Camera className="h-4 w-4" />
