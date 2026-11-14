@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { MapContainer, TileLayer, CircleMarker, Tooltip, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, CircleMarker, Tooltip, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { SearchResult } from "@/lib/mock-data";
 
@@ -42,8 +42,24 @@ const ResultsMap = ({ results, onSelect }: { results: SearchResult[]; onSelect?:
               <Tooltip direction="top" offset={[0, -6]}>
                 <div className="font-semibold">{r.business_name}</div>
                 <div>Opportunity score: {p}/100</div>
-                <div className="opacity-70">Click to view lead</div>
+                <div className="opacity-70">Click to view lead{r.website ? " & website link" : ""}</div>
               </Tooltip>
+              <Popup>
+                <div className="font-semibold">{r.business_name}</div>
+                <div>Opportunity score: {p}/100</div>
+                {r.website ? (
+                  <a
+                    href={r.website.startsWith("http") ? r.website : `https://${r.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium"
+                  >
+                    Open website →
+                  </a>
+                ) : (
+                  <div className="opacity-70">No website</div>
+                )}
+              </Popup>
             </CircleMarker>
           );
         })}
