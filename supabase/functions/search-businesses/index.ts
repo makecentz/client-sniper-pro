@@ -323,7 +323,10 @@ Deno.serve(async (req) => {
     if (!outscraper.ok) {
       const errText = await outscraper.text();
       console.error("Outscraper error:", outscraper.status, errText);
-      return new Response(JSON.stringify({ error: "Search service error" }), {
+      const msg = outscraper.status === 402
+        ? "The business search provider account is out of credits or has a billing issue. Please contact the site admin."
+        : `Search service error (${outscraper.status})`;
+      return new Response(JSON.stringify({ error: msg, code: outscraper.status === 402 ? "PROVIDER_BILLING" : "PROVIDER_ERROR" }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
