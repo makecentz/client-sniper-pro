@@ -1,3 +1,3 @@
 # Search-result actions
 - [x] Add Remove below Save; shared list/map dismissal and screenshot/selection rules pass 3 tests. Browser verification incomplete: search navigation returned to Dashboard.
-- [ ] Send leads to Ecomcommandcenter1 Lead Tracker — blocked: that project has no incoming-lead endpoint or MCP tools; receiver must be added in its own chat.
+- [ ] Connect Send to Lead Tracker to https://ecomcommandcenter1.lovable.app/api/public/receive-lead — blocked: live endpoint returns HTTP 503, "Lead ingestion is not configured"; set LEAD_INGEST_API_KEY in Ecomcommandcenter1, then securely configure the same shared key here before wiring and testing delivery.
