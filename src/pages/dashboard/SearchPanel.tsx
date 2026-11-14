@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import ResultsMap from "@/components/dashboard/ResultsMap";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,7 +57,12 @@ const SearchPanel = () => {
   const filteredIndustries = INDUSTRIES.filter((i) =>
     i.toLowerCase().includes(businessType.trim().toLowerCase())
   );
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>(() => {
+    try { return JSON.parse(sessionStorage.getItem("ch_search_results") || "[]"); } catch { return []; }
+  });
+  useEffect(() => {
+    try { sessionStorage.setItem("ch_search_results", JSON.stringify(results)); } catch { /* noop */ }
+  }, [results]);
   const [searching, setSearching] = useState(false);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [screenshots, setScreenshots] = useState<Record<number, string>>({});
@@ -409,6 +415,7 @@ const SearchPanel = () => {
 
       {results.length > 0 && (
         <div className="space-y-3">
+          <ResultsMap results={results} />
           <h2 className="text-lg font-semibold text-foreground">Results ({results.length})</h2>
           {results.map((result, idx) => (
             <Card key={idx} className="border-border/50">

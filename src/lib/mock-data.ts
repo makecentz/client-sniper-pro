@@ -53,6 +53,8 @@ export interface Lead {
 
 // Search result type (before saving to DB)
 export interface SearchResult {
+  latitude?: number | null;
+  longitude?: number | null;
   business_name: string;
   phone: string;
   address: string;

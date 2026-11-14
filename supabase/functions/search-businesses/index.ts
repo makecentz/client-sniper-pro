@@ -391,6 +391,8 @@ Deno.serve(async (req) => {
         business_name: r.name || "Unknown Business",
         phone: r.phone || r.international_phone_number || "",
         address: r.full_address || r.address || "",
+        latitude: typeof r.latitude === "number" ? r.latitude : null,
+        longitude: typeof r.longitude === "number" ? r.longitude : null,
         website,
         email,
         has_website: hasWebsite,
